@@ -66,7 +66,10 @@ Methods inherited from <a href="exceptions.html#Exception">exceptions.Exception<
 <font color="#ffffff" face="helvetica, arial"><big><strong>Functions</strong></big></font></td></tr>
     
 <tr><td bgcolor="#eeaa77"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
-<td width="100%"><dl><dt><a name="-get_config"><strong>get_config</strong></a>(config_pathname<font color="#909090">=None</font>)</dt><dd><tt>Read&nbsp;py-Asterisk&nbsp;configuration&nbsp;data&nbsp;from&nbsp;the&nbsp;filesystem.</tt></dd></dl>
+<td width="100%"><dl><dt><a name="-find_config"><strong>find_config</strong></a>(config_pathname)</dt><dd><tt>Search&nbsp;the&nbsp;filesystem&nbsp;paths&nbsp;listed&nbsp;in&nbsp;CONFIG_PATHNAMES&nbsp;for&nbsp;a&nbsp;regular&nbsp;file.<br>
+Return&nbsp;the&nbsp;name&nbsp;of&nbsp;the&nbsp;first&nbsp;one&nbsp;found,&nbsp;or&nbsp;&lt;config_pathname&gt;,&nbsp;if&nbsp;it&nbsp;is&nbsp;not<br>
+None.</tt></dd></dl>
+ <dl><dt><a name="-get_config"><strong>get_config</strong></a>(config_pathname<font color="#909090">=None</font>)</dt><dd><tt>Read&nbsp;py-Asterisk&nbsp;configuration&nbsp;data&nbsp;from&nbsp;the&nbsp;filesystem.</tt></dd></dl>
 </td></tr></table><p>
 <table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
 <tr bgcolor="#55aa55">

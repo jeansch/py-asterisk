@@ -332,6 +332,16 @@ class BaseManager(object):
             self._dispatch_packet(packet)
 
 
+    def strip_evinfo(self, event):
+        '''
+        Given an event, remove it's ActionID and Event members.
+        '''
+
+        new = Asterisk.Util.AttributeDict(event)
+        del new['ActionID'], new['Event']
+        return new
+
+
     def replace_events(self, events):
         '''
         Given a list of functions, temporarily replace on_<funcname> attributes
@@ -602,10 +612,32 @@ class CoreActions(object):
 
 
     def ParkedCalls(self):
-        'Trigger resending of all parked call events.'
+        'Return a nested dict describing currently parked calls.'
 
         id = self._write_action('ParkedCalls')
-        return self._raise_failure(self.read_response(id))
+        self._raise_failure(self.read_response(id))
+        parked = {}
+
+        def ParkedCall(self, event):
+            event = self.strip_evinfo(event)
+            parked[event.pop('Exten')] = event
+
+        def ParkedCallsComplete(self, event):
+            stop_flag[0] = True
+
+        stop_flag = [ False ]
+        undo = self.replace_events([ ParkedCall, ParkedCallsComplete ])
+
+        try:
+            while stop_flag[0] == False:
+                packet = self._read_packet()
+                self._dispatch_packet(packet)
+
+        finally:
+            self.undo_events(undo)
+        return parked
+
+
 
 
     def Ping(self):
@@ -646,10 +678,9 @@ class CoreActions(object):
         queues = {}
 
         def QueueParams(self, event):
+            event = self.strip_evinfo(event)
             name = event.pop('Queue')
             event['members'] = {}
-            del event['Event']
-
             queues[name] = event
     
         def QueueMember(self, event):
@@ -724,8 +755,8 @@ class CoreActions(object):
         channels = {}
 
         def Status(self, event):
+            event = self.strip_evinfo(event)
             name = event.pop('Channel')
-            del event['Event']
             channels[name] = event
     
         def StatusComplete(self, event):
@@ -811,8 +842,8 @@ class ZapataActions(object):
         channels = {}
 
         def ZapShowChannels(self, event):
+            event = self.strip_evinfo(event)
             number = int(event.pop('Channel'))
-            del event['Event'], event['ActionID']
             channels[number] = event
     
         def ZapShowChannelsComplete(self, event):
