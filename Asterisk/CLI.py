@@ -86,7 +86,7 @@ def show_actions(action = None):
 
 
 def execute_action(manager, argv):
-    method_name = argv.pop(0)
+    method_name = argv.pop(0).lower()
     method_dict = dict(\
         [ (k.lower(), v) for (k, v) in inspect.getmembers(manager) \
         if inspect.ismethod(v) ])
