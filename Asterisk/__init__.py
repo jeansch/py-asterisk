@@ -1,5 +1,5 @@
 '''
-Asterisk Managemer API Python package.
+Asterisk Manager API Python package.
 '''
 
 __author__ = 'David M. Wilson <dw@botanicus.net>'
