@@ -346,7 +346,7 @@ class BaseManager(Asterisk.Logging.InstanceLogger):
             self.on_Event(packet)
 
         else:
-            raise InternalError('Unknown packet type detected: %r', packet)
+            raise InternalError('Unknown packet type detected: %r' % (packet,))
 
 
     def _translate_response(self, packet, success = None):
