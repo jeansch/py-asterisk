@@ -1,0 +1,116 @@
+On Tue, Oct 12, 2004 at 08:30:49PM +0100, Nick Knight wrote:
+
+> BTW, I have figured out call origination - the other thing I am looking
+> at is caller ID parsing - have you got any example code to monitor and
+> manage events for inbound calls.
+
+Hi Nick!
+
+When you talk about CallerID parsing, do you mean breaking the CallerID
+up into <country>, <std>, <number>?
+
+Quick example for grabbing CallerID:
+
+
+    class GrabCallerID(object):
+        '''
+        Subscribe to 'Newchannel' events, and grab the CallerID of new
+        channels as they appear.
+        '''
+
+        def Newchannel(self, pbx, event):
+            '''
+            Event handler for the Asterisk 'Newchannel' event.
+            '''
+
+            cli = event.Callerid
+            print "CallerID for %s is: %s" % (event.Channel, cli)
+
+
+            if self.bad_caller(cli):
+                event.Channel.hangup()
+
+
+        def bad_caller(self, cli):
+            '''
+            Return truth if we don't like this caller.
+            '''
+
+            return cli.startswith('0870') # or whatever.
+
+
+        def __init__(self):
+            # Create an EventCollection instance, which is a mapping of
+            # event name <-> list of delegates that you can merge with
+            # the EventCollections of an Asterisk.Manager.BaseManager
+            # (or derivitaves) instance.
+
+            # Confused? I thought as much. Give me a few weeks and
+            # you'll have some introductary documentation to go by. :)
+
+            self.events = events = Asterisk.Util.EventCollection()
+
+            # Add our event handler.
+            events.subscribe('Newchannel', self.Newchannel)
+
+
+        def register(self, some_pbx):
+            '''
+            Register our list of events with <some_pbx>'s
+            EventCollection.
+            '''
+
+            some_pbx.events += events
+
+
+        def unregister(self, some_pbx):
+            '''
+            Unregister our events from <some_pbx>.
+            '''
+
+            some_pbx.events -= events
+
+
+
+
+    Now all you do is something like:
+
+        from Asterisk.Manager import Manager
+
+        pbx = Manager(('localhost', 5038), 'dw', 'letmein')
+        grab = GrabCallerID()
+
+        grab.register(pbx)
+
+        # Sit receiving events in an endless loop, Newchannel events
+        # will end up in the GrabCallerID.Newchannel method.
+        pbx.serve_forever()
+
+
+    For playing around, you may also be interested in this snippet:
+
+        import logging
+        logging.basicConfig()
+        logging.getLogger().setLevel(logging.DEBUG)
+
+        This will cause a tonne of debug output to be printed to your
+        terminal. Read the logging package's documentation for more
+        information on redirecting this output to a file.
+
+        If you import Asterisk.Manager first, then you can also set a
+        further two levels: logging.PACKET and logging.IO which cause
+        even greater output to be generated.
+
+
+    For debugging, there is also Asterisk.Util.dump_human which dumps
+    packets in a half-readable format. The 'asterisk-dump' command-line
+    utility is also useful for working out what is going wrong.
+
+
+Hope this helps!
+
+
+David.
+-- 
+20:26 <tjf> you're an emotional rollercoaster
+20:26 <tjf> THAT ONLY GOES DOWN
