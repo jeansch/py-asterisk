@@ -455,7 +455,8 @@ class CoreActions(object):
         for handler in events:
             handler_name = 'on_' + handler.__name__
             output[handler_name] = getattr(self, handler_name, None)
-            setattr(self, handler_name, handler)
+            setattr(self, handler_name,
+                instancemethod(handler, self, self.__class__))
 
         return output
 
@@ -642,29 +643,31 @@ class CoreActions(object):
         self._raise_failure(self.read_response(id))
         queues = {}
 
-        def QueueParams(event):
+        def QueueParams(self, event):
             name = event.pop('Queue')
             event['members'] = {}
             del event['Event']
 
             queues[name] = event
     
-        def QueueMember(event):
+        def QueueMember(self, event):
             name = event.pop('Queue')
             queues[name]['members'][event.pop('Location')] = event
 
-        def QueueStatusEnd(event):
+        def QueueStatusEnd(self, event):
             stop_flag[0] = True
 
         stop_flag = [ False ]
 
         undo = self._temp_events([ QueueParams, QueueMember, QueueStatusEnd ])
 
-        while stop_flag[0] == False:
-            packet = self._read_packet()
-            self._dispatch_packet(packet)
+        try:
+            while stop_flag[0] == False:
+                packet = self._read_packet()
+                self._dispatch_packet(packet)
 
-        self._undo_events(undo)
+        finally:
+            self._undo_events(undo)
         return queues
 
     QueueStatus = Queues
@@ -718,28 +721,25 @@ class CoreActions(object):
         self._raise_failure(self.read_response(id))
         channels = {}
 
-        def on_Status(self, event):
+        def Status(self, event):
             name = event.pop('Channel')
             del event['Event']
             channels[name] = event
     
-        def on_StatusComplete(self, event):
+        def StatusComplete(self, event):
             stop_flag[0] = True
 
+
         stop_flag = [ False ]
+        undo = self._temp_events([ Status, StatusComplete ])
 
-        old_Status = self.on_Status
-        old_StatusComplete = self.on_StatusComplete
-        self.on_Status = instancemethod(on_Status, self, self.__class__)
-        self.on_StatusComplete = instancemethod(on_StatusComplete, self, self.__class__)
+        try:
+            while stop_flag[0] == False:
+                packet = self._read_packet()
+                self._dispatch_packet(packet)
 
-        while stop_flag[0] == False:
-            packet = self._read_packet()
-            self._dispatch_packet(packet)
-
-        self.on_Status = old_Status
-        self.on_StatusComplete = old_StatusComplete
-
+        finally:
+            self._undo_events(undo)
         return channels
 
 
@@ -808,28 +808,24 @@ class ZapataActions(object):
         self._raise_failure(self.read_response(id))
         channels = {}
 
-        def on_ZapShowChannels(self, event):
+        def ZapShowChannels(self, event):
             number = int(event.pop('Channel'))
-            del event['Event']
+            del event['Event'], event['ActionID']
             channels[number] = event
     
-        def on_ZapShowChannelsComplete(self, event):
+        def ZapShowChannelsComplete(self, event):
             stop_flag[0] = True
 
         stop_flag = [ False ]
+        undo = self._temp_events([ ZapShowChannels, ZapShowChannelsComplete ])
 
-        old_ZapShowChannels = self.on_ZapShowChannels
-        old_ZapShowChannelsComplete = self.on_ZapShowChannelsComplete
-        self.ZapShowChannels = on_ZapShowChannels
-        self.on_ZapShowChannelsComplete = on_ZapShowChannelsComplete
+        try:
+            while stop_flag[0] == False:
+                packet = self._read_packet()
+                self._dispatch_packet(packet)
 
-        while stop_flag[0] == False:
-            packet = self._read_packet()
-            self._dispatch_packet(packet)
-
-        self.on_ZapShowChannels = old_ZapShowChannels
-        self.on_ZapShowChannelsComplete = old_ZapShowChannelsComplete
-
+        finally:
+            self._undo_events(undo)
         return channels
 
 
