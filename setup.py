@@ -18,7 +18,7 @@ setup(
 	description =   'Asterisk Manager API Python interface.',
 	author =        'David M. Wilson',
 	author_email =  'dw-py-Asterisk-setup.py@botanicus.net',
-	license =       'LGPL',
+	license =       'MIT',
 	url =           'http://botanicus.net/dw/',
 	download_url =  'http://botanicus.net/dw/py-asterisk.php',
 	packages =      [ 'Asterisk' ],
