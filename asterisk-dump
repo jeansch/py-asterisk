@@ -4,12 +4,13 @@
 Dump events from the Manager interface to stdout.
 '''
 
-__author__  = 'David M. Wilson <dw-py-asterisk-dump-events@botanicus.net>'
+__author__  = 'David M. Wilson <dw-asterisk-dump@botanicus.net>'
 __id__      = '$Id$'
 
-import sys
+import sys, time, socket
 from Asterisk.Config import get_config
 from Asterisk.Manager import CoreManager
+import Asterisk.Manager
 
 
 
@@ -26,15 +27,42 @@ class MyManager(CoreManager):
 
 
 
-def main(argv):
+def main2():
     manager = MyManager(*get_config()['manager_init_args'])
 
     try:
+        print '#', repr(manager)
+        print
         manager.serve_forever()
 
     except KeyboardInterrupt, e:
         raise SystemExit
 
+
+
+def main(argv):
+    max_reconnects = 100
+    reconnect_delay = 2
+
+    while True:
+        try:
+            main2()
+
+        except Asterisk.Manager.GoneAwayError, e:
+            print '#', str(e)
+
+
+        except socket.error, e:
+            print
+            print '# Connect error:', e[1]
+            reconnect_delay *= 2
+
+        print '# Waiting', reconnect_delay, 'seconds before reconnect.'
+        print '# Will try', max_reconnects, 'more times before exit..'
+
+        max_reconnects -= 1
+        time.sleep(reconnect_delay)
+        print '# Reconnecting...'
 
 
 
