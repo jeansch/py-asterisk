@@ -63,7 +63,7 @@ __id__ = '$Id$'
 
 import socket
 from new import instancemethod
-import Asterisk
+import Asterisk, Asterisk.Util
 
 
 
@@ -200,7 +200,7 @@ class BaseManager(object):
         sequence is read. Return the packet as a mapping.
         '''
 
-        packet = {}
+        packet = Asterisk.Util.AttributeDict()
 
         while True:
             line = self.file.readline().rstrip()
@@ -488,6 +488,8 @@ class CoreActions(object):
         # TODO: this can sum multiple mailboxes too.
 
         self._write_action('MailboxCount', { 'Mailbox': mailbox })
+        result = self._raise_failure(self.read_response())
+        return int(result.NewMessages), int(result.OldMessages)
 
 
     def MailboxStatus(self, mailbox):
@@ -513,7 +515,8 @@ class CoreActions(object):
     def Originate(self, channel, **kwargs):
         'Originate a call.'
 
-        self._write_action('Originate', { 'Channel': channel } + kwargs)
+        kwargs['Channel'] = channel
+        self._write_action('Originate', kwargs)
         return self._raise_failure(self.read_response())
 
 
