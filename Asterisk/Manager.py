@@ -131,7 +131,7 @@ class BaseChannel(Asterisk.Logging.InstanceLogger):
 
     def Setvar(self, variable, value):
         'Set the <variable> in this channel to <value>.'
-        return self.manager.Setvar(variable, value)
+        return self.manager.Setvar(self, variable, value)
 
     def Status(self):
         'Return the Status() dict for this channel (wasteful!).'
@@ -783,7 +783,7 @@ class CoreActions(object):
             'Context': context,
             'Exten': extension,
             'Priority': priority,
-            'ExtraChannel': channel2 and channel2 or ''
+            'ExtraChannel': channel2
         })
 
         return self._translate_response(self.read_response(id))
