@@ -458,14 +458,23 @@ class CoreActions(object):
         return self._raise_failure(self.read_response())
 
 
-    def Getvar(self, channel, variable):
-        "Return the value of <channel>'s <variable>."
+    def Getvar(self, channel, variable, default = None):
+        '''
+        Return the value of <channel>'s <variable>, or <default> if <variable>
+        is not set.
+        '''
 
         self._write_action('Getvar', {
             'Channel': channel,
             'Variable': variable
         })
-        return self._raise_failure(self.read_response())[variable]
+
+        response = self._raise_failure(self.read_response())
+        value = response[variable]
+
+        if value == '(null)':
+            return default
+        return value
 
 
     def Hangup(self, channel):
