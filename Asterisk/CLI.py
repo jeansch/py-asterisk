@@ -92,7 +92,7 @@ def execute_action(manager, argv):
         if inspect.ismethod(v) ])
 
     method = method_dict[method_name]
-    Asterisk.Util.dump_result(method(*argv))
+    Asterisk.Util.dump_human(method(*argv))
 
 
 def command_line(argv):

@@ -44,29 +44,33 @@ def dump_packet(packet, file = sys.stdout):
 
 
 
-def _dump_result(result, file, _indent):
-    indent = lambda a=0,i=_indent: ('   ' * (a+i))
-
-    result.sort()
-
-    for key, val in result:
-        if isinstance(val, str):
-            file.write('%s%s: %s\n' % (indent(), key, str(val)))
-        elif isinstance(val, list):
-            file.write('%s%s:\n%s' % (indent(), key, indent(1)))
-            file.write(('\n' + indent(1)).join(map(str, val)))
-            file.write('\n')
-        elif isinstance(val, dict):
-            file.write('%s%s:\n' % (indent(), key))
-            _dump_result(val, file, _indent+1)
 
 
-def dump_result(result, file = sys.stdout):
-    '''
-    Dump a nested dict in human readable form to file-like object <file>.
-    '''
+def dump_human(data, file = sys.stdout, _indent = 0):
+    scalars = (str, int, float)
+    recursive = (dict, list, tuple, AttributeDict)
+    indent = lambda a = 0, i = _indent: ('   ' * (a + i))
+    Type = type(data)
 
-    if isinstance(result, dict):
-        _dump_result(result.items(), file, 0)
-    elif isinstance(result, (tuple, list)):
-        _dump_result(list(enumerate(result)), file, 0)
+
+    if Type in (dict, AttributeDict):
+        items = data.items()
+        items.sort()
+
+        for key, val in items:
+            file.write(indent() + key + ': ')
+            if type(val) in recursive:
+                file.write('\n')
+                dump_human(val, file, _indent + 1)
+            else:
+                dump_human(val, file, 0)
+
+    elif Type in (list, tuple):
+        for val in data:
+            dump_human(val, file, _indent + 1)
+
+    elif Type in (int, float):
+        file.write(indent() + '%r\n' % data)
+
+    elif Type is str:
+        file.write(indent() + data + '\n')
