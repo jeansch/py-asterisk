@@ -387,7 +387,7 @@ class BaseManager(Asterisk.Logging.InstanceLogger):
     def close(self):
         'Log off and close the connection to the PBX.'
 
-        self.log.debug('close() shutting down.')
+        self.log.debug('Closing down.')
 
         self._write_action('Logoff')
         packet = self._read_packet(discard_events = True)
@@ -399,7 +399,7 @@ class BaseManager(Asterisk.Logging.InstanceLogger):
     def read(self):
         'Called by the parent code when activity is detected on our fd.'
 
-        self.log.debug('Activity detected on our fd.')
+        self.log.io('read(): Activity detected on our fd.')
         packet = self._read_packet()
         self._dispatch_packet(packet)
 
