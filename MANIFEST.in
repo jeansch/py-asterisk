@@ -1,1 +1,1 @@
-include *.html dump-events
+include *.html asterisk-dump asterisk-recover py-asterisk
