@@ -21,7 +21,7 @@ class MyManager(CoreManager):
     '''
 
     def on_Event(self, event):
-        Asterisk.Util.dump_packet(event, sys.stdout)
+        Asterisk.Util.dump_packet(event)
 
 
 

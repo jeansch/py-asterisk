@@ -5,6 +5,8 @@ Asterisk/Util.py: utility classes.
 __author__ = 'David M. Wilson <dw-py-Asterisk-Util.py@botanicus.net>'
 __Id__ = '$Id$'
 
+import sys
+
 
 
 
@@ -18,7 +20,7 @@ class AttributeDict(dict):
 
 
 
-def dump_packet(packet, file):
+def dump_packet(packet, file = sys.stdout):
     '''
     Dump a packet in human readable form to file-like object <file>.
     '''
