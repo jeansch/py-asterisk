@@ -53,13 +53,12 @@ logging.setLoggerClass(AsteriskLogger)
 # Per-instance logging mix-in.
 
 class InstanceLogger(object):
-    def getLoggerClass(self):
+    def getLoggerName(self):
         '''
-        Return the namespace where debug messages for all instances of this
-        class are sent.
+        Return the name where log messages for this instance is sent.
         '''
 
-        return '%s.%s' % (self.__module__, self.__class__.__name__)
+        return '%s.%s.%d' % (self.__module__, self.__class__.__name__, id(self))
 
 
     def getLogger(self):
@@ -68,5 +67,4 @@ class InstanceLogger(object):
         instance.
         '''
 
-        log_name = self.getLoggerClass() + '.' + str(id(self))
-        return logging.getLogger(log_name)
+        return logging.getLogger(self.getLoggerName())
