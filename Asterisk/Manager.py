@@ -61,9 +61,9 @@ Asynchronous Usage:
 __author__ = 'David M. Wilson <dw-py-asterisk-Manager.py@botanicus.net>'
 __id__ = '$Id$'
 
-# Change the following line to integrate with your exception system:
-import Asterisk
 import socket
+from new import instancemethod
+import Asterisk
 
 
 
@@ -208,9 +208,14 @@ class BaseManager(object):
             if not line:
                 return packet
 
-            key, val = line.split(': ', 1)
+            if line.count(':') == 1 and line[-1] == ':': # Empty field:
+                key, val = line[:-1], ''
+            else:
+                key, val = line.split(': ', 1)
+
             if key == 'Response' and val == 'Follows':
                 return self._read_response_follows()
+
             packet[key] = val
 
 
@@ -238,10 +243,10 @@ class BaseManager(object):
             % (packet, ))
 
 
-    def _raise_failure(self, packet):
+    def _raise_failure(self, packet, success = None):
         'Raise an error if the reponse packet reports failure.'
 
-        if packet['Response'] not in ('Success', 'follows'):
+        if packet['Response'] in ('Success', 'follows'):
             return packet
 
         if packet['Message'] == 'Permission denied':
@@ -652,8 +657,8 @@ class CoreActions(object):
 
         old_Status = self.on_Status
         old_StatusComplete = self.on_StatusComplete
-        self.Status = on_Status
-        self.on_StatusComplete = on_StatusComplete
+        self.on_Status = instancemethod(on_Status, self, self.__class__)
+        self.on_StatusComplete = instancemethod(on_StatusComplete, self, self.__class__)
 
         while stop_flag[0] == False:
             packet = self._read_packet()
