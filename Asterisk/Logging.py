@@ -12,9 +12,11 @@ import logging
 
 # Add two new levels.
 
-logging.PACKET = logging.DEBUG  - 1
-logging.IO     = logging.PACKET - 1
+logging.STATE    = logging.DEBUG  - 1
+logging.PACKET   = logging.STATE  - 1
+logging.IO       = logging.PACKET - 1
 
+logging.addLevelName(logging.STATE,  'STATE')
 logging.addLevelName(logging.PACKET, 'PACKET')
 logging.addLevelName(logging.IO,     'IO')
 
