@@ -58,7 +58,7 @@ def dump_human(data, file = sys.stdout, _indent = 0):
         items.sort()
 
         for key, val in items:
-            file.write(indent() + key + ': ')
+            file.write(indent() + str(key) + ': ')
             if type(val) in recursive:
                 file.write('\n')
                 dump_human(val, file, _indent + 1)
