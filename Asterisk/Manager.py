@@ -67,23 +67,23 @@ class BaseChannel(Asterisk.Logging.InstanceLogger):
     This translates to Getvar and Setvar actions on the channel.
     '''
 
-    def __init__(self, manager, channel_id):
+    def __init__(self, manager, id):
         '''
-        Initialise a new Channel object belonging to <channel_id> reachable via
+        Initialise a new Channel object belonging to <id> reachable via
         BaseManager <manager>.
         '''
 
         self.manager = manager
-        self.channel_id = channel_id
+        self.id = id
         self.log = self.getLogger()
 
     def __str__(self):
-        return self.channel_id
+        return self.id
 
     def __repr__(self):
         return '<%s.%s referencing channel %r of %r>' %\
             (self.__class__.__module__, self.__class__.__name__,
-             self.channel_id, self.manager)
+             self.id, self.manager)
 
     def AbsoluteTimeout(self, timeout):
         'Set the absolute timeout of this channel to <timeout>.'
@@ -127,7 +127,7 @@ class BaseChannel(Asterisk.Logging.InstanceLogger):
 
     def Status(self):
         'Return the Status() dict for this channel (wasteful!).'
-        return self.manager.Status()[self.channel_id]
+        return self.manager.Status()[self.id]
 
     def StopMonitor(self):
         'Stop monitoring of this channel.'
