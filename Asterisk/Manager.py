@@ -89,15 +89,13 @@ class CommunicationError(BaseException):
 
 
 class InternalError(BaseException):
-    'This exception is raised when an error occurs within the ManagerAPI object.'
-    def __init__(self, error):
-        self._error = 'Internal error: %s' % error
+    'This exception is raised when an error occurs within a Manager object.'
+    _prefix = 'py-Asterisk internal error'
 
 
 class ActionFailed(BaseException):
     'This exception is raised when a PBX action fails.'
-    def __init__(self, message):
-        self._error = 'action failed: %s' % message
+    _prefix = 'py-Asterisk action failed'
 
 
 class PermissionDenied(BaseException):
@@ -112,9 +110,7 @@ class PermissionDenied(BaseException):
 
 
 class BaseManager(object):
-    '''
-    Base protocol implementation for the Asterisk Manager API.
-    '''
+    'Base protocol implementation for the Asterisk Manager API.'
 
     _AST_BANNER = 'Asterisk Call Manager/1.0\r\n'
 

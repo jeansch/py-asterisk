@@ -23,5 +23,8 @@ class BaseException(Exception):
     _prefix = '(Base Exception)'
     _error = '(no error)'
 
+    def __init__(self, error):
+        self._error = error
+
     def __str__(self):
         return '%s: %s' % (self._prefix, self._error)

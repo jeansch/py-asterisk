@@ -16,8 +16,6 @@ from Asterisk.Config import get_config
 
 class ArgumentsError(BaseException):
     _prefix = 'program arguments error'
-    def __init__(self, error):
-        self._error = error
 
 
 
