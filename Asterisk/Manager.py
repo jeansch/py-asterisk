@@ -77,6 +77,10 @@ class BaseChannel(Asterisk.Logging.InstanceLogger):
         self.id = id
         self.log = self.getLogger()
 
+    def __eq__(self, other):
+        'Return truth if <other> is equal to this object.'
+        return (self.id == other.id) and (self.manager is other.manager)
+
     def __hash__(self):
         'Return the hash value of this channel.'
         return hash(self.id) ^ id(self.manager)
@@ -131,7 +135,7 @@ class BaseChannel(Asterisk.Logging.InstanceLogger):
 
     def Status(self):
         'Return the Status() dict for this channel (wasteful!).'
-        return self.manager.Status()[self.id]
+        return self.manager.Status()[self]
 
     def StopMonitor(self):
         'Stop monitoring of this channel.'
@@ -206,7 +210,7 @@ class BaseManager(Asterisk.Logging.InstanceLogger):
         self._authenticate()
 
 
-    def _get_channel(self, channel_id):
+    def get_channel(self, channel_id):
         'Return a channel object for the given <channel_id>.'
 
         if channel_id[:3].lower() == 'zap':
@@ -362,12 +366,12 @@ class BaseManager(Asterisk.Logging.InstanceLogger):
     def _translate_response(self, packet, success = None):
         '''
         Raise an error if the reponse packet reports failure. Convert any
-        channel identifiers to their equivalent objects using _get_channel().
+        channel identifiers to their equivalent objects using get_channel().
         '''
 
         for key in ('Channel', 'Channel1', 'Channel2'):
             if key in packet:
-                packet[key] = self._get_channel(packet[key])
+                packet[key] = self.get_channel(packet[key])
 
         if packet.Response in ('Success', 'Follows', 'Pong'):
             return packet
@@ -385,7 +389,7 @@ class BaseManager(Asterisk.Logging.InstanceLogger):
 
         for key in ('Channel', 'Channel1', 'Channel2'):
             if key in event:
-                event[key] = self._get_channel(event[key])
+                event[key] = self.get_channel(event[key])
 
 
     def close(self):
@@ -464,7 +468,7 @@ class BaseManager(Asterisk.Logging.InstanceLogger):
         Given an event, remove it's ActionID and Event members.
         '''
 
-        new = Asterisk.Util.AttributeDict(event)
+        new = event.copy()
         del new['ActionID'], new['Event']
         return new
 
