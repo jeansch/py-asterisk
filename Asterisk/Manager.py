@@ -122,7 +122,7 @@ class PermissionDenied(BaseException):
 
 
 
-class Channel(object):
+class BaseChannel(object):
     '''
     Represents a living Asterisk channel, with shortcut methods for operating
     on it. The object acts as a mapping, ie. you may get and set items of it.
@@ -209,6 +209,30 @@ class Channel(object):
 
 
 
+class ZapChannel(BaseChannel):
+    def ZapDNDoff(self):
+        'Disable DND status on this Zapata driver channel.'
+        return self.manager.ZapDNDoff(str(self))
+
+    def ZapDNDon(self):
+        'Enable DND status on this Zapata driver channel.'
+        return self.manager.ZapDNDon(str(self))
+
+    def ZapDialOffhook(self, number):
+        'Off-hook dial <number> on this Zapata driver channel.'
+        return self.manager.ZapDialOffhook(str(self), number)
+
+    def ZapHangup(self):
+        'Hangup this Zapata driver channel.'
+        return self.manager.ZapHangup(str(self))
+
+    def ZapTransfer(self):
+        'Transfer this Zapata driver channel.'
+        return self.manager.ZapTransfer(str(self))
+
+
+
+
 class BaseManager(object):
     'Base protocol implementation for the Asterisk Manager API.'
 
@@ -276,7 +300,9 @@ class BaseManager(object):
     def _get_channel(self, channel_id):
         'Return a channel object for the given <channel_id>.'
 
-        return Channel(self, channel_id)
+        if channel_id[:3].lower() == 'zap':
+            return ZapChannel(self, channel_id)
+        return BaseChannel(self, channel_id)
 
 
     def _authenticate(self):
