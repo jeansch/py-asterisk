@@ -6,6 +6,30 @@ __author__ = 'David M. Wilson <dw-py-Asterisk-Util.py@botanicus.net>'
 __Id__ = '$Id$'
 
 import sys, copy
+import Asterisk
+
+
+
+
+
+class SubscriptionError(Asterisk.BaseException):
+    '''
+    This exception is raised when an attempt to register the same (event,
+    handler) tuple twice is detected.
+    '''
+
+
+
+# This special unique object is used to indicate that an argument has not been
+# specified. It is used where None may be a valid argument value.
+
+class Unspecified(object):
+    'A class to represent an unspecified value that cannot be None.'
+
+    def __repr__(self):
+        return '<Asterisk.Util.Unspecified>'
+
+Unspecified = Unspecified()
 
 
 
@@ -17,6 +41,104 @@ class AttributeDict(dict):
     def __setattr__(self, key, value):
         self[key] = value
 
+
+
+
+class EventCollection(object):
+    '''
+    Utility class to allow grouping and automatic registration of event.
+    '''
+
+    def __init__(self, initial = None):
+        '''
+        If <initial> is not None, register functions from the list <initial>
+        waiting for events with the same name as the function.
+        '''
+
+        self.subscriptions = {}
+
+        if initial is not None:
+            for func in initial:
+                self.subscribe(func.__name__, func)
+
+
+    def subscribe(self, name, handler):
+        '''
+        Subscribe callable <handler> to event named <name>.
+        '''
+
+        if name not in self.subscriptions:
+            subscriptions = self.subscriptions[name] = []
+        else:
+            subscriptions = self.subscriptions[name]
+
+        if handler in subscriptions:
+            raise SubscriptionError
+
+        subscriptions.append(handler)
+
+
+    def unsubscribe(self, name, handler):
+        'Unsubscribe callable <handler> to event named <name>.'
+        self.subscriptions[name].remove(handler)
+
+
+    def fire(self, name, *args, **kwargs):
+        'Fire event <name> passing *<args> and **<kwargs> to subscribers.'
+
+        if name not in self.subscriptions:
+            return
+
+        for subscription in self.subscriptions[name]:
+            subscription(*args, **kwargs)
+
+
+    def copy(self):
+        new = self.__class__()
+
+        for name, subscriptions in self.subscriptions.iteritems():
+            new.subscriptions[name] = []
+            for subscription in subscriptions:
+                new.subscriptions[name].append(subscription)
+
+
+    def __iadd__(self, collection):
+        'Add all the events in <collection> to our collection.'
+
+        if not isinstance(collection, EventCollection):
+            raise TypeError
+
+        new = self.copy()
+
+        try:
+            for name, handlers in collection.subscriptions.iteritems():
+                for handler in handlers:
+                    self.subscribe(name, handler)
+        except Exception, e:
+            self.subscriptions = new.subscriptions
+            raise
+
+        return self
+
+
+    def __isub__(self, collection):
+        'Remove all the events in <collection> from our collection.'
+
+        if not isinstance(collection, EventCollection):
+            raise TypeError
+
+        new = self.copy()
+
+        try:
+            for name, handlers in collection.subscriptions.iteritems():
+                for handler in handlers:
+                    self.unsubscribe(name, handler)
+        except Exception, e:
+            self.subscriptions = new.subscriptions
+            raise
+
+        return self
+    
 
 
 

@@ -8,8 +8,7 @@ __author__ = 'David M. Wilson <dw@autosols.com>'
 __id__ = '$Id$'
 
 import sys, os, inspect
-from Asterisk import Manager, BaseException
-from Asterisk.Config import get_config
+from Asterisk import Manager, BaseException, Config
 import Asterisk.Util
 
 
@@ -118,8 +117,6 @@ def command_line(argv):
     Act as a command-line tool.
     '''
 
-    config = get_config()
-
     commands = [ 'actions', 'action', 'command', 'usage', 'help' ]
 
     if len(argv) < 2:
@@ -135,8 +132,8 @@ def command_line(argv):
     if command == 'usage':
         return usage(argv[0], sys.stdout)
 
-    manager = Manager.Manager(*get_config()['manager_init_args'])
-    
+    manager = Manager.Manager(*Config.Config().get_connection())
+
     if command == 'actions':
         show_actions()
 

@@ -1,61 +1,5 @@
 '''
-Asterisk Manager API interface module for Python.
-
-This module provides an object oriented interface to the Asterisk Manager API,
-whilest embracing some applicable Python concepts:
-
-    - Functionality is split into seperate mix-in classes.
-
-    - Asterisk PBX errors cause fairly granular exceptions.
-
-    - Docstrings are provided for all objects.
-
-    - The module may be used asynchronously if required. It should be suitable
-      for inclusion in a single-threaded GUI.
-
-    - Asterisk data is translated into data stored using Python types, so
-      working with it should be trivial. Through the use of XMLRPCServer or
-      similar, it should be trivial to expose this conversion to other
-      languages.
-
-
-Synchronous Usage:
-
-    Using the Manager or CoreManager objects, or using your own object with the
-    CoreActions mix-in, you may simply call methods of the instanciated object
-    and they will block until all data is available.
-
-
-Asynchronous Usage:
-
-    Declare on_<event> methods for each event you wish to monitor. Using the
-    select module, create an inner loop similar to this:
-
-        class MyManager(Asterisk.Manager):
-            def on_Link(self, event):
-                some_module.do_something(event)
-
-        manager = MyManager()
-        objects_to_watch = [ manager, gui, etc ]
-
-        while True:
-            for obj in select.select(objects_to_watch, [], [])[1]:
-                if obj is manager:
-                    manager.read()
-                else if obj is gui:
-                    gui.handle_event()
-
-
-    If you need to watch many events, or perhaps you would like to monitor
-    everything that is happening, you can define a fall-back event handler.
-    This event handler is used when a more specific one is not found (note use
-    of CoreManager):
-
-        class AllEventsManager(Asterisk.CoreManager):
-            def on_Event(self, event):
-                some_module.do_something(event)
-
-        ...
+Asterisk Manager and Channel objects.
 '''
 
 __author__ = 'David M. Wilson <dw-py-asterisk-Manager.py@botanicus.net>'
@@ -63,16 +7,10 @@ __id__ = '$Id$'
 
 import socket, time, logging, errno, os
 from new import instancemethod
-import Asterisk, Asterisk.Util
+import Asterisk, Asterisk.Util, Asterisk.Logging
 
 
 
-# Configure the logging module.
-
-logging.PACKET = logging.DEBUG  - 1
-logging.IO     = logging.PACKET - 1
-logging.addLevelName(logging.PACKET, 'PACKET')
-logging.addLevelName(logging.IO,     'IO')
 
 
 
@@ -122,16 +60,12 @@ class PermissionDenied(BaseException):
 
 
 
-class BaseChannel(object):
+class BaseChannel(Asterisk.Logging.InstanceLogger):
     '''
     Represents a living Asterisk channel, with shortcut methods for operating
     on it. The object acts as a mapping, ie. you may get and set items of it.
     This translates to Getvar and Setvar actions on the channel.
     '''
-
-    # Unique object used for testing for an unspecified argument where None is
-    # unsuitable. We use this as it looks nice in pydoc output.
-    _ChannelUnspecified = [None]
 
     def __init__(self, manager, channel_id):
         '''
@@ -141,6 +75,7 @@ class BaseChannel(object):
 
         self.manager = manager
         self.channel_id = channel_id
+        self.log = self.getLogger()
 
     def __str__(self):
         return self.channel_id
@@ -152,39 +87,39 @@ class BaseChannel(object):
 
     def AbsoluteTimeout(self, timeout):
         'Set the absolute timeout of this channel to <timeout>.'
-        return self.manager.AbsoluteTimeout(str(self), timeout)
+        return self.manager.AbsoluteTimeout(self, timeout)
 
     def ChangeMonitor(self, pathname):
         'Change the monitor filename of this channel to <pathname>.'
-        return self.manager.ChangeMonitor(str(self), pathname)
+        return self.manager.ChangeMonitor(self, pathname)
 
-    def Getvar(self, variable, default = _ChannelUnspecified):
+    def Getvar(self, variable, default = Asterisk.Util.Unspecified):
         '''
         Return the value of this channel's <variable>, or <default> if variable
         is not set.
         '''
-        if default is self._ChannelUnspecified:
-            return self.manager.Getvar(str(self), variable)
-        return self.manager.Getvar(str(self), variable, default)
+        if default is Asterisk.Util.Unspecified:
+            return self.manager.Getvar(self, variable)
+        return self.manager.Getvar(self, variable, default)
 
     def Hangup(self):
         'Hangup this channel.'
-        return self.manager.Hangup(str(self))
+        return self.manager.Hangup(self)
 
     def Monitor(self, pathname, format, mix):
         'Begin monitoring of this channel into <pathname> using <format>.'
-        return self.manager.Monitor(str(self), pathname, format, mix)
+        return self.manager.Monitor(self, pathname, format, mix)
 
     def Redirect(self, context, extension = 's', priority = 1, channel2 = None):
         '''
         Redirect this channel to <priority> of <extension> in <context>,
         optionally bridging with <channel2>.
         '''
-        return self.manager.Redirect(str(self), context, extension, priority, channel2)
+        return self.manager.Redirect(self, context, extension, priority, channel2)
 
     def SetCDRUserField(data, append = False):
         "Append or replace this channel's CDR user field with <data>."
-        return self.manager.SetCDRUserField(str(self), data, append)
+        return self.manager.SetCDRUserField(self, data, append)
 
     def Setvar(self, variable, value):
         'Set the <variable> in this channel to <value>.'
@@ -196,7 +131,7 @@ class BaseChannel(object):
 
     def StopMonitor(self):
         'Stop monitoring of this channel.'
-        return self.manager.StopMonitor(str(self))
+        return self.manager.StopMonitor(self)
 
     def __getitem__(self, key):
         'Fetch <key> as a variable from this channel.'
@@ -212,50 +147,31 @@ class BaseChannel(object):
 class ZapChannel(BaseChannel):
     def ZapDNDoff(self):
         'Disable DND status on this Zapata driver channel.'
-        return self.manager.ZapDNDoff(str(self))
+        return self.manager.ZapDNDoff(self)
 
     def ZapDNDon(self):
         'Enable DND status on this Zapata driver channel.'
-        return self.manager.ZapDNDon(str(self))
+        return self.manager.ZapDNDon(self)
 
     def ZapDialOffhook(self, number):
         'Off-hook dial <number> on this Zapata driver channel.'
-        return self.manager.ZapDialOffhook(str(self), number)
+        return self.manager.ZapDialOffhook(self, number)
 
     def ZapHangup(self):
         'Hangup this Zapata driver channel.'
-        return self.manager.ZapHangup(str(self))
+        return self.manager.ZapHangup(self)
 
     def ZapTransfer(self):
         'Transfer this Zapata driver channel.'
-        return self.manager.ZapTransfer(str(self))
+        return self.manager.ZapTransfer(self)
 
 
 
 
-class BaseManager(object):
+class BaseManager(Asterisk.Logging.InstanceLogger):
     'Base protocol implementation for the Asterisk Manager API.'
 
     _AST_BANNER = 'Asterisk Call Manager/1.0\r\n'
-
-
-    def getLoggerClass(self):
-        '''
-        Return the namespace where debug messages for all instances of this
-        class are sent.
-        '''
-
-        return '%s.%s' % (self.__module__, self.__class__.__name__)
-
-
-    def getLogger(self):
-        '''
-        Return the Logger instance which receives debug messages for this class
-        instance.
-        '''
-
-        log_name = self.getLoggerClass() + '.' + str(id(self))
-        return logging.getLogger(log_name)
 
 
     def __init__(self, address, username, secret, listen_events = True):
@@ -269,23 +185,11 @@ class BaseManager(object):
         self.username = username
         self.secret = secret
         self.listen_events = listen_events
-
-
-        self.log = self.getLogger()
-        self.log.debug('Initialising.')
-
+        self.events = Asterisk.Util.EventCollection()
 
         # Configure logging:
-
-        def _packetlog(msg, *args, **kwargs):
-            self.log.log(logging.PACKET, msg, *args, **kwargs)
-
-        def _iolog(msg, *args, **kwargs):
-            self.log.log(logging.IO, msg, *args, **kwargs)
-
-        self._iolog = _iolog
-        self._packetlog = _packetlog
-
+        self.log = self.getLogger()
+        self.log.debug('Initialising.')
 
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.connect(address)
@@ -351,14 +255,14 @@ class BaseManager(object):
             [ lines.append('%s: %s' % item) for item in data.iteritems()
                 if item[1] is not None ]
 
-        self._packetlog('write_action: %r', lines)
+        self.log.packet('write_action: %r', lines)
 
         for line in lines:
             self.file.write(line + '\r\n')
-            self._iolog('_write_action: send %r', line + '\r\n')
+            self.log.io('_write_action: send %r', line + '\r\n')
 
         self.file.write('\r\n')
-        self._iolog('_write_action: send: %r', '\r\n')
+        self.log.io('_write_action: send: %r', '\r\n')
         return id
 
 
@@ -378,7 +282,7 @@ class BaseManager(object):
 
         while True:
             line = self.file.readline().rstrip()
-            self._iolog('_read_response_follows: recv %r', line)
+            self.log.io('_read_response_follows: recv %r', line)
             line_nr += 1
 
             if line_nr == 1 and line.startswith('ActionID: '):
@@ -408,13 +312,13 @@ class BaseManager(object):
 
         while True:
             line = self.file.readline().rstrip()
-            self._iolog('_read_packet: recv %r', line)
+            self.log.io('_read_packet: recv %r', line)
 
             if not line:
                 if not packet:
                     raise GoneAwayError('Asterisk Manager connection has gone away.')
 
-                self._packetlog('_read_packet: %r', packet)
+                self.log.packet('_read_packet: %r', packet)
                 self.log.debug('_read_packet() completed.')
                 return packet
 
@@ -438,21 +342,8 @@ class BaseManager(object):
 
         elif 'Event' in packet:
             self._translate_event(packet)
-            self.log.debug('_dispatch_packet() dealing with event.')
-
-            # Specific handler:
-            method = getattr(self, 'on_%s' % packet.Event, None)
-            if method is not None:
-                self.log.debug('_dispatch_packet() using on_%s', packet.Event)
-                return method(packet)
-
-            # Global handler:
-            self.log.debug('_dispatch_packet() using on_Event for %r.', packet.Event)
-            method = getattr(self, 'on_Event', None)
-            if method is not None:
-                return method(packet)
-
-            raise InternalError('no handler defined for event %r.', packet.Event)
+            self.log.debug('_dispatch_packet() passing event to on_Event.')
+            self.on_Event(packet)
 
         else:
             raise InternalError('Unknown packet type detected: %r', packet)
@@ -549,6 +440,12 @@ class BaseManager(object):
                 buffer.append(packet)
 
 
+    def on_Event(self, event):
+        'Triggered when an event is received from the Manager.'
+
+        self.events.fire(event.Event, self, event)
+
+
     def responses_waiting(self):
         'Return truth if there are unprocessed buffered responses.'
 
@@ -573,145 +470,6 @@ class BaseManager(object):
         return new
 
 
-    def replace_events(self, events):
-        '''
-        Given a list of functions, temporarily replace on_<funcname> attributes
-        to self using those functions. Return a mapping containing undo
-        information.
-        '''
-
-        output = {}
-        for handler in events:
-            handler_name = 'on_' + handler.__name__
-            output[handler_name] = getattr(self, handler_name, None)
-            setattr(self, handler_name,
-                instancemethod(handler, self, self.__class__))
-
-        return output
-
-
-    def undo_events(self, mapping):
-        '''
-        Given a mapping (as returned by _save_methods), update self with those
-        methods. Method names with a value of None are ignored.
-        '''
-
-        for name, method in mapping.iteritems():
-            if method is None:
-                del self.__dict__[name]
-            else:
-                setattr(self, name, method)
-
-
-
-
-class CoreEventHandlers(object):
-    '''
-    Provide placeholders for events generated by the core Asterisk engine.
-    '''
-
-    # Placeholder event handlers. We define these so that previously unseen
-    # events cause an Exception and thus addition here, so we help to document
-    # the waste that is Asterisk. See (and update) doc/events.txt for example
-    # events.
-
-    def on_Response(self, event):
-        'Fired when a response is sent in reply to an action.'
-
-    def on_Newexten(self, event):
-        'Fired when a "Newexten" event is seen.'
-
-    def on_Hangup(self, event):
-        'Fired when a "Hangup" event is seen.'
-
-    def on_Newchannel(self, event):
-        'Fired when a "Newchannel" event is seen.'
-
-    def on_Newstate(self, event):
-        'Fired when a "Newstate" event is seen.'
-
-    def on_Link(self, event):
-        'Fired when a "Link" event is seen.'
-
-    def on_Unlink(self, event):
-        'Fired when an "Unlink" event is seen.'
-
-    def on_Reload(self, event):
-        'Fired when a "Reload" event is seen.'
-
-    def on_ExtensionStatus(self, event):
-        'Fired when an "ExtensionStatus" event is seen.'
-
-    def on_Rename(self, event):
-        'Fired when a "Rename" event is seen.'
-
-    def on_Newcalleridid(self, event):
-        'Fired when a "Newcallerid" event is seen.'
-
-    def on_Alarm(self, event):
-        'Fired when an "Alarm" event is seen.'
-
-    def on_AlarmClear(self, event):
-        'Fired when an "AlarmClear" event is seen.'
-
-    def on_Agentcallbacklogoff(self, event):
-        'Fired when an "Agentcallbacklogoff" event is seen.'
-
-    def on_Agentcallbacklogin(self, event):
-        'Fired when an "Agentcallbacklogin" event is seen.'
-
-    def on_Agentlogin(self, event):
-        'Fired when an "Agentlogin" event is seen.'
-
-    def on_Agentlogoff(self, event):
-        'Fired when an "Agentlogoff" event is seen.'
-
-    def on_MeetmeJoin(self, event):
-        'Fired when a "MeetmeJoin" event is seen.'
-
-    def on_MeetmeLeave(self, event):
-        'Fired when a "MeetmeLeave" event is seen.'
-
-    def on_MessageWaiting(self, event):
-        'Fired when a "MessageWaiting" event is seen.'
-
-    def on_Join(self, event):
-        'Fired when a "Join" event is seen.'
-
-    def on_Leave(self, event):
-        'Fired when a "Leave" event is seen.'
-
-    def on_AgentCalled(self, event):
-        'Fired when an "AgentCalled" event is seen.'
-
-    def on_ParkedCall(self, event):
-        'Fired when a "ParkedCall" event is seen.'
-
-    def on_Cdr(self, event):
-        'Fired when a "Cdr" event is seen.'
-
-    def on_ParkedCallsComplete(self, event):
-        'Fired when a "ParkedCallsComplete" event is seen.'
-
-    def on_QueueEntry(self, event):
-        'Fired when a "QueueEntry" event is seen.'
-
-    def on_QueueParams(self, event):
-        'Fired when a "QueueParams" event is seen.'
-
-    def on_QueueMember(self, event):
-        'Fired when a "QueueMember" event is seen.'
-
-    def on_QueueStatusEnd(self, event):
-        'Fired when a "QueueStatusEnd" event is seen.'
-
-    def on_Status(self, event):
-        'Fired when a "Status" event is seen.'
-
-    def on_StatusComplete(self, event):
-        'Fired when a "StatusComplete" event is seen.'
-
-
 
 
 class CoreActions(object):
@@ -719,11 +477,6 @@ class CoreActions(object):
     Provide methods for Manager API actions exposed by the core Asterisk
     engine.
     '''
-
-    # Unique object used for testing for an unspecified argument where None is
-    # unsuitable. We use this as it looks nice in pydoc output.
-    _CoreActionsUnspecified = [None]
-
 
     def AbsoluteTimeout(self, channel, timeout):
         'Set the absolute timeout of <channel> to <timeout>.'
@@ -772,7 +525,7 @@ class CoreActions(object):
         return self._translate_response(self.read_response(id))
 
 
-    def Getvar(self, channel, variable, default = _CoreActionsUnspecified):
+    def Getvar(self, channel, variable, default = Asterisk.Util.Unspecified):
         '''
         Return the value of <channel>'s <variable>, or <default> if <variable>
         is not set.
@@ -789,7 +542,7 @@ class CoreActions(object):
         value = response[variable]
 
         if value == '(null)':
-            if default is self._CoreActionsUnspecified:
+            if default is Asterisk.Util.Unspecified:
                 raise KeyError(variable)
             else:
                 self.log.debug('Getvar() returning %r', default)
@@ -925,16 +678,19 @@ class CoreActions(object):
         def ParkedCallsComplete(self, event):
             stop_flag[0] = True
 
-        stop_flag = [ False ]
-        undo = self.replace_events([ ParkedCall, ParkedCallsComplete ])
+        events = Asterisk.Util.EventCollection([ ParkedCall, ParkedCallsComplete ])
+        self.events += events
 
         try:
+            stop_flag = [ False ]
+
             while stop_flag[0] == False:
                 packet = self._read_packet()
                 self._dispatch_packet(packet)
 
         finally:
-            self.undo_events(undo)
+            self.events -= events
+
         return parked
 
 
@@ -994,17 +750,20 @@ class CoreActions(object):
         def QueueStatusEnd(self, event):
             stop_flag[0] = True
 
-        stop_flag = [ False ]
-
-        undo = self.replace_events([ QueueParams, QueueMember, QueueEntry, QueueStatusEnd ])
+        events = Asterisk.Util.EventCollection([
+            QueueParams, QueueMember, QueueEntry, QueueStatusEnd])
+        self.events += events
 
         try:
+            stop_flag = [ False ]
+
             while stop_flag[0] == False:
                 packet = self._read_packet()
                 self._dispatch_packet(packet)
 
         finally:
-            self.undo_events(undo)
+            self.events -= events
+
         return queues
 
     Queues = QueueStatus
@@ -1066,17 +825,18 @@ class CoreActions(object):
         def StatusComplete(self, event):
             stop_flag[0] = True
 
-
-        stop_flag = [ False ]
-        undo = self.replace_events([ Status, StatusComplete ])
+        events = Asterisk.Util.EventCollection([ Status, StatusComplete ])
+        self.events += events
 
         try:
+            stop_flag = [ False ]
+
             while stop_flag[0] == False:
                 packet = self._read_packet()
                 self._dispatch_packet(packet)
 
         finally:
-            self.undo_events(undo)
+            self.events -= events
         return channels
 
 
@@ -1085,20 +845,6 @@ class CoreActions(object):
 
         id = self._write_action('StopMonitor', { 'Channel': channel })
         return self._translate_response(self.read_response(id))
-
-
-
-
-class ZapataEventHandlers(object):
-    '''
-    Provide placeholders for events generated by the Zapata Driver.
-    '''
-
-    def on_ZapShowChannels(self, event):
-        'Fired when a "ZapShowChannels" event is seen.'
-
-    def on_ZapShowChannelsComplete(self, event):
-        'Fired when a "ZapShowChannels" event is seen.'
 
 
 
@@ -1153,16 +899,20 @@ class ZapataActions(object):
         def ZapShowChannelsComplete(self, event):
             stop_flag[0] = True
 
-        stop_flag = [ False ]
-        undo = self.replace_events([ ZapShowChannels, ZapShowChannelsComplete ])
+        events = Asterisk.Util.EventCollection([
+            ZapShowChannels, ZapShowChannelsComplete ])
+        self.events += events
 
         try:
+            stop_flag = [ False ]
+
             while stop_flag[0] == False:
                 packet = self._read_packet()
                 self._dispatch_packet(packet)
 
         finally:
-            self.undo_events(undo)
+            self.events -= events
+
         return channels
 
 
@@ -1170,7 +920,7 @@ class ZapataActions(object):
         'Transfer Zapata driver <channel>.'
         # TODO: Does nothing on X100P. What is this for?
 
-        id = self._write_action('ZapTransfer', { 'ZapChannel': str(int(channel)) })
+        id = self._write_action('ZapTransfer', { 'ZapChannel': channel })
         return self._translate_response(self.read_response(id))
 
 
@@ -1187,11 +937,8 @@ class CoreManager(BaseManager, CoreActions, ZapataActions):
 
 
 
-class Manager(BaseManager, CoreEventHandlers, CoreActions,
-ZapataEventHandlers, ZapataActions):
+class Manager(BaseManager, CoreActions, ZapataActions):
     '''
     Asterisk Manager API protocol implementation, core event handler
     placeholders, and core actions.
     '''
-
-    pass

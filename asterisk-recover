@@ -11,17 +11,15 @@ __author__  = 'David M. Wilson <dw-asterisk-dump@botanicus.net>'
 __id__      = '$Id: asterisk-dump 3 2004-09-03 01:41:42Z dw $'
 
 import sys
-from Asterisk.Config import get_config
+from Asterisk.Config import Config
 from Asterisk.Manager import Manager
 
 
 
 
 def main(argv):
-    manager = Manager(*get_config()['manager_init_args'])
-
+    manager = Manager(*Config().get_connection())
     statii = manager.Status()
-    #statii = {'SIP/101-d180': {'Account': '', 'Extension': '917070', 'CallerID': '101', 'Seconds': '32', 'Uniqueid': '1094494902.180', 'Priority': '1', 'State': 'Up', 'Link': 'Zap/2-1', 'Context': 'local_extensions'}, 'Zap/2-1': {'Account': '', 'CallerID': '101', 'State': 'Up', 'Link': 'SIP/101-d180', 'Uniqueid': '1094494902.181'}}
 
     if not len(statii):
         print >> sys.stderr, 'No channels active.'

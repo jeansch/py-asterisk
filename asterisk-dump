@@ -8,7 +8,7 @@ __author__  = 'David M. Wilson <dw-asterisk-dump@botanicus.net>'
 __id__      = '$Id$'
 
 import sys, time, socket
-from Asterisk.Config import get_config
+from Asterisk.Config import Config
 from Asterisk.Manager import CoreManager
 import Asterisk.Manager, Asterisk.Util
 
@@ -27,7 +27,7 @@ class MyManager(CoreManager):
 
 
 def main2():
-    manager = MyManager(*get_config()['manager_init_args'])
+    manager = MyManager(*Config().get_connection())
 
     try:
         print '#', repr(manager)

@@ -9,7 +9,7 @@
 <font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong><a href="Asterisk.html"><font color="#ffffff">Asterisk</font></a>.Config</strong></big></big></font></td
 ><td align=right valign=bottom
 ><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="file:/usr/src/ks-voip/py-asterisk/Asterisk/Config.py">/usr/src/ks-voip/py-asterisk/Asterisk/Config.py</a></font></td></tr></table>
-    <p><tt>Asterisk/Config.py:&nbsp;filesystem&nbsp;configuration&nbsp;reader.</tt></p>
+    <p><tt>Asterisk/<a href="#Config">Config</a>.py:&nbsp;filesystem&nbsp;configuration&nbsp;reader.</tt></p>
 <p>
 <table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
 <tr bgcolor="#aa55cc">
@@ -34,8 +34,36 @@
 <dt><font face="helvetica, arial"><a href="Asterisk.Config.html#ConfigurationError">ConfigurationError</a>
 </font></dt></dl>
 </dd>
+<dt><font face="helvetica, arial"><a href="__builtin__.html#object">__builtin__.object</a>
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="Asterisk.Config.html#Config">Config</a>
+</font></dt></dl>
+</dd>
 </dl>
  <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="Config">class <strong>Config</strong></a>(<a href="__builtin__.html#object">__builtin__.object</a>)</font></td></tr>
+    
+<tr><td bgcolor="#ffc8d8"><tt>&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%">Methods defined here:<br>
+<dl><dt><a name="Config-__init__"><strong>__init__</strong></a>(self, config_pathname<font color="#909090">=None</font>)</dt></dl>
+
+<dl><dt><a name="Config-get_connection"><strong>get_connection</strong></a>(self, connection<font color="#909090">=None</font>)</dt><dd><tt>Return&nbsp;an&nbsp;(address,&nbsp;username,&nbsp;secret)&nbsp;argument&nbsp;tuple,&nbsp;suitable&nbsp;for<br>
+initialising&nbsp;a&nbsp;Manager&nbsp;instance.&nbsp;If&nbsp;&lt;connection&gt;&nbsp;is&nbsp;specified,&nbsp;use<br>
+the&nbsp;named&nbsp;&lt;connection&gt;&nbsp;instead&nbsp;of&nbsp;the&nbsp;configuration&nbsp;default.</tt></dd></dl>
+
+<dl><dt><a name="Config-refresh"><strong>refresh</strong></a>(self)</dt><dd><tt>Read&nbsp;py-Asterisk&nbsp;configuration&nbsp;data&nbsp;from&nbsp;the&nbsp;filesystem.</tt></dd></dl>
+
+<hr>
+Data and other attributes defined here:<br>
+<dl><dt><strong>__dict__</strong> = &lt;dictproxy object&gt;<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dl>
+
+<dl><dt><strong>__weakref__</strong> = &lt;attribute '__weakref__' of 'Config' objects&gt;<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;<a href="__builtin__.html#object">object</a>&nbsp;(if&nbsp;defined)</tt></dl>
+
+</td></tr></table> <p>
 <table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
 <tr bgcolor="#ffc8d8">
 <td colspan=3 valign=bottom>&nbsp;<br>
@@ -61,21 +89,11 @@ Methods inherited from <a href="exceptions.html#Exception">exceptions.Exception<
 
 </td></tr></table></td></tr></table><p>
 <table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
-<tr bgcolor="#eeaa77">
-<td colspan=3 valign=bottom>&nbsp;<br>
-<font color="#ffffff" face="helvetica, arial"><big><strong>Functions</strong></big></font></td></tr>
-    
-<tr><td bgcolor="#eeaa77"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
-<td width="100%"><dl><dt><a name="-find_config"><strong>find_config</strong></a>(config_pathname)</dt><dd><tt>Search&nbsp;the&nbsp;filesystem&nbsp;paths&nbsp;listed&nbsp;in&nbsp;CONFIG_PATHNAMES&nbsp;for&nbsp;a&nbsp;regular&nbsp;file.<br>
-Return&nbsp;the&nbsp;name&nbsp;of&nbsp;the&nbsp;first&nbsp;one&nbsp;found,&nbsp;or&nbsp;&lt;config_pathname&gt;,&nbsp;if&nbsp;it&nbsp;is&nbsp;not<br>
-None.</tt></dd></dl>
- <dl><dt><a name="-get_config"><strong>get_config</strong></a>(config_pathname<font color="#909090">=None</font>)</dt><dd><tt>Read&nbsp;py-Asterisk&nbsp;configuration&nbsp;data&nbsp;from&nbsp;the&nbsp;filesystem.</tt></dd></dl>
-</td></tr></table><p>
-<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
 <tr bgcolor="#55aa55">
 <td colspan=3 valign=bottom>&nbsp;<br>
 <font color="#ffffff" face="helvetica, arial"><big><strong>Data</strong></big></font></td></tr>
     
 <tr><td bgcolor="#55aa55"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
-<td width="100%"><strong>CONFIG_PATHNAMES</strong> = ['//py-asterisk.conf', '/home/dw/.py-asterisk.conf', './py-asterisk.conf', '/etc/py-asterisk.conf', '/etc/asterisk/py-asterisk.conf']</td></tr></table>
+<td width="100%"><strong>CONFIG_FILENAME</strong> = 'py-asterisk.conf'<br>
+<strong>CONFIG_PATHNAMES</strong> = ['', '/.py-asterisk.conf', '/py-asterisk.conf', 'py-asterisk.conf', '/etc/py-asterisk.conf', '/etc/asterisk/py-asterisk.conf']</td></tr></table>
 </body></html>

@@ -21,9 +21,18 @@ logging.addLevelName(logging.IO,     'IO')
 
 
 
+# Attempt to find the parent logger class using the Python 2.4 API.
+
+if hasattr(logging, 'getLoggerClass'):
+    loggerClass = logging.getLoggerClass()
+else:
+    loggerClass = logging.Logger
+
+
+
 # Provide a new logger class that supports our new levels.
 
-class AsteriskLogger(logging.Logger):
+class AsteriskLogger(loggerClass):
     def packet(self, msg, *args, **kwargs):
         "Log a message with severity 'PACKET' on this logger."
         return self.log(logging.PACKET, msg, *args, **kwargs)

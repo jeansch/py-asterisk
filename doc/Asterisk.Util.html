@@ -17,9 +17,10 @@
 <font color="#fffff" face="helvetica, arial"><big><strong>Modules</strong></big></font></td></tr>
     
 <tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
-<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="copy.html">copy</a><br>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="Asterisk.html">Asterisk</a><br>
+</td><td width="25%" valign=top><a href="copy.html">copy</a><br>
 </td><td width="25%" valign=top><a href="sys.html">sys</a><br>
-</td><td width="25%" valign=top></td><td width="25%" valign=top></td></tr></table></td></tr></table><p>
+</td><td width="25%" valign=top></td></tr></table></td></tr></table><p>
 <table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
 <tr bgcolor="#ee77aa">
 <td colspan=3 valign=bottom>&nbsp;<br>
@@ -27,10 +28,22 @@
     
 <tr><td bgcolor="#ee77aa"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
 <td width="100%"><dl>
+<dt><font face="helvetica, arial"><a href="Asterisk.html#BaseException">Asterisk.BaseException</a>(<a href="exceptions.html#Exception">exceptions.Exception</a>)
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="Asterisk.Util.html#SubscriptionError">SubscriptionError</a>
+</font></dt></dl>
+</dd>
 <dt><font face="helvetica, arial"><a href="__builtin__.html#dict">__builtin__.dict</a>(<a href="__builtin__.html#object">__builtin__.object</a>)
 </font></dt><dd>
 <dl>
 <dt><font face="helvetica, arial"><a href="Asterisk.Util.html#AttributeDict">AttributeDict</a>
+</font></dt></dl>
+</dd>
+<dt><font face="helvetica, arial"><a href="__builtin__.html#object">__builtin__.object</a>
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="Asterisk.Util.html#EventCollection">EventCollection</a>
 </font></dt></dl>
 </dd>
 </dl>
@@ -56,7 +69,7 @@ Methods defined here:<br>
 Data and other attributes defined here:<br>
 <dl><dt><strong>__dict__</strong> = &lt;dictproxy object&gt;<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dl>
 
-<dl><dt><strong>__weakref__</strong> = &lt;attribute '__weakref__' of 'AttributeDict' objects&gt;<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dl>
+<dl><dt><strong>__weakref__</strong> = &lt;attribute '__weakref__' of 'AttributeDict' objects&gt;<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;<a href="__builtin__.html#object">object</a>&nbsp;(if&nbsp;defined)</tt></dl>
 
 <hr>
 Methods inherited from <a href="__builtin__.html#dict">__builtin__.dict</a>:<br>
@@ -126,10 +139,66 @@ If&nbsp;key&nbsp;is&nbsp;not&nbsp;found,&nbsp;d&nbsp;is&nbsp;returned&nbsp;if&nb
 
 <hr>
 Data and other attributes inherited from <a href="__builtin__.html#dict">__builtin__.dict</a>:<br>
-<dl><dt><strong>__new__</strong> = &lt;built-in method __new__ of type object&gt;<dd><tt>T.<a href="#AttributeDict-__new__">__new__</a>(S,&nbsp;...)&nbsp;-&gt;&nbsp;a&nbsp;new&nbsp;object&nbsp;with&nbsp;type&nbsp;S,&nbsp;a&nbsp;subtype&nbsp;of&nbsp;T</tt></dl>
+<dl><dt><strong>__new__</strong> = &lt;built-in method __new__ of type object&gt;<dd><tt>T.<a href="#AttributeDict-__new__">__new__</a>(S,&nbsp;...)&nbsp;-&gt;&nbsp;a&nbsp;new&nbsp;<a href="__builtin__.html#object">object</a>&nbsp;with&nbsp;type&nbsp;S,&nbsp;a&nbsp;subtype&nbsp;of&nbsp;T</tt></dl>
 
 <dl><dt><strong>fromkeys</strong> = &lt;built-in method fromkeys of type object&gt;<dd><tt><a href="__builtin__.html#dict">dict</a>.<a href="#AttributeDict-fromkeys">fromkeys</a>(S[,v])&nbsp;-&gt;&nbsp;New&nbsp;<a href="__builtin__.html#dict">dict</a>&nbsp;with&nbsp;keys&nbsp;from&nbsp;S&nbsp;and&nbsp;values&nbsp;equal&nbsp;to&nbsp;v.<br>
 v&nbsp;defaults&nbsp;to&nbsp;None.</tt></dl>
+
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="EventCollection">class <strong>EventCollection</strong></a>(<a href="__builtin__.html#object">__builtin__.object</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>Utility&nbsp;class&nbsp;to&nbsp;allow&nbsp;grouping&nbsp;and&nbsp;automatic&nbsp;registration&nbsp;of&nbsp;event.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%">Methods defined here:<br>
+<dl><dt><a name="EventCollection-__iadd__"><strong>__iadd__</strong></a>(self, collection)</dt><dd><tt>Add&nbsp;all&nbsp;the&nbsp;events&nbsp;in&nbsp;&lt;collection&gt;&nbsp;to&nbsp;our&nbsp;collection.</tt></dd></dl>
+
+<dl><dt><a name="EventCollection-__init__"><strong>__init__</strong></a>(self, initial<font color="#909090">=None</font>)</dt><dd><tt>If&nbsp;&lt;initial&gt;&nbsp;is&nbsp;not&nbsp;None,&nbsp;register&nbsp;functions&nbsp;from&nbsp;the&nbsp;list&nbsp;&lt;initial&gt;<br>
+waiting&nbsp;for&nbsp;events&nbsp;with&nbsp;the&nbsp;same&nbsp;name&nbsp;as&nbsp;the&nbsp;function.</tt></dd></dl>
+
+<dl><dt><a name="EventCollection-__isub__"><strong>__isub__</strong></a>(self, collection)</dt><dd><tt>Remove&nbsp;all&nbsp;the&nbsp;events&nbsp;in&nbsp;&lt;collection&gt;&nbsp;from&nbsp;our&nbsp;collection.</tt></dd></dl>
+
+<dl><dt><a name="EventCollection-copy"><strong>copy</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="EventCollection-fire"><strong>fire</strong></a>(self, name, *args, **kwargs)</dt><dd><tt>Fire&nbsp;event&nbsp;&lt;name&gt;&nbsp;passing&nbsp;*&lt;args&gt;&nbsp;and&nbsp;**&lt;kwargs&gt;&nbsp;to&nbsp;subscribers.</tt></dd></dl>
+
+<dl><dt><a name="EventCollection-subscribe"><strong>subscribe</strong></a>(self, name, handler)</dt><dd><tt>Subscribe&nbsp;callable&nbsp;&lt;handler&gt;&nbsp;to&nbsp;event&nbsp;named&nbsp;&lt;name&gt;.</tt></dd></dl>
+
+<dl><dt><a name="EventCollection-unsubscribe"><strong>unsubscribe</strong></a>(self, name, handler)</dt><dd><tt>Unsubscribe&nbsp;callable&nbsp;&lt;handler&gt;&nbsp;to&nbsp;event&nbsp;named&nbsp;&lt;name&gt;.</tt></dd></dl>
+
+<hr>
+Data and other attributes defined here:<br>
+<dl><dt><strong>__dict__</strong> = &lt;dictproxy object&gt;<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dl>
+
+<dl><dt><strong>__weakref__</strong> = &lt;attribute '__weakref__' of 'EventCollection' objects&gt;<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;<a href="__builtin__.html#object">object</a>&nbsp;(if&nbsp;defined)</tt></dl>
+
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="SubscriptionError">class <strong>SubscriptionError</strong></a>(<a href="Asterisk.html#BaseException">Asterisk.BaseException</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>This&nbsp;exception&nbsp;is&nbsp;raised&nbsp;when&nbsp;an&nbsp;attempt&nbsp;to&nbsp;register&nbsp;the&nbsp;same&nbsp;(event,<br>
+handler)&nbsp;tuple&nbsp;twice&nbsp;is&nbsp;detected.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="Asterisk.Util.html#SubscriptionError">SubscriptionError</a></dd>
+<dd><a href="Asterisk.html#BaseException">Asterisk.BaseException</a></dd>
+<dd><a href="exceptions.html#Exception">exceptions.Exception</a></dd>
+</dl>
+<hr>
+Methods inherited from <a href="Asterisk.html#BaseException">Asterisk.BaseException</a>:<br>
+<dl><dt><a name="SubscriptionError-__init__"><strong>__init__</strong></a>(self, error)</dt></dl>
+
+<dl><dt><a name="SubscriptionError-__str__"><strong>__str__</strong></a>(self)</dt></dl>
+
+<hr>
+Methods inherited from <a href="exceptions.html#Exception">exceptions.Exception</a>:<br>
+<dl><dt><a name="SubscriptionError-__getitem__"><strong>__getitem__</strong></a>(...)</dt></dl>
 
 </td></tr></table></td></tr></table><p>
 <table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
@@ -139,7 +208,7 @@ v&nbsp;defaults&nbsp;to&nbsp;None.</tt></dl>
     
 <tr><td bgcolor="#eeaa77"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
 <td width="100%"><dl><dt><a name="-dump_human"><strong>dump_human</strong></a>(data, file<font color="#909090">=&lt;open file '&lt;stdout&gt;', mode 'w'&gt;</font>, _indent<font color="#909090">=0</font>)</dt></dl>
- <dl><dt><a name="-dump_packet"><strong>dump_packet</strong></a>(packet, file<font color="#909090">=&lt;open file '&lt;stdout&gt;', mode 'w'&gt;</font>)</dt><dd><tt>Dump&nbsp;a&nbsp;packet&nbsp;in&nbsp;human&nbsp;readable&nbsp;form&nbsp;to&nbsp;file-like&nbsp;object&nbsp;&lt;file&gt;.</tt></dd></dl>
+ <dl><dt><a name="-dump_packet"><strong>dump_packet</strong></a>(packet, file<font color="#909090">=&lt;open file '&lt;stdout&gt;', mode 'w'&gt;</font>)</dt><dd><tt>Dump&nbsp;a&nbsp;packet&nbsp;in&nbsp;human&nbsp;readable&nbsp;form&nbsp;to&nbsp;file-like&nbsp;<a href="__builtin__.html#object">object</a>&nbsp;&lt;file&gt;.</tt></dd></dl>
 </td></tr></table><p>
 <table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
 <tr bgcolor="#55aa55">
@@ -147,7 +216,8 @@ v&nbsp;defaults&nbsp;to&nbsp;None.</tt></dl>
 <font color="#ffffff" face="helvetica, arial"><big><strong>Data</strong></big></font></td></tr>
     
 <tr><td bgcolor="#55aa55"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
-<td width="100%"><strong>__Id__</strong> = '$Id$'<br>
+<td width="100%"><strong>Unspecified</strong> = &lt;Asterisk.Util.Unspecified&gt;<br>
+<strong>__Id__</strong> = '$Id$'<br>
 <strong>__author__</strong> = 'David M. Wilson &lt;dw-py-Asterisk-Util.py@botanicus.net&gt;'</td></tr></table><p>
 <table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
 <tr bgcolor="#7799ee">

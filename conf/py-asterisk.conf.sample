@@ -4,7 +4,11 @@
 ; py-Asterisk sample configuration file.
 
 
-[pbx-connection]
+[py-asterisk]
+default connection=my-pbx
+
+
+[connection: my-pbx]
 hostname=pbx.lan.yourcompany.net
 port=5038
 username=admin

@@ -1,0 +1,147 @@
+Event Handlers in py-Asterisk.
+$Id$
+
+
+
+Overview
+
+    In order to allow for much more flexible event handling, and better
+    grouping of functionality within software utilising py-asterisk, it was
+    decided that subclassing of the Manager/BaseManager object was no longer
+    appropriate for adding event handlers.
+
+    Reasons:
+
+    - It doesn't make sense. Event handlers do not extend the Manager object
+      in any way, they are clients of the object, and not extensions of the
+      object.
+
+
+    - Subclasses of the Manager object should be used to add new
+      functionality, for example, to add in-house custom manager actions.
+
+
+    - Splitting event handling off away from the Manager object, combined with
+      the newer rich BaseChannel type, opens the package to greater
+      flexibility in dealing with multiple PBXes.
+      
+      Simply define your class of event handlers, which expect Event, Channel,
+      and Manager objects passed to them, then register the event handlers
+      with multiple Manager objects. Imagine a monitoring application
+      responsible for a network of PBXes, and call monitoring and logging on
+      each.
+
+
+    - Allowing multiple handlers to be specified for each event allows a whole
+      new range of exciting mix-ins to be created, in-line with the vision set
+      out for py-asterisk originally: live Python objects that accurately
+      represent the state of equivalent Asterisk objects.
+
+      For instance, it is concievable that a mix-in may be created that keeps
+      track of BaseChannel objects created, that registers handlers for
+      channel state change events, and that automatically updates any created
+      channel objects with live state information.
+
+
+    - Allowing multiple handlers allows solving of the sync/async problem in a
+      number of different ways. Rather than forcing the py-asterisk user to
+      choose between either synchronous or asyncronous behaviour, a
+      BaseManager object may continue running asyncronously while a
+      synchronous command is executing.
+      
+      This is possible at present anyway, but we can now do it without
+      disrupting any client code that may be listening for the same events.
+      This offers maximum flexibility in programming, and may, for instance,
+      allow an advanced programmer to work on asynchronous code while his
+      trainee can get by with simple method calls.
+ 
+
+    - It is possible (either already or otherwise) to implement generators
+      that provide event feedback as it happens. Imagine:
+
+        for channel in manager.iter_channels():
+            print "just got info on", channel
+
+
+
+
+Concept
+
+    Taken from C# and other languages, a source of events no longer is a stub
+    function that you override, but a collection object that allows multiple
+    callables to be registered for one event. Those callables may be
+    completely unrelated to the class originating the event.
+
+    Through the use of BaseChannel, Event, and exception types, associations
+    between event, channel, and error information is created and accessible
+    through references in the object you are currently dealing with.
+
+    When you define your group of event handling functions, you may now easily
+    put them within the same class, possibly a class directly associated with
+    your application. Functionality to automatically register your event
+    handlers with a specific Manager class can be provided through an optional
+    mix-in, or via your own code if you have custom logic for deciding where
+    (and how many times) your event handlers are registered.
+
+
+
+
+Objects
+
+    BaseManager (and associated mix-ins)
+
+        This class represents a single connection to an Asterisk instance. It
+        provides methods for executing commands on the Asterisk PBX and also
+        acts as a source of events.
+
+        The BaseManager class itself provides one stub function for the
+        reception of events, on_Event(). By overriding on_Event, subclasses
+        may decide how events should be dispatched.
+
+
+    BaseChannel (and associated subclasses)
+
+        This class represents a single active channel object, and maintains a
+        reference to it's associated BaseManager object.
+
+
+    EventRegistrar
+
+        This mix-in class provides a class variable named <handlers>, a method
+        for registering the contents of <handlers> with a BaseManager
+        instance, and an overrideable <__init__> which automatically calls the
+        registration method.
+
+        This can act as a base class for grouping event handlers together that
+        may be used with multiple PBXes, or as a simple mix-in for your own
+        class heiarchy that provides an automated way of register event
+        handlers.
+
+        Example 1:
+
+            class MyEvents(Asterisk.Manager.EventRegistrar):
+                def on_Status(self, event):
+                    ...
+
+                handlers += on_Status
+
+
+                def on_StatusComplete(self, event):
+                    ...
+
+                handlers += on_StatusComplete
+
+
+            pbx = Manager(...)
+            handlers = MyEvents(pbx)
+
+
+        Example 2:
+
+            class MyEvents2(EventRegistrar, SomeBaseClass):
+                ...
+
+            pbx = Manager(...)
+            handlers = MyEvents(["your", "own", "__init__", "args"])
+            handlers.register_manager(pbx)
+

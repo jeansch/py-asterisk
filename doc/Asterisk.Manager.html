@@ -8,64 +8,8 @@
 <td valign=bottom>&nbsp;<br>
 <font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong><a href="Asterisk.html"><font color="#ffffff">Asterisk</font></a>.Manager</strong></big></big></font></td
 ><td align=right valign=bottom
-><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="file:/home/dw/py-asterisk/Asterisk/Manager.py">/home/dw/py-asterisk/Asterisk/Manager.py</a></font></td></tr></table>
-    <p><tt>Asterisk&nbsp;<a href="#Manager">Manager</a>&nbsp;API&nbsp;interface&nbsp;module&nbsp;for&nbsp;Python.<br>
-&nbsp;<br>
-This&nbsp;module&nbsp;provides&nbsp;an&nbsp;<a href="__builtin__.html#object">object</a>&nbsp;oriented&nbsp;interface&nbsp;to&nbsp;the&nbsp;Asterisk&nbsp;<a href="#Manager">Manager</a>&nbsp;API,<br>
-whilest&nbsp;embracing&nbsp;some&nbsp;applicable&nbsp;Python&nbsp;concepts:<br>
-&nbsp;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;Functionality&nbsp;is&nbsp;split&nbsp;into&nbsp;seperate&nbsp;mix-in&nbsp;classes.<br>
-&nbsp;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;Asterisk&nbsp;PBX&nbsp;errors&nbsp;cause&nbsp;fairly&nbsp;granular&nbsp;exceptions.<br>
-&nbsp;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;Docstrings&nbsp;are&nbsp;provided&nbsp;for&nbsp;all&nbsp;objects.<br>
-&nbsp;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;The&nbsp;module&nbsp;may&nbsp;be&nbsp;used&nbsp;asynchronously&nbsp;if&nbsp;required.&nbsp;It&nbsp;should&nbsp;be&nbsp;suitable<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;inclusion&nbsp;in&nbsp;a&nbsp;single-threaded&nbsp;GUI.<br>
-&nbsp;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;Asterisk&nbsp;data&nbsp;is&nbsp;translated&nbsp;into&nbsp;data&nbsp;stored&nbsp;using&nbsp;Python&nbsp;types,&nbsp;so<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;working&nbsp;with&nbsp;it&nbsp;should&nbsp;be&nbsp;trivial.&nbsp;Through&nbsp;the&nbsp;use&nbsp;of&nbsp;XMLRPCServer&nbsp;or<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;similar,&nbsp;it&nbsp;should&nbsp;be&nbsp;trivial&nbsp;to&nbsp;expose&nbsp;this&nbsp;conversion&nbsp;to&nbsp;other<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;languages.<br>
-&nbsp;<br>
-&nbsp;<br>
-Synchronous&nbsp;Usage:<br>
-&nbsp;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;Using&nbsp;the&nbsp;<a href="#Manager">Manager</a>&nbsp;or&nbsp;<a href="#CoreManager">CoreManager</a>&nbsp;objects,&nbsp;or&nbsp;using&nbsp;your&nbsp;own&nbsp;<a href="__builtin__.html#object">object</a>&nbsp;with&nbsp;the<br>
-&nbsp;&nbsp;&nbsp;&nbsp;<a href="#CoreActions">CoreActions</a>&nbsp;mix-in,&nbsp;you&nbsp;may&nbsp;simply&nbsp;call&nbsp;methods&nbsp;of&nbsp;the&nbsp;instanciated&nbsp;<a href="__builtin__.html#object">object</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp;and&nbsp;they&nbsp;will&nbsp;block&nbsp;until&nbsp;all&nbsp;data&nbsp;is&nbsp;available.<br>
-&nbsp;<br>
-&nbsp;<br>
-Asynchronous&nbsp;Usage:<br>
-&nbsp;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;Declare&nbsp;on_&lt;event&gt;&nbsp;methods&nbsp;for&nbsp;each&nbsp;event&nbsp;you&nbsp;wish&nbsp;to&nbsp;monitor.&nbsp;Using&nbsp;the<br>
-&nbsp;&nbsp;&nbsp;&nbsp;select&nbsp;module,&nbsp;create&nbsp;an&nbsp;inner&nbsp;loop&nbsp;similar&nbsp;to&nbsp;this:<br>
-&nbsp;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;class&nbsp;MyManager(Asterisk.<a href="#Manager">Manager</a>):<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;def&nbsp;on_Link(self,&nbsp;event):<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;some_module.do_something(event)<br>
-&nbsp;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;manager&nbsp;=&nbsp;MyManager()<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;objects_to_watch&nbsp;=&nbsp;[&nbsp;manager,&nbsp;gui,&nbsp;etc&nbsp;]<br>
-&nbsp;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;while&nbsp;True:<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;obj&nbsp;in&nbsp;select.select(objects_to_watch,&nbsp;[],&nbsp;[])[1]:<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;obj&nbsp;is&nbsp;manager:<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;manager.read()<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;if&nbsp;obj&nbsp;is&nbsp;gui:<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gui.handle_event()<br>
-&nbsp;<br>
-&nbsp;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;If&nbsp;you&nbsp;need&nbsp;to&nbsp;watch&nbsp;many&nbsp;events,&nbsp;or&nbsp;perhaps&nbsp;you&nbsp;would&nbsp;like&nbsp;to&nbsp;monitor<br>
-&nbsp;&nbsp;&nbsp;&nbsp;everything&nbsp;that&nbsp;is&nbsp;happening,&nbsp;you&nbsp;can&nbsp;define&nbsp;a&nbsp;fall-back&nbsp;event&nbsp;handler.<br>
-&nbsp;&nbsp;&nbsp;&nbsp;This&nbsp;event&nbsp;handler&nbsp;is&nbsp;used&nbsp;when&nbsp;a&nbsp;more&nbsp;specific&nbsp;one&nbsp;is&nbsp;not&nbsp;found&nbsp;(note&nbsp;use<br>
-&nbsp;&nbsp;&nbsp;&nbsp;of&nbsp;<a href="#CoreManager">CoreManager</a>):<br>
-&nbsp;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;class&nbsp;AllEventsManager(Asterisk.<a href="#CoreManager">CoreManager</a>):<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;def&nbsp;on_Event(self,&nbsp;event):<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;some_module.do_something(event)<br>
-&nbsp;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;...</tt></p>
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="file:/usr/src/ks-voip/py-asterisk/Asterisk/Manager.py">/usr/src/ks-voip/py-asterisk/Asterisk/Manager.py</a></font></td></tr></table>
+    <p><tt>Asterisk&nbsp;<a href="#Manager">Manager</a>&nbsp;and&nbsp;Channel&nbsp;objects.</tt></p>
 <p>
 <table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
 <tr bgcolor="#aa55cc">
@@ -74,10 +18,12 @@ Asynchronous&nbsp;Usage:<br>
     
 <tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
 <td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="Asterisk.html">Asterisk</a><br>
+<a href="errno.html">errno</a><br>
 </td><td width="25%" valign=top><a href="logging.html">logging</a><br>
+<a href="os.html">os</a><br>
 </td><td width="25%" valign=top><a href="socket.html">socket</a><br>
-</td><td width="25%" valign=top><a href="time.html">time</a><br>
-</td></tr></table></td></tr></table><p>
+<a href="time.html">time</a><br>
+</td><td width="25%" valign=top></td></tr></table></td></tr></table><p>
 <table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
 <tr bgcolor="#ee77aa">
 <td colspan=3 valign=bottom>&nbsp;<br>
@@ -101,21 +47,29 @@ Asynchronous&nbsp;Usage:<br>
 </dd>
 </dl>
 </dd>
-<dt><font face="helvetica, arial"><a href="__builtin__.html#object">__builtin__.object</a>
+<dt><font face="helvetica, arial"><a href="Asterisk.Logging.html#InstanceLogger">Asterisk.Logging.InstanceLogger</a>(<a href="__builtin__.html#object">__builtin__.object</a>)
 </font></dt><dd>
 <dl>
+<dt><font face="helvetica, arial"><a href="Asterisk.Manager.html#BaseChannel">BaseChannel</a>
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="Asterisk.Manager.html#ZapChannel">ZapChannel</a>
+</font></dt></dl>
+</dd>
 <dt><font face="helvetica, arial"><a href="Asterisk.Manager.html#BaseManager">BaseManager</a>
 </font></dt><dd>
 <dl>
 <dt><font face="helvetica, arial"><a href="Asterisk.Manager.html#CoreManager">CoreManager</a>(<a href="Asterisk.Manager.html#BaseManager">BaseManager</a>, <a href="Asterisk.Manager.html#CoreActions">CoreActions</a>, <a href="Asterisk.Manager.html#ZapataActions">ZapataActions</a>)
-</font></dt><dt><font face="helvetica, arial"><a href="Asterisk.Manager.html#Manager">Manager</a>(<a href="Asterisk.Manager.html#BaseManager">BaseManager</a>, <a href="Asterisk.Manager.html#CoreEventHandlers">CoreEventHandlers</a>, <a href="Asterisk.Manager.html#CoreActions">CoreActions</a>, <a href="Asterisk.Manager.html#ZapataEventHandlers">ZapataEventHandlers</a>, <a href="Asterisk.Manager.html#ZapataActions">ZapataActions</a>)
+</font></dt><dt><font face="helvetica, arial"><a href="Asterisk.Manager.html#Manager">Manager</a>(<a href="Asterisk.Manager.html#BaseManager">BaseManager</a>, <a href="Asterisk.Manager.html#CoreActions">CoreActions</a>, <a href="Asterisk.Manager.html#ZapataActions">ZapataActions</a>)
 </font></dt></dl>
 </dd>
-<dt><font face="helvetica, arial"><a href="Asterisk.Manager.html#Channel">Channel</a>
-</font></dt><dt><font face="helvetica, arial"><a href="Asterisk.Manager.html#CoreActions">CoreActions</a>
-</font></dt><dt><font face="helvetica, arial"><a href="Asterisk.Manager.html#CoreEventHandlers">CoreEventHandlers</a>
+</dl>
+</dd>
+<dt><font face="helvetica, arial"><a href="__builtin__.html#object">__builtin__.object</a>
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="Asterisk.Manager.html#CoreActions">CoreActions</a>
 </font></dt><dt><font face="helvetica, arial"><a href="Asterisk.Manager.html#ZapataActions">ZapataActions</a>
-</font></dt><dt><font face="helvetica, arial"><a href="Asterisk.Manager.html#ZapataEventHandlers">ZapataEventHandlers</a>
 </font></dt></dl>
 </dd>
 </dl>
@@ -173,6 +127,71 @@ Methods inherited from <a href="exceptions.html#Exception">exceptions.Exception<
 <table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
 <tr bgcolor="#ffc8d8">
 <td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="BaseChannel">class <strong>BaseChannel</strong></a>(<a href="Asterisk.Logging.html#InstanceLogger">Asterisk.Logging.InstanceLogger</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>Represents&nbsp;a&nbsp;living&nbsp;Asterisk&nbsp;channel,&nbsp;with&nbsp;shortcut&nbsp;methods&nbsp;for&nbsp;operating<br>
+on&nbsp;it.&nbsp;The&nbsp;<a href="__builtin__.html#object">object</a>&nbsp;acts&nbsp;as&nbsp;a&nbsp;mapping,&nbsp;ie.&nbsp;you&nbsp;may&nbsp;get&nbsp;and&nbsp;set&nbsp;items&nbsp;of&nbsp;it.<br>
+This&nbsp;translates&nbsp;to&nbsp;Getvar&nbsp;and&nbsp;Setvar&nbsp;actions&nbsp;on&nbsp;the&nbsp;channel.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="Asterisk.Manager.html#BaseChannel">BaseChannel</a></dd>
+<dd><a href="Asterisk.Logging.html#InstanceLogger">Asterisk.Logging.InstanceLogger</a></dd>
+<dd><a href="__builtin__.html#object">__builtin__.object</a></dd>
+</dl>
+<hr>
+Methods defined here:<br>
+<dl><dt><a name="BaseChannel-AbsoluteTimeout"><strong>AbsoluteTimeout</strong></a>(self, timeout)</dt><dd><tt>Set&nbsp;the&nbsp;absolute&nbsp;timeout&nbsp;of&nbsp;this&nbsp;channel&nbsp;to&nbsp;&lt;timeout&gt;.</tt></dd></dl>
+
+<dl><dt><a name="BaseChannel-ChangeMonitor"><strong>ChangeMonitor</strong></a>(self, pathname)</dt><dd><tt>Change&nbsp;the&nbsp;monitor&nbsp;filename&nbsp;of&nbsp;this&nbsp;channel&nbsp;to&nbsp;&lt;pathname&gt;.</tt></dd></dl>
+
+<dl><dt><a name="BaseChannel-Getvar"><strong>Getvar</strong></a>(self, variable, default<font color="#909090">=&lt;Asterisk.Util.Unspecified&gt;</font>)</dt><dd><tt>Return&nbsp;the&nbsp;value&nbsp;of&nbsp;this&nbsp;channel's&nbsp;&lt;variable&gt;,&nbsp;or&nbsp;&lt;default&gt;&nbsp;if&nbsp;variable<br>
+is&nbsp;not&nbsp;set.</tt></dd></dl>
+
+<dl><dt><a name="BaseChannel-Hangup"><strong>Hangup</strong></a>(self)</dt><dd><tt>Hangup&nbsp;this&nbsp;channel.</tt></dd></dl>
+
+<dl><dt><a name="BaseChannel-Monitor"><strong>Monitor</strong></a>(self, pathname, format, mix)</dt><dd><tt>Begin&nbsp;monitoring&nbsp;of&nbsp;this&nbsp;channel&nbsp;into&nbsp;&lt;pathname&gt;&nbsp;using&nbsp;&lt;format&gt;.</tt></dd></dl>
+
+<dl><dt><a name="BaseChannel-Redirect"><strong>Redirect</strong></a>(self, context, extension<font color="#909090">='s'</font>, priority<font color="#909090">=1</font>, channel2<font color="#909090">=None</font>)</dt><dd><tt>Redirect&nbsp;this&nbsp;channel&nbsp;to&nbsp;&lt;priority&gt;&nbsp;of&nbsp;&lt;extension&gt;&nbsp;in&nbsp;&lt;context&gt;,<br>
+optionally&nbsp;bridging&nbsp;with&nbsp;&lt;channel2&gt;.</tt></dd></dl>
+
+<dl><dt><a name="BaseChannel-SetCDRUserField"><strong>SetCDRUserField</strong></a>(data, append<font color="#909090">=False</font>)</dt><dd><tt>Append&nbsp;or&nbsp;replace&nbsp;this&nbsp;channel's&nbsp;CDR&nbsp;user&nbsp;field&nbsp;with&nbsp;&lt;data&gt;.</tt></dd></dl>
+
+<dl><dt><a name="BaseChannel-Setvar"><strong>Setvar</strong></a>(self, variable, value)</dt><dd><tt>Set&nbsp;the&nbsp;&lt;variable&gt;&nbsp;in&nbsp;this&nbsp;channel&nbsp;to&nbsp;&lt;value&gt;.</tt></dd></dl>
+
+<dl><dt><a name="BaseChannel-Status"><strong>Status</strong></a>(self)</dt><dd><tt>Return&nbsp;the&nbsp;<a href="#BaseChannel-Status">Status</a>()&nbsp;dict&nbsp;for&nbsp;this&nbsp;channel&nbsp;(wasteful!).</tt></dd></dl>
+
+<dl><dt><a name="BaseChannel-StopMonitor"><strong>StopMonitor</strong></a>(self)</dt><dd><tt>Stop&nbsp;monitoring&nbsp;of&nbsp;this&nbsp;channel.</tt></dd></dl>
+
+<dl><dt><a name="BaseChannel-__getitem__"><strong>__getitem__</strong></a>(self, key)</dt><dd><tt>Fetch&nbsp;&lt;key&gt;&nbsp;as&nbsp;a&nbsp;variable&nbsp;from&nbsp;this&nbsp;channel.</tt></dd></dl>
+
+<dl><dt><a name="BaseChannel-__init__"><strong>__init__</strong></a>(self, manager, channel_id)</dt><dd><tt>Initialise&nbsp;a&nbsp;new&nbsp;Channel&nbsp;<a href="__builtin__.html#object">object</a>&nbsp;belonging&nbsp;to&nbsp;&lt;channel_id&gt;&nbsp;reachable&nbsp;via<br>
+<a href="#BaseManager">BaseManager</a>&nbsp;&lt;manager&gt;.</tt></dd></dl>
+
+<dl><dt><a name="BaseChannel-__repr__"><strong>__repr__</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="BaseChannel-__setitem__"><strong>__setitem__</strong></a>(self, key, value)</dt><dd><tt>Set&nbsp;&lt;key&gt;&nbsp;as&nbsp;a&nbsp;variable&nbsp;on&nbsp;this&nbsp;channel.</tt></dd></dl>
+
+<dl><dt><a name="BaseChannel-__str__"><strong>__str__</strong></a>(self)</dt></dl>
+
+<hr>
+Methods inherited from <a href="Asterisk.Logging.html#InstanceLogger">Asterisk.Logging.InstanceLogger</a>:<br>
+<dl><dt><a name="BaseChannel-getLogger"><strong>getLogger</strong></a>(self)</dt><dd><tt>Return&nbsp;the&nbsp;Logger&nbsp;instance&nbsp;which&nbsp;receives&nbsp;debug&nbsp;messages&nbsp;for&nbsp;this&nbsp;class<br>
+instance.</tt></dd></dl>
+
+<dl><dt><a name="BaseChannel-getLoggerClass"><strong>getLoggerClass</strong></a>(self)</dt><dd><tt>Return&nbsp;the&nbsp;namespace&nbsp;where&nbsp;debug&nbsp;messages&nbsp;for&nbsp;all&nbsp;instances&nbsp;of&nbsp;this<br>
+class&nbsp;are&nbsp;sent.</tt></dd></dl>
+
+<hr>
+Data and other attributes inherited from <a href="Asterisk.Logging.html#InstanceLogger">Asterisk.Logging.InstanceLogger</a>:<br>
+<dl><dt><strong>__dict__</strong> = &lt;dictproxy object&gt;<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dl>
+
+<dl><dt><strong>__weakref__</strong> = &lt;attribute '__weakref__' of 'InstanceLogger' objects&gt;<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;<a href="__builtin__.html#object">object</a>&nbsp;(if&nbsp;defined)</tt></dl>
+
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
 <font color="#000000" face="helvetica, arial"><a name="BaseException">class <strong>BaseException</strong></a>(<a href="Asterisk.html#BaseException">Asterisk.BaseException</a>)</font></td></tr>
     
 <tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
@@ -197,12 +216,18 @@ Methods inherited from <a href="exceptions.html#Exception">exceptions.Exception<
 <table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
 <tr bgcolor="#ffc8d8">
 <td colspan=3 valign=bottom>&nbsp;<br>
-<font color="#000000" face="helvetica, arial"><a name="BaseManager">class <strong>BaseManager</strong></a>(<a href="__builtin__.html#object">__builtin__.object</a>)</font></td></tr>
+<font color="#000000" face="helvetica, arial"><a name="BaseManager">class <strong>BaseManager</strong></a>(<a href="Asterisk.Logging.html#InstanceLogger">Asterisk.Logging.InstanceLogger</a>)</font></td></tr>
     
 <tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
 <td colspan=2><tt>Base&nbsp;protocol&nbsp;implementation&nbsp;for&nbsp;the&nbsp;Asterisk&nbsp;<a href="#Manager">Manager</a>&nbsp;API.<br>&nbsp;</tt></td></tr>
 <tr><td>&nbsp;</td>
-<td width="100%">Methods defined here:<br>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="Asterisk.Manager.html#BaseManager">BaseManager</a></dd>
+<dd><a href="Asterisk.Logging.html#InstanceLogger">Asterisk.Logging.InstanceLogger</a></dd>
+<dd><a href="__builtin__.html#object">__builtin__.object</a></dd>
+</dl>
+<hr>
+Methods defined here:<br>
 <dl><dt><a name="BaseManager-__init__"><strong>__init__</strong></a>(self, address, username, secret, listen_events<font color="#909090">=True</font>)</dt><dd><tt>Provide&nbsp;communication&nbsp;methods&nbsp;for&nbsp;the&nbsp;PBX&nbsp;instance&nbsp;running&nbsp;at<br>
 &lt;address&gt;.&nbsp;Authenticate&nbsp;using&nbsp;&lt;username&gt;&nbsp;and&nbsp;&lt;secret&gt;.&nbsp;Receive&nbsp;event<br>
 information&nbsp;from&nbsp;the&nbsp;<a href="#Manager">Manager</a>&nbsp;API&nbsp;if&nbsp;&lt;listen_events&gt;&nbsp;is&nbsp;True.</tt></dd></dl>
@@ -211,19 +236,11 @@ information&nbsp;from&nbsp;the&nbsp;<a href="#Manager">Manager</a>&nbsp;API&nbsp
 
 <dl><dt><a name="BaseManager-close"><strong>close</strong></a>(self)</dt><dd><tt>Log&nbsp;off&nbsp;and&nbsp;close&nbsp;the&nbsp;connection&nbsp;to&nbsp;the&nbsp;PBX.</tt></dd></dl>
 
-<dl><dt><a name="BaseManager-getLogger"><strong>getLogger</strong></a>(self)</dt><dd><tt>Return&nbsp;the&nbsp;Logger&nbsp;instance&nbsp;which&nbsp;receives&nbsp;debug&nbsp;messages&nbsp;for&nbsp;this&nbsp;class<br>
-instance.</tt></dd></dl>
-
-<dl><dt><a name="BaseManager-getLoggerClass"><strong>getLoggerClass</strong></a>(self)</dt><dd><tt>Return&nbsp;the&nbsp;namespace&nbsp;where&nbsp;debug&nbsp;messages&nbsp;for&nbsp;all&nbsp;instances&nbsp;of&nbsp;this<br>
-class&nbsp;are&nbsp;sent.</tt></dd></dl>
+<dl><dt><a name="BaseManager-on_Event"><strong>on_Event</strong></a>(self, event)</dt><dd><tt>Triggered&nbsp;when&nbsp;an&nbsp;event&nbsp;is&nbsp;received&nbsp;from&nbsp;the&nbsp;<a href="#Manager">Manager</a>.</tt></dd></dl>
 
 <dl><dt><a name="BaseManager-read"><strong>read</strong></a>(self)</dt><dd><tt>Called&nbsp;by&nbsp;the&nbsp;parent&nbsp;code&nbsp;when&nbsp;activity&nbsp;is&nbsp;detected&nbsp;on&nbsp;our&nbsp;fd.</tt></dd></dl>
 
 <dl><dt><a name="BaseManager-read_response"><strong>read_response</strong></a>(self, id)</dt><dd><tt>Return&nbsp;the&nbsp;response&nbsp;packet&nbsp;found&nbsp;for&nbsp;the&nbsp;given&nbsp;action&nbsp;&lt;id&gt;.</tt></dd></dl>
-
-<dl><dt><a name="BaseManager-replace_events"><strong>replace_events</strong></a>(self, events)</dt><dd><tt>Given&nbsp;a&nbsp;list&nbsp;of&nbsp;functions,&nbsp;temporarily&nbsp;replace&nbsp;on_&lt;funcname&gt;&nbsp;attributes<br>
-to&nbsp;self&nbsp;using&nbsp;those&nbsp;functions.&nbsp;Return&nbsp;a&nbsp;mapping&nbsp;containing&nbsp;undo<br>
-information.</tt></dd></dl>
 
 <dl><dt><a name="BaseManager-responses_waiting"><strong>responses_waiting</strong></a>(self)</dt><dd><tt>Return&nbsp;truth&nbsp;if&nbsp;there&nbsp;are&nbsp;unprocessed&nbsp;buffered&nbsp;responses.</tt></dd></dl>
 
@@ -231,65 +248,19 @@ information.</tt></dd></dl>
 
 <dl><dt><a name="BaseManager-strip_evinfo"><strong>strip_evinfo</strong></a>(self, event)</dt><dd><tt>Given&nbsp;an&nbsp;event,&nbsp;remove&nbsp;it's&nbsp;ActionID&nbsp;and&nbsp;Event&nbsp;members.</tt></dd></dl>
 
-<dl><dt><a name="BaseManager-undo_events"><strong>undo_events</strong></a>(self, mapping)</dt><dd><tt>Given&nbsp;a&nbsp;mapping&nbsp;(as&nbsp;returned&nbsp;by&nbsp;_save_methods),&nbsp;update&nbsp;self&nbsp;with&nbsp;those<br>
-methods.&nbsp;Method&nbsp;names&nbsp;with&nbsp;a&nbsp;value&nbsp;of&nbsp;None&nbsp;are&nbsp;ignored.</tt></dd></dl>
+<hr>
+Methods inherited from <a href="Asterisk.Logging.html#InstanceLogger">Asterisk.Logging.InstanceLogger</a>:<br>
+<dl><dt><a name="BaseManager-getLogger"><strong>getLogger</strong></a>(self)</dt><dd><tt>Return&nbsp;the&nbsp;Logger&nbsp;instance&nbsp;which&nbsp;receives&nbsp;debug&nbsp;messages&nbsp;for&nbsp;this&nbsp;class<br>
+instance.</tt></dd></dl>
+
+<dl><dt><a name="BaseManager-getLoggerClass"><strong>getLoggerClass</strong></a>(self)</dt><dd><tt>Return&nbsp;the&nbsp;namespace&nbsp;where&nbsp;debug&nbsp;messages&nbsp;for&nbsp;all&nbsp;instances&nbsp;of&nbsp;this<br>
+class&nbsp;are&nbsp;sent.</tt></dd></dl>
 
 <hr>
-Data and other attributes defined here:<br>
+Data and other attributes inherited from <a href="Asterisk.Logging.html#InstanceLogger">Asterisk.Logging.InstanceLogger</a>:<br>
 <dl><dt><strong>__dict__</strong> = &lt;dictproxy object&gt;<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dl>
 
-<dl><dt><strong>__weakref__</strong> = &lt;attribute '__weakref__' of 'BaseManager' objects&gt;<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;<a href="__builtin__.html#object">object</a>&nbsp;(if&nbsp;defined)</tt></dl>
-
-</td></tr></table> <p>
-<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
-<tr bgcolor="#ffc8d8">
-<td colspan=3 valign=bottom>&nbsp;<br>
-<font color="#000000" face="helvetica, arial"><a name="Channel">class <strong>Channel</strong></a>(<a href="__builtin__.html#object">__builtin__.object</a>)</font></td></tr>
-    
-<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
-<td colspan=2><tt>Represents&nbsp;a&nbsp;living&nbsp;Asterisk&nbsp;channel,&nbsp;with&nbsp;shortcut&nbsp;methods&nbsp;for&nbsp;operating<br>
-on&nbsp;it.&nbsp;The&nbsp;<a href="__builtin__.html#object">object</a>&nbsp;acts&nbsp;as&nbsp;a&nbsp;mapping,&nbsp;ie.&nbsp;you&nbsp;may&nbsp;get&nbsp;and&nbsp;set&nbsp;items&nbsp;of&nbsp;it.<br>
-This&nbsp;translates&nbsp;to&nbsp;Getvar&nbsp;and&nbsp;Setvar&nbsp;actions&nbsp;on&nbsp;the&nbsp;channel.<br>&nbsp;</tt></td></tr>
-<tr><td>&nbsp;</td>
-<td width="100%">Methods defined here:<br>
-<dl><dt><a name="Channel-AbsoluteTimeout"><strong>AbsoluteTimeout</strong></a>(self, timeout)</dt><dd><tt>Set&nbsp;the&nbsp;absolute&nbsp;timeout&nbsp;of&nbsp;this&nbsp;channel&nbsp;to&nbsp;&lt;timeout&gt;.</tt></dd></dl>
-
-<dl><dt><a name="Channel-ChangeMonitor"><strong>ChangeMonitor</strong></a>(self, pathname)</dt><dd><tt>Change&nbsp;the&nbsp;monitor&nbsp;filename&nbsp;of&nbsp;this&nbsp;channel&nbsp;to&nbsp;&lt;pathname&gt;.</tt></dd></dl>
-
-<dl><dt><a name="Channel-Getvar"><strong>Getvar</strong></a>(self, variable, default<font color="#909090">=[None]</font>)</dt><dd><tt>Return&nbsp;the&nbsp;value&nbsp;of&nbsp;this&nbsp;channel's&nbsp;&lt;variable&gt;,&nbsp;or&nbsp;&lt;default&gt;&nbsp;if&nbsp;variable<br>
-is&nbsp;not&nbsp;set.</tt></dd></dl>
-
-<dl><dt><a name="Channel-Hangup"><strong>Hangup</strong></a>(self)</dt><dd><tt>Hangup&nbsp;this&nbsp;channel.</tt></dd></dl>
-
-<dl><dt><a name="Channel-Monitor"><strong>Monitor</strong></a>(self, pathname, format, mix)</dt><dd><tt>Begin&nbsp;monitoring&nbsp;of&nbsp;this&nbsp;channel&nbsp;into&nbsp;&lt;pathname&gt;&nbsp;using&nbsp;&lt;format&gt;.</tt></dd></dl>
-
-<dl><dt><a name="Channel-Redirect"><strong>Redirect</strong></a>(self, context, extension<font color="#909090">='s'</font>, priority<font color="#909090">=1</font>, channel2<font color="#909090">=None</font>)</dt><dd><tt>Redirect&nbsp;this&nbsp;channel&nbsp;to&nbsp;&lt;priority&gt;&nbsp;of&nbsp;&lt;extension&gt;&nbsp;in&nbsp;&lt;context&gt;,<br>
-optionally&nbsp;bridging&nbsp;with&nbsp;&lt;channel2&gt;.</tt></dd></dl>
-
-<dl><dt><a name="Channel-SetCDRUserField"><strong>SetCDRUserField</strong></a>(data, append<font color="#909090">=False</font>)</dt><dd><tt>Append&nbsp;or&nbsp;replace&nbsp;this&nbsp;channel's&nbsp;CDR&nbsp;user&nbsp;field&nbsp;with&nbsp;&lt;data&gt;.</tt></dd></dl>
-
-<dl><dt><a name="Channel-Setvar"><strong>Setvar</strong></a>(self, variable, value)</dt><dd><tt>Set&nbsp;the&nbsp;&lt;variable&gt;&nbsp;in&nbsp;this&nbsp;channel&nbsp;to&nbsp;&lt;value&gt;.</tt></dd></dl>
-
-<dl><dt><a name="Channel-Status"><strong>Status</strong></a>(self)</dt><dd><tt>Return&nbsp;the&nbsp;<a href="#Channel-Status">Status</a>()&nbsp;dict&nbsp;for&nbsp;this&nbsp;channel&nbsp;(wasteful!).</tt></dd></dl>
-
-<dl><dt><a name="Channel-StopMonitor"><strong>StopMonitor</strong></a>(self)</dt><dd><tt>Stop&nbsp;monitoring&nbsp;of&nbsp;this&nbsp;channel.</tt></dd></dl>
-
-<dl><dt><a name="Channel-__getitem__"><strong>__getitem__</strong></a>(self, key)</dt><dd><tt>Fetch&nbsp;&lt;key&gt;&nbsp;as&nbsp;a&nbsp;variable&nbsp;from&nbsp;this&nbsp;channel.</tt></dd></dl>
-
-<dl><dt><a name="Channel-__init__"><strong>__init__</strong></a>(self, manager, channel_id)</dt><dd><tt>Initialise&nbsp;a&nbsp;new&nbsp;<a href="#Channel">Channel</a>&nbsp;<a href="__builtin__.html#object">object</a>&nbsp;belonging&nbsp;to&nbsp;&lt;channel_id&gt;&nbsp;reachable&nbsp;via<br>
-<a href="#BaseManager">BaseManager</a>&nbsp;&lt;manager&gt;.</tt></dd></dl>
-
-<dl><dt><a name="Channel-__repr__"><strong>__repr__</strong></a>(self)</dt></dl>
-
-<dl><dt><a name="Channel-__setitem__"><strong>__setitem__</strong></a>(self, key, value)</dt><dd><tt>Set&nbsp;&lt;key&gt;&nbsp;as&nbsp;a&nbsp;variable&nbsp;on&nbsp;this&nbsp;channel.</tt></dd></dl>
-
-<dl><dt><a name="Channel-__str__"><strong>__str__</strong></a>(self)</dt></dl>
-
-<hr>
-Data and other attributes defined here:<br>
-<dl><dt><strong>__dict__</strong> = &lt;dictproxy object&gt;<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dl>
-
-<dl><dt><strong>__weakref__</strong> = &lt;attribute '__weakref__' of 'Channel' objects&gt;<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;<a href="__builtin__.html#object">object</a>&nbsp;(if&nbsp;defined)</tt></dl>
+<dl><dt><strong>__weakref__</strong> = &lt;attribute '__weakref__' of 'InstanceLogger' objects&gt;<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;<a href="__builtin__.html#object">object</a>&nbsp;(if&nbsp;defined)</tt></dl>
 
 </td></tr></table> <p>
 <table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
@@ -339,7 +310,7 @@ engine.<br>&nbsp;</tt></td></tr>
 
 <dl><dt><a name="CoreActions-ExtensionState"><strong>ExtensionState</strong></a>(self, context, extension)</dt><dd><tt>Return&nbsp;the&nbsp;state&nbsp;of&nbsp;&lt;extension&gt;&nbsp;in&nbsp;&lt;context&gt;.</tt></dd></dl>
 
-<dl><dt><a name="CoreActions-Getvar"><strong>Getvar</strong></a>(self, channel, variable, default<font color="#909090">=[None]</font>)</dt><dd><tt>Return&nbsp;the&nbsp;value&nbsp;of&nbsp;&lt;channel&gt;'s&nbsp;&lt;variable&gt;,&nbsp;or&nbsp;&lt;default&gt;&nbsp;if&nbsp;&lt;variable&gt;<br>
+<dl><dt><a name="CoreActions-Getvar"><strong>Getvar</strong></a>(self, channel, variable, default<font color="#909090">=&lt;Asterisk.Util.Unspecified&gt;</font>)</dt><dd><tt>Return&nbsp;the&nbsp;value&nbsp;of&nbsp;&lt;channel&gt;'s&nbsp;&lt;variable&gt;,&nbsp;or&nbsp;&lt;default&gt;&nbsp;if&nbsp;&lt;variable&gt;<br>
 is&nbsp;not&nbsp;set.</tt></dd></dl>
 
 <dl><dt><a name="CoreActions-Hangup"><strong>Hangup</strong></a>(self, channel)</dt><dd><tt>Hangup&nbsp;&lt;channel&gt;.</tt></dd></dl>
@@ -410,86 +381,6 @@ Data and other attributes defined here:<br>
 <table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
 <tr bgcolor="#ffc8d8">
 <td colspan=3 valign=bottom>&nbsp;<br>
-<font color="#000000" face="helvetica, arial"><a name="CoreEventHandlers">class <strong>CoreEventHandlers</strong></a>(<a href="__builtin__.html#object">__builtin__.object</a>)</font></td></tr>
-    
-<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
-<td colspan=2><tt>Provide&nbsp;placeholders&nbsp;for&nbsp;events&nbsp;generated&nbsp;by&nbsp;the&nbsp;core&nbsp;Asterisk&nbsp;engine.<br>&nbsp;</tt></td></tr>
-<tr><td>&nbsp;</td>
-<td width="100%">Methods defined here:<br>
-<dl><dt><a name="CoreEventHandlers-on_AgentCalled"><strong>on_AgentCalled</strong></a>(self, event)</dt><dd><tt>Fired&nbsp;when&nbsp;an&nbsp;"AgentCalled"&nbsp;event&nbsp;is&nbsp;seen.</tt></dd></dl>
-
-<dl><dt><a name="CoreEventHandlers-on_Agentcallbacklogin"><strong>on_Agentcallbacklogin</strong></a>(self, event)</dt><dd><tt>Fired&nbsp;when&nbsp;an&nbsp;"Agentcallbacklogin"&nbsp;event&nbsp;is&nbsp;seen.</tt></dd></dl>
-
-<dl><dt><a name="CoreEventHandlers-on_Agentcallbacklogoff"><strong>on_Agentcallbacklogoff</strong></a>(self, event)</dt><dd><tt>Fired&nbsp;when&nbsp;an&nbsp;"Agentcallbacklogoff"&nbsp;event&nbsp;is&nbsp;seen.</tt></dd></dl>
-
-<dl><dt><a name="CoreEventHandlers-on_Agentlogin"><strong>on_Agentlogin</strong></a>(self, event)</dt><dd><tt>Fired&nbsp;when&nbsp;an&nbsp;"Agentlogin"&nbsp;event&nbsp;is&nbsp;seen.</tt></dd></dl>
-
-<dl><dt><a name="CoreEventHandlers-on_Agentlogoff"><strong>on_Agentlogoff</strong></a>(self, event)</dt><dd><tt>Fired&nbsp;when&nbsp;an&nbsp;"Agentlogoff"&nbsp;event&nbsp;is&nbsp;seen.</tt></dd></dl>
-
-<dl><dt><a name="CoreEventHandlers-on_Alarm"><strong>on_Alarm</strong></a>(self, event)</dt><dd><tt>Fired&nbsp;when&nbsp;an&nbsp;"Alarm"&nbsp;event&nbsp;is&nbsp;seen.</tt></dd></dl>
-
-<dl><dt><a name="CoreEventHandlers-on_AlarmClear"><strong>on_AlarmClear</strong></a>(self, event)</dt><dd><tt>Fired&nbsp;when&nbsp;an&nbsp;"AlarmClear"&nbsp;event&nbsp;is&nbsp;seen.</tt></dd></dl>
-
-<dl><dt><a name="CoreEventHandlers-on_Cdr"><strong>on_Cdr</strong></a>(self, event)</dt><dd><tt>Fired&nbsp;when&nbsp;a&nbsp;"Cdr"&nbsp;event&nbsp;is&nbsp;seen.</tt></dd></dl>
-
-<dl><dt><a name="CoreEventHandlers-on_ExtensionStatus"><strong>on_ExtensionStatus</strong></a>(self, event)</dt><dd><tt>Fired&nbsp;when&nbsp;an&nbsp;"ExtensionStatus"&nbsp;event&nbsp;is&nbsp;seen.</tt></dd></dl>
-
-<dl><dt><a name="CoreEventHandlers-on_Hangup"><strong>on_Hangup</strong></a>(self, event)</dt><dd><tt>Fired&nbsp;when&nbsp;a&nbsp;"Hangup"&nbsp;event&nbsp;is&nbsp;seen.</tt></dd></dl>
-
-<dl><dt><a name="CoreEventHandlers-on_Join"><strong>on_Join</strong></a>(self, event)</dt><dd><tt>Fired&nbsp;when&nbsp;a&nbsp;"Join"&nbsp;event&nbsp;is&nbsp;seen.</tt></dd></dl>
-
-<dl><dt><a name="CoreEventHandlers-on_Leave"><strong>on_Leave</strong></a>(self, event)</dt><dd><tt>Fired&nbsp;when&nbsp;a&nbsp;"Leave"&nbsp;event&nbsp;is&nbsp;seen.</tt></dd></dl>
-
-<dl><dt><a name="CoreEventHandlers-on_Link"><strong>on_Link</strong></a>(self, event)</dt><dd><tt>Fired&nbsp;when&nbsp;a&nbsp;"Link"&nbsp;event&nbsp;is&nbsp;seen.</tt></dd></dl>
-
-<dl><dt><a name="CoreEventHandlers-on_MeetmeJoin"><strong>on_MeetmeJoin</strong></a>(self, event)</dt><dd><tt>Fired&nbsp;when&nbsp;a&nbsp;"MeetmeJoin"&nbsp;event&nbsp;is&nbsp;seen.</tt></dd></dl>
-
-<dl><dt><a name="CoreEventHandlers-on_MeetmeLeave"><strong>on_MeetmeLeave</strong></a>(self, event)</dt><dd><tt>Fired&nbsp;when&nbsp;a&nbsp;"MeetmeLeave"&nbsp;event&nbsp;is&nbsp;seen.</tt></dd></dl>
-
-<dl><dt><a name="CoreEventHandlers-on_MessageWaiting"><strong>on_MessageWaiting</strong></a>(self, event)</dt><dd><tt>Fired&nbsp;when&nbsp;a&nbsp;"MessageWaiting"&nbsp;event&nbsp;is&nbsp;seen.</tt></dd></dl>
-
-<dl><dt><a name="CoreEventHandlers-on_Newcalleridid"><strong>on_Newcalleridid</strong></a>(self, event)</dt><dd><tt>Fired&nbsp;when&nbsp;a&nbsp;"Newcallerid"&nbsp;event&nbsp;is&nbsp;seen.</tt></dd></dl>
-
-<dl><dt><a name="CoreEventHandlers-on_Newchannel"><strong>on_Newchannel</strong></a>(self, event)</dt><dd><tt>Fired&nbsp;when&nbsp;a&nbsp;"Newchannel"&nbsp;event&nbsp;is&nbsp;seen.</tt></dd></dl>
-
-<dl><dt><a name="CoreEventHandlers-on_Newexten"><strong>on_Newexten</strong></a>(self, event)</dt><dd><tt>Fired&nbsp;when&nbsp;a&nbsp;"Newexten"&nbsp;event&nbsp;is&nbsp;seen.</tt></dd></dl>
-
-<dl><dt><a name="CoreEventHandlers-on_Newstate"><strong>on_Newstate</strong></a>(self, event)</dt><dd><tt>Fired&nbsp;when&nbsp;a&nbsp;"Newstate"&nbsp;event&nbsp;is&nbsp;seen.</tt></dd></dl>
-
-<dl><dt><a name="CoreEventHandlers-on_ParkedCall"><strong>on_ParkedCall</strong></a>(self, event)</dt><dd><tt>Fired&nbsp;when&nbsp;a&nbsp;"ParkedCall"&nbsp;event&nbsp;is&nbsp;seen.</tt></dd></dl>
-
-<dl><dt><a name="CoreEventHandlers-on_ParkedCallsComplete"><strong>on_ParkedCallsComplete</strong></a>(self, event)</dt><dd><tt>Fired&nbsp;when&nbsp;a&nbsp;"ParkedCallsComplete"&nbsp;event&nbsp;is&nbsp;seen.</tt></dd></dl>
-
-<dl><dt><a name="CoreEventHandlers-on_QueueEntry"><strong>on_QueueEntry</strong></a>(self, event)</dt><dd><tt>Fired&nbsp;when&nbsp;a&nbsp;"QueueEntry"&nbsp;event&nbsp;is&nbsp;seen.</tt></dd></dl>
-
-<dl><dt><a name="CoreEventHandlers-on_QueueMember"><strong>on_QueueMember</strong></a>(self, event)</dt><dd><tt>Fired&nbsp;when&nbsp;a&nbsp;"QueueMember"&nbsp;event&nbsp;is&nbsp;seen.</tt></dd></dl>
-
-<dl><dt><a name="CoreEventHandlers-on_QueueParams"><strong>on_QueueParams</strong></a>(self, event)</dt><dd><tt>Fired&nbsp;when&nbsp;a&nbsp;"QueueParams"&nbsp;event&nbsp;is&nbsp;seen.</tt></dd></dl>
-
-<dl><dt><a name="CoreEventHandlers-on_QueueStatusEnd"><strong>on_QueueStatusEnd</strong></a>(self, event)</dt><dd><tt>Fired&nbsp;when&nbsp;a&nbsp;"QueueStatusEnd"&nbsp;event&nbsp;is&nbsp;seen.</tt></dd></dl>
-
-<dl><dt><a name="CoreEventHandlers-on_Reload"><strong>on_Reload</strong></a>(self, event)</dt><dd><tt>Fired&nbsp;when&nbsp;a&nbsp;"Reload"&nbsp;event&nbsp;is&nbsp;seen.</tt></dd></dl>
-
-<dl><dt><a name="CoreEventHandlers-on_Rename"><strong>on_Rename</strong></a>(self, event)</dt><dd><tt>Fired&nbsp;when&nbsp;a&nbsp;"Rename"&nbsp;event&nbsp;is&nbsp;seen.</tt></dd></dl>
-
-<dl><dt><a name="CoreEventHandlers-on_Response"><strong>on_Response</strong></a>(self, event)</dt><dd><tt>Fired&nbsp;when&nbsp;a&nbsp;response&nbsp;is&nbsp;sent&nbsp;in&nbsp;reply&nbsp;to&nbsp;an&nbsp;action.</tt></dd></dl>
-
-<dl><dt><a name="CoreEventHandlers-on_Status"><strong>on_Status</strong></a>(self, event)</dt><dd><tt>Fired&nbsp;when&nbsp;a&nbsp;"Status"&nbsp;event&nbsp;is&nbsp;seen.</tt></dd></dl>
-
-<dl><dt><a name="CoreEventHandlers-on_StatusComplete"><strong>on_StatusComplete</strong></a>(self, event)</dt><dd><tt>Fired&nbsp;when&nbsp;a&nbsp;"StatusComplete"&nbsp;event&nbsp;is&nbsp;seen.</tt></dd></dl>
-
-<dl><dt><a name="CoreEventHandlers-on_Unlink"><strong>on_Unlink</strong></a>(self, event)</dt><dd><tt>Fired&nbsp;when&nbsp;an&nbsp;"Unlink"&nbsp;event&nbsp;is&nbsp;seen.</tt></dd></dl>
-
-<hr>
-Data and other attributes defined here:<br>
-<dl><dt><strong>__dict__</strong> = &lt;dictproxy object&gt;<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dl>
-
-<dl><dt><strong>__weakref__</strong> = &lt;attribute '__weakref__' of 'CoreEventHandlers' objects&gt;<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;<a href="__builtin__.html#object">object</a>&nbsp;(if&nbsp;defined)</tt></dl>
-
-</td></tr></table> <p>
-<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
-<tr bgcolor="#ffc8d8">
-<td colspan=3 valign=bottom>&nbsp;<br>
 <font color="#000000" face="helvetica, arial"><a name="CoreManager">class <strong>CoreManager</strong></a>(<a href="Asterisk.Manager.html#BaseManager">BaseManager</a>, <a href="Asterisk.Manager.html#CoreActions">CoreActions</a>, <a href="Asterisk.Manager.html#ZapataActions">ZapataActions</a>)</font></td></tr>
     
 <tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
@@ -499,6 +390,7 @@ event&nbsp;handlers.<br>&nbsp;</tt></td></tr>
 <td width="100%"><dl><dt>Method resolution order:</dt>
 <dd><a href="Asterisk.Manager.html#CoreManager">CoreManager</a></dd>
 <dd><a href="Asterisk.Manager.html#BaseManager">BaseManager</a></dd>
+<dd><a href="Asterisk.Logging.html#InstanceLogger">Asterisk.Logging.InstanceLogger</a></dd>
 <dd><a href="Asterisk.Manager.html#CoreActions">CoreActions</a></dd>
 <dd><a href="Asterisk.Manager.html#ZapataActions">ZapataActions</a></dd>
 <dd><a href="__builtin__.html#object">__builtin__.object</a></dd>
@@ -513,19 +405,11 @@ information&nbsp;from&nbsp;the&nbsp;<a href="#Manager">Manager</a>&nbsp;API&nbsp
 
 <dl><dt><a name="CoreManager-close"><strong>close</strong></a>(self)</dt><dd><tt>Log&nbsp;off&nbsp;and&nbsp;close&nbsp;the&nbsp;connection&nbsp;to&nbsp;the&nbsp;PBX.</tt></dd></dl>
 
-<dl><dt><a name="CoreManager-getLogger"><strong>getLogger</strong></a>(self)</dt><dd><tt>Return&nbsp;the&nbsp;Logger&nbsp;instance&nbsp;which&nbsp;receives&nbsp;debug&nbsp;messages&nbsp;for&nbsp;this&nbsp;class<br>
-instance.</tt></dd></dl>
-
-<dl><dt><a name="CoreManager-getLoggerClass"><strong>getLoggerClass</strong></a>(self)</dt><dd><tt>Return&nbsp;the&nbsp;namespace&nbsp;where&nbsp;debug&nbsp;messages&nbsp;for&nbsp;all&nbsp;instances&nbsp;of&nbsp;this<br>
-class&nbsp;are&nbsp;sent.</tt></dd></dl>
+<dl><dt><a name="CoreManager-on_Event"><strong>on_Event</strong></a>(self, event)</dt><dd><tt>Triggered&nbsp;when&nbsp;an&nbsp;event&nbsp;is&nbsp;received&nbsp;from&nbsp;the&nbsp;<a href="#Manager">Manager</a>.</tt></dd></dl>
 
 <dl><dt><a name="CoreManager-read"><strong>read</strong></a>(self)</dt><dd><tt>Called&nbsp;by&nbsp;the&nbsp;parent&nbsp;code&nbsp;when&nbsp;activity&nbsp;is&nbsp;detected&nbsp;on&nbsp;our&nbsp;fd.</tt></dd></dl>
 
 <dl><dt><a name="CoreManager-read_response"><strong>read_response</strong></a>(self, id)</dt><dd><tt>Return&nbsp;the&nbsp;response&nbsp;packet&nbsp;found&nbsp;for&nbsp;the&nbsp;given&nbsp;action&nbsp;&lt;id&gt;.</tt></dd></dl>
-
-<dl><dt><a name="CoreManager-replace_events"><strong>replace_events</strong></a>(self, events)</dt><dd><tt>Given&nbsp;a&nbsp;list&nbsp;of&nbsp;functions,&nbsp;temporarily&nbsp;replace&nbsp;on_&lt;funcname&gt;&nbsp;attributes<br>
-to&nbsp;self&nbsp;using&nbsp;those&nbsp;functions.&nbsp;Return&nbsp;a&nbsp;mapping&nbsp;containing&nbsp;undo<br>
-information.</tt></dd></dl>
 
 <dl><dt><a name="CoreManager-responses_waiting"><strong>responses_waiting</strong></a>(self)</dt><dd><tt>Return&nbsp;truth&nbsp;if&nbsp;there&nbsp;are&nbsp;unprocessed&nbsp;buffered&nbsp;responses.</tt></dd></dl>
 
@@ -533,14 +417,19 @@ information.</tt></dd></dl>
 
 <dl><dt><a name="CoreManager-strip_evinfo"><strong>strip_evinfo</strong></a>(self, event)</dt><dd><tt>Given&nbsp;an&nbsp;event,&nbsp;remove&nbsp;it's&nbsp;ActionID&nbsp;and&nbsp;Event&nbsp;members.</tt></dd></dl>
 
-<dl><dt><a name="CoreManager-undo_events"><strong>undo_events</strong></a>(self, mapping)</dt><dd><tt>Given&nbsp;a&nbsp;mapping&nbsp;(as&nbsp;returned&nbsp;by&nbsp;_save_methods),&nbsp;update&nbsp;self&nbsp;with&nbsp;those<br>
-methods.&nbsp;Method&nbsp;names&nbsp;with&nbsp;a&nbsp;value&nbsp;of&nbsp;None&nbsp;are&nbsp;ignored.</tt></dd></dl>
+<hr>
+Methods inherited from <a href="Asterisk.Logging.html#InstanceLogger">Asterisk.Logging.InstanceLogger</a>:<br>
+<dl><dt><a name="CoreManager-getLogger"><strong>getLogger</strong></a>(self)</dt><dd><tt>Return&nbsp;the&nbsp;Logger&nbsp;instance&nbsp;which&nbsp;receives&nbsp;debug&nbsp;messages&nbsp;for&nbsp;this&nbsp;class<br>
+instance.</tt></dd></dl>
+
+<dl><dt><a name="CoreManager-getLoggerClass"><strong>getLoggerClass</strong></a>(self)</dt><dd><tt>Return&nbsp;the&nbsp;namespace&nbsp;where&nbsp;debug&nbsp;messages&nbsp;for&nbsp;all&nbsp;instances&nbsp;of&nbsp;this<br>
+class&nbsp;are&nbsp;sent.</tt></dd></dl>
 
 <hr>
-Data and other attributes inherited from <a href="Asterisk.Manager.html#BaseManager">BaseManager</a>:<br>
+Data and other attributes inherited from <a href="Asterisk.Logging.html#InstanceLogger">Asterisk.Logging.InstanceLogger</a>:<br>
 <dl><dt><strong>__dict__</strong> = &lt;dictproxy object&gt;<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dl>
 
-<dl><dt><strong>__weakref__</strong> = &lt;attribute '__weakref__' of 'BaseManager' objects&gt;<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;<a href="__builtin__.html#object">object</a>&nbsp;(if&nbsp;defined)</tt></dl>
+<dl><dt><strong>__weakref__</strong> = &lt;attribute '__weakref__' of 'InstanceLogger' objects&gt;<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;<a href="__builtin__.html#object">object</a>&nbsp;(if&nbsp;defined)</tt></dl>
 
 <hr>
 Methods inherited from <a href="Asterisk.Manager.html#CoreActions">CoreActions</a>:<br>
@@ -554,7 +443,7 @@ Methods inherited from <a href="Asterisk.Manager.html#CoreActions">CoreActions</
 
 <dl><dt><a name="CoreManager-ExtensionState"><strong>ExtensionState</strong></a>(self, context, extension)</dt><dd><tt>Return&nbsp;the&nbsp;state&nbsp;of&nbsp;&lt;extension&gt;&nbsp;in&nbsp;&lt;context&gt;.</tt></dd></dl>
 
-<dl><dt><a name="CoreManager-Getvar"><strong>Getvar</strong></a>(self, channel, variable, default<font color="#909090">=[None]</font>)</dt><dd><tt>Return&nbsp;the&nbsp;value&nbsp;of&nbsp;&lt;channel&gt;'s&nbsp;&lt;variable&gt;,&nbsp;or&nbsp;&lt;default&gt;&nbsp;if&nbsp;&lt;variable&gt;<br>
+<dl><dt><a name="CoreManager-Getvar"><strong>Getvar</strong></a>(self, channel, variable, default<font color="#909090">=&lt;Asterisk.Util.Unspecified&gt;</font>)</dt><dd><tt>Return&nbsp;the&nbsp;value&nbsp;of&nbsp;&lt;channel&gt;'s&nbsp;&lt;variable&gt;,&nbsp;or&nbsp;&lt;default&gt;&nbsp;if&nbsp;&lt;variable&gt;<br>
 is&nbsp;not&nbsp;set.</tt></dd></dl>
 
 <dl><dt><a name="CoreManager-Hangup"><strong>Hangup</strong></a>(self, channel)</dt><dd><tt>Hangup&nbsp;&lt;channel&gt;.</tt></dd></dl>
@@ -683,7 +572,7 @@ Methods inherited from <a href="exceptions.html#Exception">exceptions.Exception<
 <table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
 <tr bgcolor="#ffc8d8">
 <td colspan=3 valign=bottom>&nbsp;<br>
-<font color="#000000" face="helvetica, arial"><a name="Manager">class <strong>Manager</strong></a>(<a href="Asterisk.Manager.html#BaseManager">BaseManager</a>, <a href="Asterisk.Manager.html#CoreEventHandlers">CoreEventHandlers</a>, <a href="Asterisk.Manager.html#CoreActions">CoreActions</a>, <a href="Asterisk.Manager.html#ZapataEventHandlers">ZapataEventHandlers</a>, <a href="Asterisk.Manager.html#ZapataActions">ZapataActions</a>)</font></td></tr>
+<font color="#000000" face="helvetica, arial"><a name="Manager">class <strong>Manager</strong></a>(<a href="Asterisk.Manager.html#BaseManager">BaseManager</a>, <a href="Asterisk.Manager.html#CoreActions">CoreActions</a>, <a href="Asterisk.Manager.html#ZapataActions">ZapataActions</a>)</font></td></tr>
     
 <tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
 <td colspan=2><tt>Asterisk&nbsp;<a href="#Manager">Manager</a>&nbsp;API&nbsp;protocol&nbsp;implementation,&nbsp;core&nbsp;event&nbsp;handler<br>
@@ -692,9 +581,8 @@ placeholders,&nbsp;and&nbsp;core&nbsp;actions.<br>&nbsp;</tt></td></tr>
 <td width="100%"><dl><dt>Method resolution order:</dt>
 <dd><a href="Asterisk.Manager.html#Manager">Manager</a></dd>
 <dd><a href="Asterisk.Manager.html#BaseManager">BaseManager</a></dd>
-<dd><a href="Asterisk.Manager.html#CoreEventHandlers">CoreEventHandlers</a></dd>
+<dd><a href="Asterisk.Logging.html#InstanceLogger">Asterisk.Logging.InstanceLogger</a></dd>
 <dd><a href="Asterisk.Manager.html#CoreActions">CoreActions</a></dd>
-<dd><a href="Asterisk.Manager.html#ZapataEventHandlers">ZapataEventHandlers</a></dd>
 <dd><a href="Asterisk.Manager.html#ZapataActions">ZapataActions</a></dd>
 <dd><a href="__builtin__.html#object">__builtin__.object</a></dd>
 </dl>
@@ -708,19 +596,11 @@ information&nbsp;from&nbsp;the&nbsp;<a href="#Manager">Manager</a>&nbsp;API&nbsp
 
 <dl><dt><a name="Manager-close"><strong>close</strong></a>(self)</dt><dd><tt>Log&nbsp;off&nbsp;and&nbsp;close&nbsp;the&nbsp;connection&nbsp;to&nbsp;the&nbsp;PBX.</tt></dd></dl>
 
-<dl><dt><a name="Manager-getLogger"><strong>getLogger</strong></a>(self)</dt><dd><tt>Return&nbsp;the&nbsp;Logger&nbsp;instance&nbsp;which&nbsp;receives&nbsp;debug&nbsp;messages&nbsp;for&nbsp;this&nbsp;class<br>
-instance.</tt></dd></dl>
-
-<dl><dt><a name="Manager-getLoggerClass"><strong>getLoggerClass</strong></a>(self)</dt><dd><tt>Return&nbsp;the&nbsp;namespace&nbsp;where&nbsp;debug&nbsp;messages&nbsp;for&nbsp;all&nbsp;instances&nbsp;of&nbsp;this<br>
-class&nbsp;are&nbsp;sent.</tt></dd></dl>
+<dl><dt><a name="Manager-on_Event"><strong>on_Event</strong></a>(self, event)</dt><dd><tt>Triggered&nbsp;when&nbsp;an&nbsp;event&nbsp;is&nbsp;received&nbsp;from&nbsp;the&nbsp;<a href="#Manager">Manager</a>.</tt></dd></dl>
 
 <dl><dt><a name="Manager-read"><strong>read</strong></a>(self)</dt><dd><tt>Called&nbsp;by&nbsp;the&nbsp;parent&nbsp;code&nbsp;when&nbsp;activity&nbsp;is&nbsp;detected&nbsp;on&nbsp;our&nbsp;fd.</tt></dd></dl>
 
 <dl><dt><a name="Manager-read_response"><strong>read_response</strong></a>(self, id)</dt><dd><tt>Return&nbsp;the&nbsp;response&nbsp;packet&nbsp;found&nbsp;for&nbsp;the&nbsp;given&nbsp;action&nbsp;&lt;id&gt;.</tt></dd></dl>
-
-<dl><dt><a name="Manager-replace_events"><strong>replace_events</strong></a>(self, events)</dt><dd><tt>Given&nbsp;a&nbsp;list&nbsp;of&nbsp;functions,&nbsp;temporarily&nbsp;replace&nbsp;on_&lt;funcname&gt;&nbsp;attributes<br>
-to&nbsp;self&nbsp;using&nbsp;those&nbsp;functions.&nbsp;Return&nbsp;a&nbsp;mapping&nbsp;containing&nbsp;undo<br>
-information.</tt></dd></dl>
 
 <dl><dt><a name="Manager-responses_waiting"><strong>responses_waiting</strong></a>(self)</dt><dd><tt>Return&nbsp;truth&nbsp;if&nbsp;there&nbsp;are&nbsp;unprocessed&nbsp;buffered&nbsp;responses.</tt></dd></dl>
 
@@ -728,80 +608,19 @@ information.</tt></dd></dl>
 
 <dl><dt><a name="Manager-strip_evinfo"><strong>strip_evinfo</strong></a>(self, event)</dt><dd><tt>Given&nbsp;an&nbsp;event,&nbsp;remove&nbsp;it's&nbsp;ActionID&nbsp;and&nbsp;Event&nbsp;members.</tt></dd></dl>
 
-<dl><dt><a name="Manager-undo_events"><strong>undo_events</strong></a>(self, mapping)</dt><dd><tt>Given&nbsp;a&nbsp;mapping&nbsp;(as&nbsp;returned&nbsp;by&nbsp;_save_methods),&nbsp;update&nbsp;self&nbsp;with&nbsp;those<br>
-methods.&nbsp;Method&nbsp;names&nbsp;with&nbsp;a&nbsp;value&nbsp;of&nbsp;None&nbsp;are&nbsp;ignored.</tt></dd></dl>
+<hr>
+Methods inherited from <a href="Asterisk.Logging.html#InstanceLogger">Asterisk.Logging.InstanceLogger</a>:<br>
+<dl><dt><a name="Manager-getLogger"><strong>getLogger</strong></a>(self)</dt><dd><tt>Return&nbsp;the&nbsp;Logger&nbsp;instance&nbsp;which&nbsp;receives&nbsp;debug&nbsp;messages&nbsp;for&nbsp;this&nbsp;class<br>
+instance.</tt></dd></dl>
+
+<dl><dt><a name="Manager-getLoggerClass"><strong>getLoggerClass</strong></a>(self)</dt><dd><tt>Return&nbsp;the&nbsp;namespace&nbsp;where&nbsp;debug&nbsp;messages&nbsp;for&nbsp;all&nbsp;instances&nbsp;of&nbsp;this<br>
+class&nbsp;are&nbsp;sent.</tt></dd></dl>
 
 <hr>
-Data and other attributes inherited from <a href="Asterisk.Manager.html#BaseManager">BaseManager</a>:<br>
+Data and other attributes inherited from <a href="Asterisk.Logging.html#InstanceLogger">Asterisk.Logging.InstanceLogger</a>:<br>
 <dl><dt><strong>__dict__</strong> = &lt;dictproxy object&gt;<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dl>
 
-<dl><dt><strong>__weakref__</strong> = &lt;attribute '__weakref__' of 'BaseManager' objects&gt;<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;<a href="__builtin__.html#object">object</a>&nbsp;(if&nbsp;defined)</tt></dl>
-
-<hr>
-Methods inherited from <a href="Asterisk.Manager.html#CoreEventHandlers">CoreEventHandlers</a>:<br>
-<dl><dt><a name="Manager-on_AgentCalled"><strong>on_AgentCalled</strong></a>(self, event)</dt><dd><tt>Fired&nbsp;when&nbsp;an&nbsp;"AgentCalled"&nbsp;event&nbsp;is&nbsp;seen.</tt></dd></dl>
-
-<dl><dt><a name="Manager-on_Agentcallbacklogin"><strong>on_Agentcallbacklogin</strong></a>(self, event)</dt><dd><tt>Fired&nbsp;when&nbsp;an&nbsp;"Agentcallbacklogin"&nbsp;event&nbsp;is&nbsp;seen.</tt></dd></dl>
-
-<dl><dt><a name="Manager-on_Agentcallbacklogoff"><strong>on_Agentcallbacklogoff</strong></a>(self, event)</dt><dd><tt>Fired&nbsp;when&nbsp;an&nbsp;"Agentcallbacklogoff"&nbsp;event&nbsp;is&nbsp;seen.</tt></dd></dl>
-
-<dl><dt><a name="Manager-on_Agentlogin"><strong>on_Agentlogin</strong></a>(self, event)</dt><dd><tt>Fired&nbsp;when&nbsp;an&nbsp;"Agentlogin"&nbsp;event&nbsp;is&nbsp;seen.</tt></dd></dl>
-
-<dl><dt><a name="Manager-on_Agentlogoff"><strong>on_Agentlogoff</strong></a>(self, event)</dt><dd><tt>Fired&nbsp;when&nbsp;an&nbsp;"Agentlogoff"&nbsp;event&nbsp;is&nbsp;seen.</tt></dd></dl>
-
-<dl><dt><a name="Manager-on_Alarm"><strong>on_Alarm</strong></a>(self, event)</dt><dd><tt>Fired&nbsp;when&nbsp;an&nbsp;"Alarm"&nbsp;event&nbsp;is&nbsp;seen.</tt></dd></dl>
-
-<dl><dt><a name="Manager-on_AlarmClear"><strong>on_AlarmClear</strong></a>(self, event)</dt><dd><tt>Fired&nbsp;when&nbsp;an&nbsp;"AlarmClear"&nbsp;event&nbsp;is&nbsp;seen.</tt></dd></dl>
-
-<dl><dt><a name="Manager-on_Cdr"><strong>on_Cdr</strong></a>(self, event)</dt><dd><tt>Fired&nbsp;when&nbsp;a&nbsp;"Cdr"&nbsp;event&nbsp;is&nbsp;seen.</tt></dd></dl>
-
-<dl><dt><a name="Manager-on_ExtensionStatus"><strong>on_ExtensionStatus</strong></a>(self, event)</dt><dd><tt>Fired&nbsp;when&nbsp;an&nbsp;"ExtensionStatus"&nbsp;event&nbsp;is&nbsp;seen.</tt></dd></dl>
-
-<dl><dt><a name="Manager-on_Hangup"><strong>on_Hangup</strong></a>(self, event)</dt><dd><tt>Fired&nbsp;when&nbsp;a&nbsp;"Hangup"&nbsp;event&nbsp;is&nbsp;seen.</tt></dd></dl>
-
-<dl><dt><a name="Manager-on_Join"><strong>on_Join</strong></a>(self, event)</dt><dd><tt>Fired&nbsp;when&nbsp;a&nbsp;"Join"&nbsp;event&nbsp;is&nbsp;seen.</tt></dd></dl>
-
-<dl><dt><a name="Manager-on_Leave"><strong>on_Leave</strong></a>(self, event)</dt><dd><tt>Fired&nbsp;when&nbsp;a&nbsp;"Leave"&nbsp;event&nbsp;is&nbsp;seen.</tt></dd></dl>
-
-<dl><dt><a name="Manager-on_Link"><strong>on_Link</strong></a>(self, event)</dt><dd><tt>Fired&nbsp;when&nbsp;a&nbsp;"Link"&nbsp;event&nbsp;is&nbsp;seen.</tt></dd></dl>
-
-<dl><dt><a name="Manager-on_MeetmeJoin"><strong>on_MeetmeJoin</strong></a>(self, event)</dt><dd><tt>Fired&nbsp;when&nbsp;a&nbsp;"MeetmeJoin"&nbsp;event&nbsp;is&nbsp;seen.</tt></dd></dl>
-
-<dl><dt><a name="Manager-on_MeetmeLeave"><strong>on_MeetmeLeave</strong></a>(self, event)</dt><dd><tt>Fired&nbsp;when&nbsp;a&nbsp;"MeetmeLeave"&nbsp;event&nbsp;is&nbsp;seen.</tt></dd></dl>
-
-<dl><dt><a name="Manager-on_MessageWaiting"><strong>on_MessageWaiting</strong></a>(self, event)</dt><dd><tt>Fired&nbsp;when&nbsp;a&nbsp;"MessageWaiting"&nbsp;event&nbsp;is&nbsp;seen.</tt></dd></dl>
-
-<dl><dt><a name="Manager-on_Newcalleridid"><strong>on_Newcalleridid</strong></a>(self, event)</dt><dd><tt>Fired&nbsp;when&nbsp;a&nbsp;"Newcallerid"&nbsp;event&nbsp;is&nbsp;seen.</tt></dd></dl>
-
-<dl><dt><a name="Manager-on_Newchannel"><strong>on_Newchannel</strong></a>(self, event)</dt><dd><tt>Fired&nbsp;when&nbsp;a&nbsp;"Newchannel"&nbsp;event&nbsp;is&nbsp;seen.</tt></dd></dl>
-
-<dl><dt><a name="Manager-on_Newexten"><strong>on_Newexten</strong></a>(self, event)</dt><dd><tt>Fired&nbsp;when&nbsp;a&nbsp;"Newexten"&nbsp;event&nbsp;is&nbsp;seen.</tt></dd></dl>
-
-<dl><dt><a name="Manager-on_Newstate"><strong>on_Newstate</strong></a>(self, event)</dt><dd><tt>Fired&nbsp;when&nbsp;a&nbsp;"Newstate"&nbsp;event&nbsp;is&nbsp;seen.</tt></dd></dl>
-
-<dl><dt><a name="Manager-on_ParkedCall"><strong>on_ParkedCall</strong></a>(self, event)</dt><dd><tt>Fired&nbsp;when&nbsp;a&nbsp;"ParkedCall"&nbsp;event&nbsp;is&nbsp;seen.</tt></dd></dl>
-
-<dl><dt><a name="Manager-on_ParkedCallsComplete"><strong>on_ParkedCallsComplete</strong></a>(self, event)</dt><dd><tt>Fired&nbsp;when&nbsp;a&nbsp;"ParkedCallsComplete"&nbsp;event&nbsp;is&nbsp;seen.</tt></dd></dl>
-
-<dl><dt><a name="Manager-on_QueueEntry"><strong>on_QueueEntry</strong></a>(self, event)</dt><dd><tt>Fired&nbsp;when&nbsp;a&nbsp;"QueueEntry"&nbsp;event&nbsp;is&nbsp;seen.</tt></dd></dl>
-
-<dl><dt><a name="Manager-on_QueueMember"><strong>on_QueueMember</strong></a>(self, event)</dt><dd><tt>Fired&nbsp;when&nbsp;a&nbsp;"QueueMember"&nbsp;event&nbsp;is&nbsp;seen.</tt></dd></dl>
-
-<dl><dt><a name="Manager-on_QueueParams"><strong>on_QueueParams</strong></a>(self, event)</dt><dd><tt>Fired&nbsp;when&nbsp;a&nbsp;"QueueParams"&nbsp;event&nbsp;is&nbsp;seen.</tt></dd></dl>
-
-<dl><dt><a name="Manager-on_QueueStatusEnd"><strong>on_QueueStatusEnd</strong></a>(self, event)</dt><dd><tt>Fired&nbsp;when&nbsp;a&nbsp;"QueueStatusEnd"&nbsp;event&nbsp;is&nbsp;seen.</tt></dd></dl>
-
-<dl><dt><a name="Manager-on_Reload"><strong>on_Reload</strong></a>(self, event)</dt><dd><tt>Fired&nbsp;when&nbsp;a&nbsp;"Reload"&nbsp;event&nbsp;is&nbsp;seen.</tt></dd></dl>
-
-<dl><dt><a name="Manager-on_Rename"><strong>on_Rename</strong></a>(self, event)</dt><dd><tt>Fired&nbsp;when&nbsp;a&nbsp;"Rename"&nbsp;event&nbsp;is&nbsp;seen.</tt></dd></dl>
-
-<dl><dt><a name="Manager-on_Response"><strong>on_Response</strong></a>(self, event)</dt><dd><tt>Fired&nbsp;when&nbsp;a&nbsp;response&nbsp;is&nbsp;sent&nbsp;in&nbsp;reply&nbsp;to&nbsp;an&nbsp;action.</tt></dd></dl>
-
-<dl><dt><a name="Manager-on_Status"><strong>on_Status</strong></a>(self, event)</dt><dd><tt>Fired&nbsp;when&nbsp;a&nbsp;"Status"&nbsp;event&nbsp;is&nbsp;seen.</tt></dd></dl>
-
-<dl><dt><a name="Manager-on_StatusComplete"><strong>on_StatusComplete</strong></a>(self, event)</dt><dd><tt>Fired&nbsp;when&nbsp;a&nbsp;"StatusComplete"&nbsp;event&nbsp;is&nbsp;seen.</tt></dd></dl>
-
-<dl><dt><a name="Manager-on_Unlink"><strong>on_Unlink</strong></a>(self, event)</dt><dd><tt>Fired&nbsp;when&nbsp;an&nbsp;"Unlink"&nbsp;event&nbsp;is&nbsp;seen.</tt></dd></dl>
+<dl><dt><strong>__weakref__</strong> = &lt;attribute '__weakref__' of 'InstanceLogger' objects&gt;<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;<a href="__builtin__.html#object">object</a>&nbsp;(if&nbsp;defined)</tt></dl>
 
 <hr>
 Methods inherited from <a href="Asterisk.Manager.html#CoreActions">CoreActions</a>:<br>
@@ -815,7 +634,7 @@ Methods inherited from <a href="Asterisk.Manager.html#CoreActions">CoreActions</
 
 <dl><dt><a name="Manager-ExtensionState"><strong>ExtensionState</strong></a>(self, context, extension)</dt><dd><tt>Return&nbsp;the&nbsp;state&nbsp;of&nbsp;&lt;extension&gt;&nbsp;in&nbsp;&lt;context&gt;.</tt></dd></dl>
 
-<dl><dt><a name="Manager-Getvar"><strong>Getvar</strong></a>(self, channel, variable, default<font color="#909090">=[None]</font>)</dt><dd><tt>Return&nbsp;the&nbsp;value&nbsp;of&nbsp;&lt;channel&gt;'s&nbsp;&lt;variable&gt;,&nbsp;or&nbsp;&lt;default&gt;&nbsp;if&nbsp;&lt;variable&gt;<br>
+<dl><dt><a name="Manager-Getvar"><strong>Getvar</strong></a>(self, channel, variable, default<font color="#909090">=&lt;Asterisk.Util.Unspecified&gt;</font>)</dt><dd><tt>Return&nbsp;the&nbsp;value&nbsp;of&nbsp;&lt;channel&gt;'s&nbsp;&lt;variable&gt;,&nbsp;or&nbsp;&lt;default&gt;&nbsp;if&nbsp;&lt;variable&gt;<br>
 is&nbsp;not&nbsp;set.</tt></dd></dl>
 
 <dl><dt><a name="Manager-Hangup"><strong>Hangup</strong></a>(self, channel)</dt><dd><tt>Hangup&nbsp;&lt;channel&gt;.</tt></dd></dl>
@@ -877,12 +696,6 @@ optionally&nbsp;bridging&nbsp;with&nbsp;&lt;channel2&gt;</tt></dd></dl>
 <dl><dt><a name="Manager-StopMonitor"><strong>StopMonitor</strong></a>(self, channel)</dt><dd><tt>Stop&nbsp;monitoring&nbsp;of&nbsp;&lt;channel&gt;.</tt></dd></dl>
 
 <hr>
-Methods inherited from <a href="Asterisk.Manager.html#ZapataEventHandlers">ZapataEventHandlers</a>:<br>
-<dl><dt><a name="Manager-on_ZapShowChannels"><strong>on_ZapShowChannels</strong></a>(self, event)</dt><dd><tt>Fired&nbsp;when&nbsp;a&nbsp;"ZapShowChannels"&nbsp;event&nbsp;is&nbsp;seen.</tt></dd></dl>
-
-<dl><dt><a name="Manager-on_ZapShowChannelsComplete"><strong>on_ZapShowChannelsComplete</strong></a>(self, event)</dt><dd><tt>Fired&nbsp;when&nbsp;a&nbsp;"ZapShowChannels"&nbsp;event&nbsp;is&nbsp;seen.</tt></dd></dl>
-
-<hr>
 Methods inherited from <a href="Asterisk.Manager.html#ZapataActions">ZapataActions</a>:<br>
 <dl><dt><a name="Manager-ZapDNDoff"><strong>ZapDNDoff</strong></a>(self, channel)</dt><dd><tt>Disable&nbsp;DND&nbsp;status&nbsp;on&nbsp;Zapata&nbsp;driver&nbsp;&lt;channel&gt;.</tt></dd></dl>
 
@@ -926,6 +739,80 @@ Methods inherited from <a href="exceptions.html#Exception">exceptions.Exception<
 <table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
 <tr bgcolor="#ffc8d8">
 <td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="ZapChannel">class <strong>ZapChannel</strong></a>(<a href="Asterisk.Manager.html#BaseChannel">BaseChannel</a>)</font></td></tr>
+    
+<tr><td bgcolor="#ffc8d8"><tt>&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="Asterisk.Manager.html#ZapChannel">ZapChannel</a></dd>
+<dd><a href="Asterisk.Manager.html#BaseChannel">BaseChannel</a></dd>
+<dd><a href="Asterisk.Logging.html#InstanceLogger">Asterisk.Logging.InstanceLogger</a></dd>
+<dd><a href="__builtin__.html#object">__builtin__.object</a></dd>
+</dl>
+<hr>
+Methods defined here:<br>
+<dl><dt><a name="ZapChannel-ZapDNDoff"><strong>ZapDNDoff</strong></a>(self)</dt><dd><tt>Disable&nbsp;DND&nbsp;status&nbsp;on&nbsp;this&nbsp;Zapata&nbsp;driver&nbsp;channel.</tt></dd></dl>
+
+<dl><dt><a name="ZapChannel-ZapDNDon"><strong>ZapDNDon</strong></a>(self)</dt><dd><tt>Enable&nbsp;DND&nbsp;status&nbsp;on&nbsp;this&nbsp;Zapata&nbsp;driver&nbsp;channel.</tt></dd></dl>
+
+<dl><dt><a name="ZapChannel-ZapDialOffhook"><strong>ZapDialOffhook</strong></a>(self, number)</dt><dd><tt>Off-hook&nbsp;dial&nbsp;&lt;number&gt;&nbsp;on&nbsp;this&nbsp;Zapata&nbsp;driver&nbsp;channel.</tt></dd></dl>
+
+<dl><dt><a name="ZapChannel-ZapHangup"><strong>ZapHangup</strong></a>(self)</dt><dd><tt>Hangup&nbsp;this&nbsp;Zapata&nbsp;driver&nbsp;channel.</tt></dd></dl>
+
+<dl><dt><a name="ZapChannel-ZapTransfer"><strong>ZapTransfer</strong></a>(self)</dt><dd><tt>Transfer&nbsp;this&nbsp;Zapata&nbsp;driver&nbsp;channel.</tt></dd></dl>
+
+<hr>
+Methods inherited from <a href="Asterisk.Manager.html#BaseChannel">BaseChannel</a>:<br>
+<dl><dt><a name="ZapChannel-AbsoluteTimeout"><strong>AbsoluteTimeout</strong></a>(self, timeout)</dt><dd><tt>Set&nbsp;the&nbsp;absolute&nbsp;timeout&nbsp;of&nbsp;this&nbsp;channel&nbsp;to&nbsp;&lt;timeout&gt;.</tt></dd></dl>
+
+<dl><dt><a name="ZapChannel-ChangeMonitor"><strong>ChangeMonitor</strong></a>(self, pathname)</dt><dd><tt>Change&nbsp;the&nbsp;monitor&nbsp;filename&nbsp;of&nbsp;this&nbsp;channel&nbsp;to&nbsp;&lt;pathname&gt;.</tt></dd></dl>
+
+<dl><dt><a name="ZapChannel-Getvar"><strong>Getvar</strong></a>(self, variable, default<font color="#909090">=&lt;Asterisk.Util.Unspecified&gt;</font>)</dt><dd><tt>Return&nbsp;the&nbsp;value&nbsp;of&nbsp;this&nbsp;channel's&nbsp;&lt;variable&gt;,&nbsp;or&nbsp;&lt;default&gt;&nbsp;if&nbsp;variable<br>
+is&nbsp;not&nbsp;set.</tt></dd></dl>
+
+<dl><dt><a name="ZapChannel-Hangup"><strong>Hangup</strong></a>(self)</dt><dd><tt>Hangup&nbsp;this&nbsp;channel.</tt></dd></dl>
+
+<dl><dt><a name="ZapChannel-Monitor"><strong>Monitor</strong></a>(self, pathname, format, mix)</dt><dd><tt>Begin&nbsp;monitoring&nbsp;of&nbsp;this&nbsp;channel&nbsp;into&nbsp;&lt;pathname&gt;&nbsp;using&nbsp;&lt;format&gt;.</tt></dd></dl>
+
+<dl><dt><a name="ZapChannel-Redirect"><strong>Redirect</strong></a>(self, context, extension<font color="#909090">='s'</font>, priority<font color="#909090">=1</font>, channel2<font color="#909090">=None</font>)</dt><dd><tt>Redirect&nbsp;this&nbsp;channel&nbsp;to&nbsp;&lt;priority&gt;&nbsp;of&nbsp;&lt;extension&gt;&nbsp;in&nbsp;&lt;context&gt;,<br>
+optionally&nbsp;bridging&nbsp;with&nbsp;&lt;channel2&gt;.</tt></dd></dl>
+
+<dl><dt><a name="ZapChannel-SetCDRUserField"><strong>SetCDRUserField</strong></a>(data, append<font color="#909090">=False</font>)</dt><dd><tt>Append&nbsp;or&nbsp;replace&nbsp;this&nbsp;channel's&nbsp;CDR&nbsp;user&nbsp;field&nbsp;with&nbsp;&lt;data&gt;.</tt></dd></dl>
+
+<dl><dt><a name="ZapChannel-Setvar"><strong>Setvar</strong></a>(self, variable, value)</dt><dd><tt>Set&nbsp;the&nbsp;&lt;variable&gt;&nbsp;in&nbsp;this&nbsp;channel&nbsp;to&nbsp;&lt;value&gt;.</tt></dd></dl>
+
+<dl><dt><a name="ZapChannel-Status"><strong>Status</strong></a>(self)</dt><dd><tt>Return&nbsp;the&nbsp;<a href="#ZapChannel-Status">Status</a>()&nbsp;dict&nbsp;for&nbsp;this&nbsp;channel&nbsp;(wasteful!).</tt></dd></dl>
+
+<dl><dt><a name="ZapChannel-StopMonitor"><strong>StopMonitor</strong></a>(self)</dt><dd><tt>Stop&nbsp;monitoring&nbsp;of&nbsp;this&nbsp;channel.</tt></dd></dl>
+
+<dl><dt><a name="ZapChannel-__getitem__"><strong>__getitem__</strong></a>(self, key)</dt><dd><tt>Fetch&nbsp;&lt;key&gt;&nbsp;as&nbsp;a&nbsp;variable&nbsp;from&nbsp;this&nbsp;channel.</tt></dd></dl>
+
+<dl><dt><a name="ZapChannel-__init__"><strong>__init__</strong></a>(self, manager, channel_id)</dt><dd><tt>Initialise&nbsp;a&nbsp;new&nbsp;Channel&nbsp;<a href="__builtin__.html#object">object</a>&nbsp;belonging&nbsp;to&nbsp;&lt;channel_id&gt;&nbsp;reachable&nbsp;via<br>
+<a href="#BaseManager">BaseManager</a>&nbsp;&lt;manager&gt;.</tt></dd></dl>
+
+<dl><dt><a name="ZapChannel-__repr__"><strong>__repr__</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="ZapChannel-__setitem__"><strong>__setitem__</strong></a>(self, key, value)</dt><dd><tt>Set&nbsp;&lt;key&gt;&nbsp;as&nbsp;a&nbsp;variable&nbsp;on&nbsp;this&nbsp;channel.</tt></dd></dl>
+
+<dl><dt><a name="ZapChannel-__str__"><strong>__str__</strong></a>(self)</dt></dl>
+
+<hr>
+Methods inherited from <a href="Asterisk.Logging.html#InstanceLogger">Asterisk.Logging.InstanceLogger</a>:<br>
+<dl><dt><a name="ZapChannel-getLogger"><strong>getLogger</strong></a>(self)</dt><dd><tt>Return&nbsp;the&nbsp;Logger&nbsp;instance&nbsp;which&nbsp;receives&nbsp;debug&nbsp;messages&nbsp;for&nbsp;this&nbsp;class<br>
+instance.</tt></dd></dl>
+
+<dl><dt><a name="ZapChannel-getLoggerClass"><strong>getLoggerClass</strong></a>(self)</dt><dd><tt>Return&nbsp;the&nbsp;namespace&nbsp;where&nbsp;debug&nbsp;messages&nbsp;for&nbsp;all&nbsp;instances&nbsp;of&nbsp;this<br>
+class&nbsp;are&nbsp;sent.</tt></dd></dl>
+
+<hr>
+Data and other attributes inherited from <a href="Asterisk.Logging.html#InstanceLogger">Asterisk.Logging.InstanceLogger</a>:<br>
+<dl><dt><strong>__dict__</strong> = &lt;dictproxy object&gt;<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dl>
+
+<dl><dt><strong>__weakref__</strong> = &lt;attribute '__weakref__' of 'InstanceLogger' objects&gt;<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;<a href="__builtin__.html#object">object</a>&nbsp;(if&nbsp;defined)</tt></dl>
+
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
 <font color="#000000" face="helvetica, arial"><a name="ZapataActions">class <strong>ZapataActions</strong></a>(<a href="__builtin__.html#object">__builtin__.object</a>)</font></td></tr>
     
 <tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
@@ -949,26 +836,6 @@ Data and other attributes defined here:<br>
 <dl><dt><strong>__dict__</strong> = &lt;dictproxy object&gt;<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dl>
 
 <dl><dt><strong>__weakref__</strong> = &lt;attribute '__weakref__' of 'ZapataActions' objects&gt;<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;<a href="__builtin__.html#object">object</a>&nbsp;(if&nbsp;defined)</tt></dl>
-
-</td></tr></table> <p>
-<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
-<tr bgcolor="#ffc8d8">
-<td colspan=3 valign=bottom>&nbsp;<br>
-<font color="#000000" face="helvetica, arial"><a name="ZapataEventHandlers">class <strong>ZapataEventHandlers</strong></a>(<a href="__builtin__.html#object">__builtin__.object</a>)</font></td></tr>
-    
-<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
-<td colspan=2><tt>Provide&nbsp;placeholders&nbsp;for&nbsp;events&nbsp;generated&nbsp;by&nbsp;the&nbsp;Zapata&nbsp;Driver.<br>&nbsp;</tt></td></tr>
-<tr><td>&nbsp;</td>
-<td width="100%">Methods defined here:<br>
-<dl><dt><a name="ZapataEventHandlers-on_ZapShowChannels"><strong>on_ZapShowChannels</strong></a>(self, event)</dt><dd><tt>Fired&nbsp;when&nbsp;a&nbsp;"ZapShowChannels"&nbsp;event&nbsp;is&nbsp;seen.</tt></dd></dl>
-
-<dl><dt><a name="ZapataEventHandlers-on_ZapShowChannelsComplete"><strong>on_ZapShowChannelsComplete</strong></a>(self, event)</dt><dd><tt>Fired&nbsp;when&nbsp;a&nbsp;"ZapShowChannels"&nbsp;event&nbsp;is&nbsp;seen.</tt></dd></dl>
-
-<hr>
-Data and other attributes defined here:<br>
-<dl><dt><strong>__dict__</strong> = &lt;dictproxy object&gt;<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dl>
-
-<dl><dt><strong>__weakref__</strong> = &lt;attribute '__weakref__' of 'ZapataEventHandlers' objects&gt;<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;<a href="__builtin__.html#object">object</a>&nbsp;(if&nbsp;defined)</tt></dl>
 
 </td></tr></table></td></tr></table><p>
 <table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
