@@ -67,6 +67,15 @@ import Asterisk, Asterisk.Util
 
 
 
+# Configure the logging module.
+
+logging.PACKET = logging.DEBUG  - 1
+logging.IO     = logging.PACKET - 1
+logging.addLevelName(logging.PACKET, 'PACKET')
+logging.addLevelName(logging.IO,     'IO')
+
+
+
 
 # Your ParentBaseException class should provide a __str__ method that combined
 # _prefix and _error as  ('%s: %s' % (_prefix, _error) or similar.
@@ -113,10 +122,116 @@ class PermissionDenied(BaseException):
 
 
 
+class Channel(object):
+    '''
+    Represents a living Asterisk channel, with shortcut methods for operating
+    on it. The object acts as a mapping, ie. you may get and set items of it.
+    This translates to Getvar and Setvar actions on the channel.
+    '''
+
+    # Unique object used for testing for an unspecified argument where None is
+    # unsuitable. We use this as it looks nice in pydoc output.
+    _ChannelUnspecified = [None]
+
+    def __init__(self, manager, channel_id):
+        '''
+        Initialise a new Channel object belonging to <channel_id> reachable via
+        BaseManager <manager>.
+        '''
+
+        self.manager = manager
+        self.channel_id = channel_id
+
+    def __str__(self):
+        return self.channel_id
+
+    def __repr__(self):
+        return '<%s.%s referencing channel %r of %r>' %\
+            (self.__class__.__module__, self.__class__.__name__,
+             self.channel_id, self.manager)
+
+    def AbsoluteTimeout(self, timeout):
+        'Set the absolute timeout of this channel to <timeout>.'
+        return self.manager.AbsoluteTimeout(str(self), timeout)
+
+    def ChangeMonitor(self, pathname):
+        'Change the monitor filename of this channel to <pathname>.'
+        return self.manager.ChangeMonitor(str(self), pathname)
+
+    def Getvar(self, variable, default = _ChannelUnspecified):
+        '''
+        Return the value of this channel's <variable>, or <default> if variable
+        is not set.
+        '''
+        if default is self._ChannelUnspecified:
+            return self.manager.Getvar(str(self), variable)
+        return self.manager.Getvar(str(self), variable, default)
+
+    def Hangup(self):
+        'Hangup this channel.'
+        return self.manager.Hangup(str(self))
+
+    def Monitor(self, pathname, format, mix):
+        'Begin monitoring of this channel into <pathname> using <format>.'
+        return self.manager.Monitor(str(self), pathname, format, mix)
+
+    def Redirect(self, context, extension = 's', priority = 1, channel2 = None):
+        '''
+        Redirect this channel to <priority> of <extension> in <context>,
+        optionally bridging with <channel2>.
+        '''
+        return self.manager.Redirect(str(self), context, extension, priority, channel2)
+
+    def SetCDRUserField(data, append = False):
+        "Append or replace this channel's CDR user field with <data>."
+        return self.manager.SetCDRUserField(str(self), data, append)
+
+    def Setvar(self, variable, value):
+        'Set the <variable> in this channel to <value>.'
+        return self.manager.Setvar(variable, value)
+
+    def Status(self):
+        'Return the Status() dict for this channel (wasteful!).'
+        return self.manager.Status()[self.channel_id]
+
+    def StopMonitor(self):
+        'Stop monitoring of this channel.'
+        return self.manager.StopMonitor(str(self))
+
+    def __getitem__(self, key):
+        'Fetch <key> as a variable from this channel.'
+        return self.Getvar(key)
+
+    def __setitem__(self, key, value):
+        'Set <key> as a variable on this channel.'
+        return self.Setvar(key, value)
+
+
+
+
 class BaseManager(object):
     'Base protocol implementation for the Asterisk Manager API.'
 
     _AST_BANNER = 'Asterisk Call Manager/1.0\r\n'
+
+
+    def getLoggerClass(self):
+        '''
+        Return the namespace where debug messages for all instances of this
+        class are sent.
+        '''
+
+        return '%s.%s' % (self.__module__, self.__class__.__name__)
+
+
+    def getLogger(self):
+        '''
+        Return the Logger instance which receives debug messages for this class
+        instance.
+        '''
+
+        log_name = self.getLoggerClass() + '.' + str(id(self))
+        return logging.getLogger(log_name)
 
 
     def __init__(self, address, username, secret, listen_events = True):
@@ -131,11 +246,22 @@ class BaseManager(object):
         self.secret = secret
         self.listen_events = listen_events
 
-        log_name = self.__module__ + '.' + self.__class__.__name__
 
-        self.log = logging.getLogger(log_name)
-        self.iolog = logging.getLogger(log_name + '.IO')
-        self.log.debug('In Asterisk.Manager.BaseManager.__init__()')
+        self.log = self.getLogger()
+        self.log.debug('Initialising.')
+
+
+        # Configure logging:
+
+        def _packetlog(msg, *args, **kwargs):
+            self.log.log(logging.PACKET, msg, *args, **kwargs)
+
+        def _iolog(msg, *args, **kwargs):
+            self.log.log(logging.IO, msg, *args, **kwargs)
+
+        self._iolog = _iolog
+        self._packetlog = _packetlog
+
 
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.connect(address)
@@ -145,6 +271,12 @@ class BaseManager(object):
         self.response_buffer = []
 
         self._authenticate()
+
+
+    def _get_channel(self, channel_id):
+        'Return a channel object for the given <channel_id>.'
+
+        return Channel(self, channel_id)
 
 
     def _authenticate(self):
@@ -192,12 +324,14 @@ class BaseManager(object):
             [ lines.append('%s: %s' % item) for item in data.iteritems()
                 if item[1] is not None ]
 
+        self._packetlog('write_action: %r', lines)
+
         for line in lines:
             self.file.write(line + '\r\n')
-            self.iolog.debug('_write_action: send %r', line + '\r\n')
+            self._iolog('_write_action: send %r', line + '\r\n')
 
         self.file.write('\r\n')
-        self.iolog.debug('_write_action: send: %r', '\r\n')
+        self._iolog('_write_action: send: %r', '\r\n')
         return id
 
 
@@ -217,7 +351,7 @@ class BaseManager(object):
 
         while True:
             line = self.file.readline().rstrip()
-            self.iolog.debug('_read_response_follows: recv %r', line)
+            self._iolog('_read_response_follows: recv %r', line)
             line_nr += 1
 
             if line_nr == 1 and line.startswith('ActionID: '):
@@ -247,13 +381,14 @@ class BaseManager(object):
 
         while True:
             line = self.file.readline().rstrip()
-            self.iolog.debug('_read_packet: recv %r', line)
+            self._iolog('_read_packet: recv %r', line)
 
             if not line:
                 if not packet:
                     raise GoneAwayError('Asterisk Manager connection has gone away.')
 
-                self.log.debug('_read_packet() completed: %r', packet)
+                self._packetlog('_read_packet: %r', packet)
+                self.log.debug('_read_packet() completed.')
                 return packet
 
             if line.count(':') == 1 and line[-1] == ':': # Empty field:
@@ -275,6 +410,7 @@ class BaseManager(object):
             self.response_buffer.append(packet)
 
         elif 'Event' in packet:
+            self._translate_event(packet)
             self.log.debug('_dispatch_packet() dealing with event.')
 
             # Specific handler:
@@ -295,8 +431,15 @@ class BaseManager(object):
             raise InternalError('Unknown packet type detected: %r', packet)
 
 
-    def _raise_failure(self, packet, success = None):
-        'Raise an error if the reponse packet reports failure.'
+    def _translate_response(self, packet, success = None):
+        '''
+        Raise an error if the reponse packet reports failure. Convert any
+        channel identifiers to their equivalent objects using _get_channel().
+        '''
+
+        for key in ('Channel', 'Channel1', 'Channel2'):
+            if key in packet:
+                packet[key] = self._get_channel(packet[key])
 
         if packet.Response in ('Success', 'Follows', 'Pong'):
             return packet
@@ -305,6 +448,16 @@ class BaseManager(object):
             raise PermissionDenied
 
         raise ActionFailed(packet.Message)
+
+
+    def _translate_event(self, event):
+        '''
+        Translate any objects discovered in <event> to Python types.
+        '''
+
+        for key in ('Channel', 'Channel1', 'Channel2'):
+            if key in event:
+                event[key] = self._get_channel(event[key])
 
 
     def close(self):
@@ -541,7 +694,7 @@ class CoreActions(object):
             'Timeout': int(timeout)
         })
 
-        self._raise_failure(self.read_response(id))
+        self._translate_response(self.read_response(id))
 
 
     def ChangeMonitor(self, channel, pathname):
@@ -552,21 +705,21 @@ class CoreActions(object):
             'File': pathname
         })
 
-        self._raise_failure(self.read_response(id))
+        self._translate_response(self.read_response(id))
 
 
     def Command(self, command):
         'Execute console command <command> and return its output lines.'
 
         id = self._write_action('Command', {'Command': command})
-        return self._raise_failure(self.read_response(id))['Lines']
+        return self._translate_response(self.read_response(id))['Lines']
 
 
     def Events(self, categories):
         'Filter received events to only those in the list <categories>.'
 
         id = self._write_action('Events', { 'EventMask': ','.join(categories) })
-        return self._raise_failure(self.read_response(id))
+        return self._translate_response(self.read_response(id))
 
 
     def ExtensionState(self, context, extension):
@@ -577,7 +730,7 @@ class CoreActions(object):
             'Context': context,
             'Exten': extension
         })
-        return self._raise_failure(self.read_response(id))
+        return self._translate_response(self.read_response(id))
 
 
     def Getvar(self, channel, variable, default = _CoreActionsUnspecified):
@@ -593,7 +746,7 @@ class CoreActions(object):
             'Variable': variable
         })
 
-        response = self._raise_failure(self.read_response(id))
+        response = self._translate_response(self.read_response(id))
         value = response[variable]
 
         if value == '(null)':
@@ -611,14 +764,14 @@ class CoreActions(object):
         'Hangup <channel>.'
 
         id = self._write_action('Hangup', { 'Channel': channel })
-        return self._raise_failure(self.read_response(id))
+        return self._translate_response(self.read_response(id))
 
 
     def ListCommands(self):
         'Return a dict of all available <action> => <desc> items.'
 
         id = self._write_action('ListCommands')
-        commands = self._raise_failure(self.read_response(id))
+        commands = self._translate_response(self.read_response(id))
         del commands['Response']
         return commands
 
@@ -634,7 +787,7 @@ class CoreActions(object):
         # TODO: this can sum multiple mailboxes too.
 
         id = self._write_action('MailboxCount', { 'Mailbox': mailbox })
-        result = self._raise_failure(self.read_response(id))
+        result = self._translate_response(self.read_response(id))
         return int(result.NewMessages), int(result.OldMessages)
 
 
@@ -642,7 +795,7 @@ class CoreActions(object):
         'Return the number of messages in <mailbox>.'
 
         id = self._write_action('MailboxStatus', { 'Mailbox': mailbox })
-        return int(self._raise_failure(self.read_response(id))['Waiting'])
+        return int(self._translate_response(self.read_response(id))['Waiting'])
 
 
     def Monitor(self, channel, pathname, format, mix):
@@ -655,7 +808,7 @@ class CoreActions(object):
             'Mix': mix and 'yes' or 'no'
         })
 
-        return self._raise_failure(self.read_response(id))
+        return self._translate_response(self.read_response(id))
 
 
     def Originate(self, channel, context = None, extension = None, priority = None,
@@ -706,7 +859,7 @@ class CoreActions(object):
         }
 
         id = self._write_action('Originate', data)
-        return self._raise_failure(self.read_response(id))
+        return self._translate_response(self.read_response(id))
 
 
     def Originate2(self, channel, parameters):
@@ -723,7 +876,7 @@ class CoreActions(object):
         'Return a nested dict describing currently parked calls.'
 
         id = self._write_action('ParkedCalls')
-        self._raise_failure(self.read_response(id))
+        self._translate_response(self.read_response(id))
         parked = {}
 
         def ParkedCall(self, event):
@@ -752,7 +905,7 @@ class CoreActions(object):
         'No-op to ensure the PBX is still there and keep the connection alive.'
 
         id = self._write_action('Ping')
-        return self._raise_failure(self.read_response(id))
+        return self._translate_response(self.read_response(id))
 
 
     def QueueAdd(self, queue, interface, penalty = 0):
@@ -764,7 +917,7 @@ class CoreActions(object):
             'Penalty': str(int(penalty))
         })
 
-        return self._raise_failure(self.read_response(id))
+        return self._translate_response(self.read_response(id))
 
 
     def QueueRemove(self, queue, interface):
@@ -775,14 +928,14 @@ class CoreActions(object):
             'Interface': interface
         })
 
-        return self._raise_failure(self.read_response(id))
+        return self._translate_response(self.read_response(id))
 
 
     def QueueStatus(self):
         'Return a complex nested dict describing queue statii.'
 
         id = self._write_action('QueueStatus')
-        self._raise_failure(self.read_response(id))
+        self._translate_response(self.read_response(id))
         queues = {}
 
         def QueueParams(self, event):
@@ -832,7 +985,7 @@ class CoreActions(object):
             'ExtraChannel': channel2 and channel2 or ''
         })
 
-        return self._raise_failure(self.read_response(id))
+        return self._translate_response(self.read_response(id))
 
 
     def SetCDRUserField(self, channel, data, append = False):
@@ -844,7 +997,7 @@ class CoreActions(object):
             'Append': append and 'yes' or 'no'
         })
 
-        return self._raise_failure(self.read_response(id))
+        return self._translate_response(self.read_response(id))
 
 
     def Setvar(self, channel, variable, value):
@@ -856,14 +1009,14 @@ class CoreActions(object):
             'Value': value
         })
 
-        return self._raise_failure(self.read_response(id))
+        return self._translate_response(self.read_response(id))
  
 
     def Status(self):
         'Return a nested dict of channel statii.'
 
         id = self._write_action('Status')
-        self._raise_failure(self.read_response(id))
+        self._translate_response(self.read_response(id))
         channels = {}
 
         def Status(self, event):
@@ -892,7 +1045,7 @@ class CoreActions(object):
         'Stop monitoring of <channel>.'
 
         id = self._write_action('StopMonitor', { 'Channel': channel })
-        return self._raise_failure(self.read_response(id))
+        return self._translate_response(self.read_response(id))
 
 
 
@@ -922,35 +1075,35 @@ class ZapataActions(object):
             'Number': number
         })
 
-        return self._raise_failure(self.read_response(id))
+        return self._translate_response(self.read_response(id))
 
 
     def ZapDNDoff(self, channel):
         'Disable DND status on Zapata driver <channel>.'
 
         id = self._write_action('ZapDNDoff', { 'ZapChannel': str(int(channel)) })
-        return self._raise_failure(self.read_response(id))
+        return self._translate_response(self.read_response(id))
 
 
     def ZapDNDon(self, channel):
         'Enable DND status on Zapata driver <channel>.'
 
         id = self._write_action('ZapDNDon', { 'ZapChannel': str(int(channel)) })
-        return self._raise_failure(self.read_response(id))
+        return self._translate_response(self.read_response(id))
 
 
     def ZapHangup(self, channel):
         'Hangup Zapata driver <channel>.'
 
         id = self._write_action('ZapHangup', { 'ZapChannel': str(int(channel)) })
-        return self._raise_failure(self.read_response(id))
+        return self._translate_response(self.read_response(id))
 
 
     def ZapShowChannels(self):
         'Return a nested dict of Zapata driver channel statii.'
 
         id = self._write_action('ZapShowChannels')
-        self._raise_failure(self.read_response(id))
+        self._translate_response(self.read_response(id))
         channels = {}
 
         def ZapShowChannels(self, event):
@@ -979,7 +1132,7 @@ class ZapataActions(object):
         # TODO: Does nothing on X100P. What is this for?
 
         id = self._write_action('ZapTransfer', { 'ZapChannel': str(int(channel)) })
-        return self._raise_failure(self.read_response(id))
+        return self._translate_response(self.read_response(id))
 
 
 

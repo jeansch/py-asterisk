@@ -8,3 +8,12 @@ Todo List For py-Asterisk.
     - Status/ParkedCalls/ShowZapChannels/etc. can only be used asyncronously,
       they cannot be used to simply trigger sending of events. This is wrong,
       but how do I fix?
+
+    - Automatic state tracking of some sort for richly typed object
+      representations - ie. automatically Channel.state from the Manager
+      object so that channels may be passed around irrelevant of their parent
+      Manager object, and may be used without raising exceptions (for eg. when
+      a channel no longer exists).
+
+    - Go through and make stuff asynchronous again.
+
