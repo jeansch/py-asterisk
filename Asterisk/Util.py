@@ -14,3 +14,27 @@ class AttributeDict(dict):
 
     def __setattr__(self, key, value):
         self[key] = value
+
+
+
+
+def dump_packet(packet, file):
+    '''
+    Dump a packet in human readable form to file-like object <file>.
+    '''
+
+    packet = dict(packet)
+
+    if 'Event' in packet:
+        file.write('-- %s\n' % packet.pop('Event'))
+    else:
+        file.write('-- Response: %s\n' % packet.pop('Response'))
+
+
+    packet = packet.items()
+    packet.sort()
+
+    for tuple in packet:
+        file.write('   %s: %s\n' % tuple)
+
+    file.write('\n')

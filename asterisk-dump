@@ -10,7 +10,7 @@ __id__      = '$Id$'
 import sys, time, socket
 from Asterisk.Config import get_config
 from Asterisk.Manager import CoreManager
-import Asterisk.Manager
+import Asterisk.Manager, Asterisk.Util
 
 
 
@@ -21,13 +21,7 @@ class MyManager(CoreManager):
     '''
 
     def on_Event(self, event):
-        event_name = event.pop('Event')
-        event = event.items()
-        event.sort()
-
-        sys.stdout.write('-- %s -- \n' % (event_name,))
-        [ sys.stdout.write('%s: %s\n' % x) for x in event ]
-        sys.stdout.write('\n')
+        Asterisk.Util.dump_packet(event, sys.stdout)
 
 
 
