@@ -332,6 +332,36 @@ class BaseManager(object):
             self._dispatch_packet(packet)
 
 
+    def replace_events(self, events):
+        '''
+        Given a list of functions, temporarily replace on_<funcname> attributes
+        to self using those functions. Return a mapping containing undo
+        information.
+        '''
+
+        output = {}
+        for handler in events:
+            handler_name = 'on_' + handler.__name__
+            output[handler_name] = getattr(self, handler_name, None)
+            setattr(self, handler_name,
+                instancemethod(handler, self, self.__class__))
+
+        return output
+
+
+    def undo_events(self, mapping):
+        '''
+        Given a mapping (as returned by _save_methods), update self with those
+        methods. Method names with a value of None are ignored.
+        '''
+
+        for name, method in mapping.iteritems():
+            if method is None:
+                del self.__dict__[name]
+            else:
+                setattr(self, name, method)
+
+
 
 
 class CoreEventHandlers(object):
@@ -445,36 +475,6 @@ class CoreActions(object):
     Provide methods for Manager API actions exposed by the core Asterisk
     engine.
     '''
-
-    def replace_events(self, events):
-        '''
-        Given a list of functions, temporarily replace on_<funcname> attributes
-        to self using those functions. Return a mapping containing undo
-        information.
-        '''
-
-        output = {}
-        for handler in events:
-            handler_name = 'on_' + handler.__name__
-            output[handler_name] = getattr(self, handler_name, None)
-            setattr(self, handler_name,
-                instancemethod(handler, self, self.__class__))
-
-        return output
-
-
-    def undo_events(self, mapping):
-        '''
-        Given a mapping (as returned by _save_methods), update self with those
-        methods. Method names with a value of None are ignored.
-        '''
-
-        for name, method in mapping.iteritems():
-            if method is None:
-                del self.__dict__[name]
-            else:
-                setattr(self, name, method)
-
 
     def AbsoluteTimeout(self, channel, timeout):
         'Set the absolute timeout of <channel> to <timeout>.'
