@@ -818,7 +818,7 @@ class CoreActions(object):
     Queues = QueueStatus
 
 
-    def Redirect(self, channel, context, extension, priority, channel2 = None):
+    def Redirect(self, channel, context, extension = 's', priority = 1, channel2 = None):
         '''
         Redirect <channel> to <priority> of <extension> in <context>,
         optionally bridging with <channel2>

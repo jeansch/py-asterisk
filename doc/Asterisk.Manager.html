@@ -74,9 +74,10 @@ Asynchronous&nbsp;Usage:<br>
     
 <tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
 <td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="Asterisk.html">Asterisk</a><br>
+</td><td width="25%" valign=top><a href="logging.html">logging</a><br>
 </td><td width="25%" valign=top><a href="socket.html">socket</a><br>
 </td><td width="25%" valign=top><a href="time.html">time</a><br>
-</td><td width="25%" valign=top></td></tr></table></td></tr></table><p>
+</td></tr></table></td></tr></table><p>
 <table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
 <tr bgcolor="#ee77aa">
 <td colspan=3 valign=bottom>&nbsp;<br>
@@ -201,8 +202,8 @@ Methods inherited from <a href="exceptions.html#Exception">exceptions.Exception<
 <td colspan=2><tt>Base&nbsp;protocol&nbsp;implementation&nbsp;for&nbsp;the&nbsp;Asterisk&nbsp;<a href="#Manager">Manager</a>&nbsp;API.<br>&nbsp;</tt></td></tr>
 <tr><td>&nbsp;</td>
 <td width="100%">Methods defined here:<br>
-<dl><dt><a name="BaseManager-__init__"><strong>__init__</strong></a>(self, hostname, port, username, secret, listen_events<font color="#909090">=True</font>)</dt><dd><tt>Provide&nbsp;communication&nbsp;methods&nbsp;for&nbsp;the&nbsp;PBX&nbsp;instance&nbsp;running&nbsp;at&nbsp;&lt;hostname&gt;&nbsp;on<br>
-&lt;port&gt;.&nbsp;Authenticate&nbsp;using&nbsp;&lt;username&gt;&nbsp;and&nbsp;&lt;secret&gt;.&nbsp;Receive&nbsp;event<br>
+<dl><dt><a name="BaseManager-__init__"><strong>__init__</strong></a>(self, address, username, secret, listen_events<font color="#909090">=True</font>)</dt><dd><tt>Provide&nbsp;communication&nbsp;methods&nbsp;for&nbsp;the&nbsp;PBX&nbsp;instance&nbsp;running&nbsp;at<br>
+&lt;address&gt;.&nbsp;Authenticate&nbsp;using&nbsp;&lt;username&gt;&nbsp;and&nbsp;&lt;secret&gt;.&nbsp;Receive&nbsp;event<br>
 information&nbsp;from&nbsp;the&nbsp;<a href="#Manager">Manager</a>&nbsp;API&nbsp;if&nbsp;&lt;listen_events&gt;&nbsp;is&nbsp;True.</tt></dd></dl>
 
 <dl><dt><a name="BaseManager-__repr__"><strong>__repr__</strong></a>(self)</dt><dd><tt>Return&nbsp;a&nbsp;string&nbsp;representation&nbsp;of&nbsp;this&nbsp;<a href="__builtin__.html#object">object</a>.</tt></dd></dl>
@@ -280,7 +281,7 @@ engine.<br>&nbsp;</tt></td></tr>
 
 <dl><dt><a name="CoreActions-ExtensionState"><strong>ExtensionState</strong></a>(self, context, extension)</dt><dd><tt>Return&nbsp;the&nbsp;state&nbsp;of&nbsp;&lt;extension&gt;&nbsp;in&nbsp;&lt;context&gt;.</tt></dd></dl>
 
-<dl><dt><a name="CoreActions-Getvar"><strong>Getvar</strong></a>(self, channel, variable, default<font color="#909090">=None</font>)</dt><dd><tt>Return&nbsp;the&nbsp;value&nbsp;of&nbsp;&lt;channel&gt;'s&nbsp;&lt;variable&gt;,&nbsp;or&nbsp;&lt;default&gt;&nbsp;if&nbsp;&lt;variable&gt;<br>
+<dl><dt><a name="CoreActions-Getvar"><strong>Getvar</strong></a>(self, channel, variable, default<font color="#909090">=[None]</font>)</dt><dd><tt>Return&nbsp;the&nbsp;value&nbsp;of&nbsp;&lt;channel&gt;'s&nbsp;&lt;variable&gt;,&nbsp;or&nbsp;&lt;default&gt;&nbsp;if&nbsp;&lt;variable&gt;<br>
 is&nbsp;not&nbsp;set.</tt></dd></dl>
 
 <dl><dt><a name="CoreActions-Hangup"><strong>Hangup</strong></a>(self, channel)</dt><dd><tt>Hangup&nbsp;&lt;channel&gt;.</tt></dd></dl>
@@ -295,7 +296,24 @@ is&nbsp;not&nbsp;set.</tt></dd></dl>
 
 <dl><dt><a name="CoreActions-Monitor"><strong>Monitor</strong></a>(self, channel, pathname, format, mix)</dt><dd><tt>Begin&nbsp;monitoring&nbsp;of&nbsp;&lt;channel&gt;&nbsp;into&nbsp;&lt;pathname&gt;&nbsp;using&nbsp;&lt;format&gt;.</tt></dd></dl>
 
-<dl><dt><a name="CoreActions-Originate"><strong>Originate</strong></a>(self, channel, **kwargs)</dt><dd><tt>Originate&nbsp;a&nbsp;call.</tt></dd></dl>
+<dl><dt><a name="CoreActions-Originate"><strong>Originate</strong></a>(self, channel, context<font color="#909090">=None</font>, extension<font color="#909090">=None</font>, priority<font color="#909090">=None</font>, application<font color="#909090">=None</font>, data<font color="#909090">=None</font>, timeout<font color="#909090">=None</font>, caller_id<font color="#909090">=None</font>, variable<font color="#909090">=None</font>, account<font color="#909090">=None</font>, async<font color="#909090">=None</font>)</dt><dd><tt><a href="#CoreActions-Originate">Originate</a>(channel,&nbsp;context&nbsp;=&nbsp;..,&nbsp;extension&nbsp;=&nbsp;..,&nbsp;priority&nbsp;=&nbsp;..[,&nbsp;...])<br>
+<a href="#CoreActions-Originate">Originate</a>(channel,&nbsp;application&nbsp;=&nbsp;..[,&nbsp;data&nbsp;=&nbsp;..[,&nbsp;...]])<br>
+&nbsp;<br>
+Originate&nbsp;a&nbsp;call&nbsp;on&nbsp;&lt;channel&gt;,&nbsp;bridging&nbsp;it&nbsp;to&nbsp;the&nbsp;specified&nbsp;dialplan<br>
+extension&nbsp;(format&nbsp;1)&nbsp;or&nbsp;application&nbsp;(format&nbsp;2).<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;context&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Dialplan&nbsp;context&nbsp;to&nbsp;bridge&nbsp;with.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;extension&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Context&nbsp;extension&nbsp;to&nbsp;bridge&nbsp;with.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;priority&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Context&nbsp;priority&nbsp;to&nbsp;bridge&nbsp;with.<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;application&gt;&nbsp;&nbsp;&nbsp;Application&nbsp;to&nbsp;bridge&nbsp;with.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;data&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Application&nbsp;parameters.<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;timeout&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Answer&nbsp;timeout&nbsp;for&nbsp;&lt;channel&gt;&nbsp;in&nbsp;milliseconds.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;caller_id&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Outgoing&nbsp;channel&nbsp;Caller&nbsp;ID.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;variable&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;channel&nbsp;variable&nbsp;to&nbsp;set&nbsp;(K=V[|K2=V2[|..]]).<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;account&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CDR&nbsp;account&nbsp;code.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;async&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Return&nbsp;successfully&nbsp;immediately.</tt></dd></dl>
 
 <dl><dt><a name="CoreActions-Originate2"><strong>Originate2</strong></a>(self, channel, parameters)</dt><dd><tt>Originate&nbsp;a&nbsp;call,&nbsp;using&nbsp;parameters&nbsp;in&nbsp;the&nbsp;mapping&nbsp;&lt;parameters&gt;.<br>
 Provided&nbsp;for&nbsp;compatibility&nbsp;with&nbsp;RPC&nbsp;bridges&nbsp;that&nbsp;do&nbsp;not&nbsp;support&nbsp;keyword<br>
@@ -313,7 +331,7 @@ arguments.</tt></dd></dl>
 
 <dl><dt><a name="CoreActions-Queues"><strong>Queues</strong></a> = <a href="#CoreActions-QueueStatus">QueueStatus</a>(self)</dt></dl>
 
-<dl><dt><a name="CoreActions-Redirect"><strong>Redirect</strong></a>(self, channel, context, extension, priority, channel2<font color="#909090">=None</font>)</dt><dd><tt>Redirect&nbsp;&lt;channel&gt;&nbsp;to&nbsp;&lt;priority&gt;&nbsp;of&nbsp;&lt;extension&gt;&nbsp;in&nbsp;&lt;context&gt;,<br>
+<dl><dt><a name="CoreActions-Redirect"><strong>Redirect</strong></a>(self, channel, context, extension<font color="#909090">='s'</font>, priority<font color="#909090">=1</font>, channel2<font color="#909090">=None</font>)</dt><dd><tt>Redirect&nbsp;&lt;channel&gt;&nbsp;to&nbsp;&lt;priority&gt;&nbsp;of&nbsp;&lt;extension&gt;&nbsp;in&nbsp;&lt;context&gt;,<br>
 optionally&nbsp;bridging&nbsp;with&nbsp;&lt;channel2&gt;</tt></dd></dl>
 
 <dl><dt><a name="CoreActions-SetCDRUserField"><strong>SetCDRUserField</strong></a>(self, channel, data, append<font color="#909090">=False</font>)</dt><dd><tt>Append&nbsp;or&nbsp;replace&nbsp;&lt;channel&gt;'s&nbsp;CDR&nbsp;user&nbsp;field&nbsp;with&nbsp;&lt;data&gt;'.</tt></dd></dl>
@@ -429,8 +447,8 @@ event&nbsp;handlers.<br>&nbsp;</tt></td></tr>
 </dl>
 <hr>
 Methods inherited from <a href="Asterisk.Manager.html#BaseManager">BaseManager</a>:<br>
-<dl><dt><a name="CoreManager-__init__"><strong>__init__</strong></a>(self, hostname, port, username, secret, listen_events<font color="#909090">=True</font>)</dt><dd><tt>Provide&nbsp;communication&nbsp;methods&nbsp;for&nbsp;the&nbsp;PBX&nbsp;instance&nbsp;running&nbsp;at&nbsp;&lt;hostname&gt;&nbsp;on<br>
-&lt;port&gt;.&nbsp;Authenticate&nbsp;using&nbsp;&lt;username&gt;&nbsp;and&nbsp;&lt;secret&gt;.&nbsp;Receive&nbsp;event<br>
+<dl><dt><a name="CoreManager-__init__"><strong>__init__</strong></a>(self, address, username, secret, listen_events<font color="#909090">=True</font>)</dt><dd><tt>Provide&nbsp;communication&nbsp;methods&nbsp;for&nbsp;the&nbsp;PBX&nbsp;instance&nbsp;running&nbsp;at<br>
+&lt;address&gt;.&nbsp;Authenticate&nbsp;using&nbsp;&lt;username&gt;&nbsp;and&nbsp;&lt;secret&gt;.&nbsp;Receive&nbsp;event<br>
 information&nbsp;from&nbsp;the&nbsp;<a href="#Manager">Manager</a>&nbsp;API&nbsp;if&nbsp;&lt;listen_events&gt;&nbsp;is&nbsp;True.</tt></dd></dl>
 
 <dl><dt><a name="CoreManager-__repr__"><strong>__repr__</strong></a>(self)</dt><dd><tt>Return&nbsp;a&nbsp;string&nbsp;representation&nbsp;of&nbsp;this&nbsp;<a href="__builtin__.html#object">object</a>.</tt></dd></dl>
@@ -472,7 +490,7 @@ Methods inherited from <a href="Asterisk.Manager.html#CoreActions">CoreActions</
 
 <dl><dt><a name="CoreManager-ExtensionState"><strong>ExtensionState</strong></a>(self, context, extension)</dt><dd><tt>Return&nbsp;the&nbsp;state&nbsp;of&nbsp;&lt;extension&gt;&nbsp;in&nbsp;&lt;context&gt;.</tt></dd></dl>
 
-<dl><dt><a name="CoreManager-Getvar"><strong>Getvar</strong></a>(self, channel, variable, default<font color="#909090">=None</font>)</dt><dd><tt>Return&nbsp;the&nbsp;value&nbsp;of&nbsp;&lt;channel&gt;'s&nbsp;&lt;variable&gt;,&nbsp;or&nbsp;&lt;default&gt;&nbsp;if&nbsp;&lt;variable&gt;<br>
+<dl><dt><a name="CoreManager-Getvar"><strong>Getvar</strong></a>(self, channel, variable, default<font color="#909090">=[None]</font>)</dt><dd><tt>Return&nbsp;the&nbsp;value&nbsp;of&nbsp;&lt;channel&gt;'s&nbsp;&lt;variable&gt;,&nbsp;or&nbsp;&lt;default&gt;&nbsp;if&nbsp;&lt;variable&gt;<br>
 is&nbsp;not&nbsp;set.</tt></dd></dl>
 
 <dl><dt><a name="CoreManager-Hangup"><strong>Hangup</strong></a>(self, channel)</dt><dd><tt>Hangup&nbsp;&lt;channel&gt;.</tt></dd></dl>
@@ -487,7 +505,24 @@ is&nbsp;not&nbsp;set.</tt></dd></dl>
 
 <dl><dt><a name="CoreManager-Monitor"><strong>Monitor</strong></a>(self, channel, pathname, format, mix)</dt><dd><tt>Begin&nbsp;monitoring&nbsp;of&nbsp;&lt;channel&gt;&nbsp;into&nbsp;&lt;pathname&gt;&nbsp;using&nbsp;&lt;format&gt;.</tt></dd></dl>
 
-<dl><dt><a name="CoreManager-Originate"><strong>Originate</strong></a>(self, channel, **kwargs)</dt><dd><tt>Originate&nbsp;a&nbsp;call.</tt></dd></dl>
+<dl><dt><a name="CoreManager-Originate"><strong>Originate</strong></a>(self, channel, context<font color="#909090">=None</font>, extension<font color="#909090">=None</font>, priority<font color="#909090">=None</font>, application<font color="#909090">=None</font>, data<font color="#909090">=None</font>, timeout<font color="#909090">=None</font>, caller_id<font color="#909090">=None</font>, variable<font color="#909090">=None</font>, account<font color="#909090">=None</font>, async<font color="#909090">=None</font>)</dt><dd><tt><a href="#CoreManager-Originate">Originate</a>(channel,&nbsp;context&nbsp;=&nbsp;..,&nbsp;extension&nbsp;=&nbsp;..,&nbsp;priority&nbsp;=&nbsp;..[,&nbsp;...])<br>
+<a href="#CoreManager-Originate">Originate</a>(channel,&nbsp;application&nbsp;=&nbsp;..[,&nbsp;data&nbsp;=&nbsp;..[,&nbsp;...]])<br>
+&nbsp;<br>
+Originate&nbsp;a&nbsp;call&nbsp;on&nbsp;&lt;channel&gt;,&nbsp;bridging&nbsp;it&nbsp;to&nbsp;the&nbsp;specified&nbsp;dialplan<br>
+extension&nbsp;(format&nbsp;1)&nbsp;or&nbsp;application&nbsp;(format&nbsp;2).<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;context&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Dialplan&nbsp;context&nbsp;to&nbsp;bridge&nbsp;with.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;extension&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Context&nbsp;extension&nbsp;to&nbsp;bridge&nbsp;with.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;priority&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Context&nbsp;priority&nbsp;to&nbsp;bridge&nbsp;with.<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;application&gt;&nbsp;&nbsp;&nbsp;Application&nbsp;to&nbsp;bridge&nbsp;with.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;data&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Application&nbsp;parameters.<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;timeout&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Answer&nbsp;timeout&nbsp;for&nbsp;&lt;channel&gt;&nbsp;in&nbsp;milliseconds.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;caller_id&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Outgoing&nbsp;channel&nbsp;Caller&nbsp;ID.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;variable&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;channel&nbsp;variable&nbsp;to&nbsp;set&nbsp;(K=V[|K2=V2[|..]]).<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;account&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CDR&nbsp;account&nbsp;code.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;async&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Return&nbsp;successfully&nbsp;immediately.</tt></dd></dl>
 
 <dl><dt><a name="CoreManager-Originate2"><strong>Originate2</strong></a>(self, channel, parameters)</dt><dd><tt>Originate&nbsp;a&nbsp;call,&nbsp;using&nbsp;parameters&nbsp;in&nbsp;the&nbsp;mapping&nbsp;&lt;parameters&gt;.<br>
 Provided&nbsp;for&nbsp;compatibility&nbsp;with&nbsp;RPC&nbsp;bridges&nbsp;that&nbsp;do&nbsp;not&nbsp;support&nbsp;keyword<br>
@@ -505,7 +540,7 @@ arguments.</tt></dd></dl>
 
 <dl><dt><a name="CoreManager-Queues"><strong>Queues</strong></a> = QueueStatus(self)</dt><dd><tt>Return&nbsp;a&nbsp;complex&nbsp;nested&nbsp;dict&nbsp;describing&nbsp;queue&nbsp;statii.</tt></dd></dl>
 
-<dl><dt><a name="CoreManager-Redirect"><strong>Redirect</strong></a>(self, channel, context, extension, priority, channel2<font color="#909090">=None</font>)</dt><dd><tt>Redirect&nbsp;&lt;channel&gt;&nbsp;to&nbsp;&lt;priority&gt;&nbsp;of&nbsp;&lt;extension&gt;&nbsp;in&nbsp;&lt;context&gt;,<br>
+<dl><dt><a name="CoreManager-Redirect"><strong>Redirect</strong></a>(self, channel, context, extension<font color="#909090">='s'</font>, priority<font color="#909090">=1</font>, channel2<font color="#909090">=None</font>)</dt><dd><tt>Redirect&nbsp;&lt;channel&gt;&nbsp;to&nbsp;&lt;priority&gt;&nbsp;of&nbsp;&lt;extension&gt;&nbsp;in&nbsp;&lt;context&gt;,<br>
 optionally&nbsp;bridging&nbsp;with&nbsp;&lt;channel2&gt;</tt></dd></dl>
 
 <dl><dt><a name="CoreManager-SetCDRUserField"><strong>SetCDRUserField</strong></a>(self, channel, data, append<font color="#909090">=False</font>)</dt><dd><tt>Append&nbsp;or&nbsp;replace&nbsp;&lt;channel&gt;'s&nbsp;CDR&nbsp;user&nbsp;field&nbsp;with&nbsp;&lt;data&gt;'.</tt></dd></dl>
@@ -601,8 +636,8 @@ placeholders,&nbsp;and&nbsp;core&nbsp;actions.<br>&nbsp;</tt></td></tr>
 </dl>
 <hr>
 Methods inherited from <a href="Asterisk.Manager.html#BaseManager">BaseManager</a>:<br>
-<dl><dt><a name="Manager-__init__"><strong>__init__</strong></a>(self, hostname, port, username, secret, listen_events<font color="#909090">=True</font>)</dt><dd><tt>Provide&nbsp;communication&nbsp;methods&nbsp;for&nbsp;the&nbsp;PBX&nbsp;instance&nbsp;running&nbsp;at&nbsp;&lt;hostname&gt;&nbsp;on<br>
-&lt;port&gt;.&nbsp;Authenticate&nbsp;using&nbsp;&lt;username&gt;&nbsp;and&nbsp;&lt;secret&gt;.&nbsp;Receive&nbsp;event<br>
+<dl><dt><a name="Manager-__init__"><strong>__init__</strong></a>(self, address, username, secret, listen_events<font color="#909090">=True</font>)</dt><dd><tt>Provide&nbsp;communication&nbsp;methods&nbsp;for&nbsp;the&nbsp;PBX&nbsp;instance&nbsp;running&nbsp;at<br>
+&lt;address&gt;.&nbsp;Authenticate&nbsp;using&nbsp;&lt;username&gt;&nbsp;and&nbsp;&lt;secret&gt;.&nbsp;Receive&nbsp;event<br>
 information&nbsp;from&nbsp;the&nbsp;<a href="#Manager">Manager</a>&nbsp;API&nbsp;if&nbsp;&lt;listen_events&gt;&nbsp;is&nbsp;True.</tt></dd></dl>
 
 <dl><dt><a name="Manager-__repr__"><strong>__repr__</strong></a>(self)</dt><dd><tt>Return&nbsp;a&nbsp;string&nbsp;representation&nbsp;of&nbsp;this&nbsp;<a href="__builtin__.html#object">object</a>.</tt></dd></dl>
@@ -710,7 +745,7 @@ Methods inherited from <a href="Asterisk.Manager.html#CoreActions">CoreActions</
 
 <dl><dt><a name="Manager-ExtensionState"><strong>ExtensionState</strong></a>(self, context, extension)</dt><dd><tt>Return&nbsp;the&nbsp;state&nbsp;of&nbsp;&lt;extension&gt;&nbsp;in&nbsp;&lt;context&gt;.</tt></dd></dl>
 
-<dl><dt><a name="Manager-Getvar"><strong>Getvar</strong></a>(self, channel, variable, default<font color="#909090">=None</font>)</dt><dd><tt>Return&nbsp;the&nbsp;value&nbsp;of&nbsp;&lt;channel&gt;'s&nbsp;&lt;variable&gt;,&nbsp;or&nbsp;&lt;default&gt;&nbsp;if&nbsp;&lt;variable&gt;<br>
+<dl><dt><a name="Manager-Getvar"><strong>Getvar</strong></a>(self, channel, variable, default<font color="#909090">=[None]</font>)</dt><dd><tt>Return&nbsp;the&nbsp;value&nbsp;of&nbsp;&lt;channel&gt;'s&nbsp;&lt;variable&gt;,&nbsp;or&nbsp;&lt;default&gt;&nbsp;if&nbsp;&lt;variable&gt;<br>
 is&nbsp;not&nbsp;set.</tt></dd></dl>
 
 <dl><dt><a name="Manager-Hangup"><strong>Hangup</strong></a>(self, channel)</dt><dd><tt>Hangup&nbsp;&lt;channel&gt;.</tt></dd></dl>
@@ -725,7 +760,24 @@ is&nbsp;not&nbsp;set.</tt></dd></dl>
 
 <dl><dt><a name="Manager-Monitor"><strong>Monitor</strong></a>(self, channel, pathname, format, mix)</dt><dd><tt>Begin&nbsp;monitoring&nbsp;of&nbsp;&lt;channel&gt;&nbsp;into&nbsp;&lt;pathname&gt;&nbsp;using&nbsp;&lt;format&gt;.</tt></dd></dl>
 
-<dl><dt><a name="Manager-Originate"><strong>Originate</strong></a>(self, channel, **kwargs)</dt><dd><tt>Originate&nbsp;a&nbsp;call.</tt></dd></dl>
+<dl><dt><a name="Manager-Originate"><strong>Originate</strong></a>(self, channel, context<font color="#909090">=None</font>, extension<font color="#909090">=None</font>, priority<font color="#909090">=None</font>, application<font color="#909090">=None</font>, data<font color="#909090">=None</font>, timeout<font color="#909090">=None</font>, caller_id<font color="#909090">=None</font>, variable<font color="#909090">=None</font>, account<font color="#909090">=None</font>, async<font color="#909090">=None</font>)</dt><dd><tt><a href="#Manager-Originate">Originate</a>(channel,&nbsp;context&nbsp;=&nbsp;..,&nbsp;extension&nbsp;=&nbsp;..,&nbsp;priority&nbsp;=&nbsp;..[,&nbsp;...])<br>
+<a href="#Manager-Originate">Originate</a>(channel,&nbsp;application&nbsp;=&nbsp;..[,&nbsp;data&nbsp;=&nbsp;..[,&nbsp;...]])<br>
+&nbsp;<br>
+Originate&nbsp;a&nbsp;call&nbsp;on&nbsp;&lt;channel&gt;,&nbsp;bridging&nbsp;it&nbsp;to&nbsp;the&nbsp;specified&nbsp;dialplan<br>
+extension&nbsp;(format&nbsp;1)&nbsp;or&nbsp;application&nbsp;(format&nbsp;2).<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;context&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Dialplan&nbsp;context&nbsp;to&nbsp;bridge&nbsp;with.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;extension&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Context&nbsp;extension&nbsp;to&nbsp;bridge&nbsp;with.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;priority&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Context&nbsp;priority&nbsp;to&nbsp;bridge&nbsp;with.<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;application&gt;&nbsp;&nbsp;&nbsp;Application&nbsp;to&nbsp;bridge&nbsp;with.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;data&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Application&nbsp;parameters.<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;timeout&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Answer&nbsp;timeout&nbsp;for&nbsp;&lt;channel&gt;&nbsp;in&nbsp;milliseconds.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;caller_id&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Outgoing&nbsp;channel&nbsp;Caller&nbsp;ID.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;variable&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;channel&nbsp;variable&nbsp;to&nbsp;set&nbsp;(K=V[|K2=V2[|..]]).<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;account&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CDR&nbsp;account&nbsp;code.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;async&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Return&nbsp;successfully&nbsp;immediately.</tt></dd></dl>
 
 <dl><dt><a name="Manager-Originate2"><strong>Originate2</strong></a>(self, channel, parameters)</dt><dd><tt>Originate&nbsp;a&nbsp;call,&nbsp;using&nbsp;parameters&nbsp;in&nbsp;the&nbsp;mapping&nbsp;&lt;parameters&gt;.<br>
 Provided&nbsp;for&nbsp;compatibility&nbsp;with&nbsp;RPC&nbsp;bridges&nbsp;that&nbsp;do&nbsp;not&nbsp;support&nbsp;keyword<br>
@@ -743,7 +795,7 @@ arguments.</tt></dd></dl>
 
 <dl><dt><a name="Manager-Queues"><strong>Queues</strong></a> = QueueStatus(self)</dt><dd><tt>Return&nbsp;a&nbsp;complex&nbsp;nested&nbsp;dict&nbsp;describing&nbsp;queue&nbsp;statii.</tt></dd></dl>
 
-<dl><dt><a name="Manager-Redirect"><strong>Redirect</strong></a>(self, channel, context, extension, priority, channel2<font color="#909090">=None</font>)</dt><dd><tt>Redirect&nbsp;&lt;channel&gt;&nbsp;to&nbsp;&lt;priority&gt;&nbsp;of&nbsp;&lt;extension&gt;&nbsp;in&nbsp;&lt;context&gt;,<br>
+<dl><dt><a name="Manager-Redirect"><strong>Redirect</strong></a>(self, channel, context, extension<font color="#909090">='s'</font>, priority<font color="#909090">=1</font>, channel2<font color="#909090">=None</font>)</dt><dd><tt>Redirect&nbsp;&lt;channel&gt;&nbsp;to&nbsp;&lt;priority&gt;&nbsp;of&nbsp;&lt;extension&gt;&nbsp;in&nbsp;&lt;context&gt;,<br>
 optionally&nbsp;bridging&nbsp;with&nbsp;&lt;channel2&gt;</tt></dd></dl>
 
 <dl><dt><a name="Manager-SetCDRUserField"><strong>SetCDRUserField</strong></a>(self, channel, data, append<font color="#909090">=False</font>)</dt><dd><tt>Append&nbsp;or&nbsp;replace&nbsp;&lt;channel&gt;'s&nbsp;CDR&nbsp;user&nbsp;field&nbsp;with&nbsp;&lt;data&gt;'.</tt></dd></dl>
