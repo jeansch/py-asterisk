@@ -34,6 +34,7 @@ def usage(argv0, out_file):
 
         %(argv0)s action <API action> [<arg1> [<argn> ..]]
             Execute the specified action.
+            For named arguments "--name=<val>" syntax may also be used.
 
         %(argv0)s command "<console command>"
             Execute the specified Asterisk console command.
@@ -91,8 +92,25 @@ def execute_action(manager, argv):
         [ (k.lower(), v) for (k, v) in inspect.getmembers(manager) \
         if inspect.ismethod(v) ])
 
-    method = method_dict[method_name]
-    Asterisk.Util.dump_human(method(*argv))
+    try:
+        method = method_dict[method_name]
+    except KeyError, e:
+        raise ArgumentsError('%r is not a valid action.' % (method_name,))
+
+    pos_args = []
+    kw_args = {}
+    process_kw = True
+
+    for arg in argv:
+        if process_kw and arg == '--':
+            process_kw = False # stop -- processing.
+        elif process_kw and arg[:2] == '--' and '=' in arg:
+            key, val = arg[2:].split('=', 2)
+            kw_args[key] = val
+        else:
+            pos_args.append(arg)
+
+    Asterisk.Util.dump_human(method(*pos_args, **kw_args))
 
 
 def command_line(argv):

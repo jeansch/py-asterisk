@@ -174,14 +174,15 @@ class BaseManager(object):
         '''
         Write an <action> request to the Manager API, sending header keys and
         values from the mapping <data>. Return the (string) action identifier
-        on success.
+        on success. Values from <data> are omitted if they are None.
         '''
 
         id = str(time.time()) # Assumes microsecond precision for reliability.
         lines = [ 'Action: ' + action, 'ActionID: ' + id ]
 
         if data is not None:
-            [ lines.append('%s: %s' % item) for item in data.iteritems() ]
+            [ lines.append('%s: %s' % item) for item in data.iteritems()
+                if item[1] is not None ]
 
         self.file.write('\r\n'.join(lines) + '\r\n\r\n')
         return id
@@ -614,11 +615,54 @@ class CoreActions(object):
         return self._raise_failure(self.read_response(id))
 
 
-    def Originate(self, channel, **kwargs):
-        'Originate a call.'
+    def Originate(self, channel, context = None, extension = None, priority = None,
+    application = None, data = None, timeout = None, caller_id = None,
+    variable = None, account = None, async = None):
+        '''
+        Originate(channel, context = .., extension = .., priority = ..[, ...])
+        Originate(channel, application = ..[, data = ..[, ...]])
 
-        kwargs['Channel'] = channel
-        id = self._write_action('Originate', kwargs)
+        Originate a call on <channel>, bridging it to the specified dialplan
+        extension (format 1) or application (format 2).
+
+            <context>       Dialplan context to bridge with.
+            <extension>     Context extension to bridge with.
+            <priority>      Context priority to bridge with.
+
+            <application>   Application to bridge with.
+            <data>          Application parameters.
+
+            <timeout>       Answer timeout for <channel> in milliseconds.
+            <caller_id>     Outgoing channel Caller ID.
+            <variable>      channel variable to set (K=V[|K2=V2[|..]]).
+            <account>       CDR account code.
+            <async>         Return successfully immediately.
+        '''
+
+        has_dialplan = None not in (channel, context, extension)
+        has_application = application is not None
+
+
+        if has_dialplan and has_application:
+            raise ActionFailed('Originate: dialplan and application calling style are mutually exclusive.')
+
+        if not (has_dialplan or has_application):
+            raise ActionFailed('Originate: neither dialplan or application calling style used. Refer to documentation.')
+
+        if not channel:
+            raise ActionFailed('Originate: you must specify a channel.')
+
+
+        data = {
+            'Channel': channel,             'Context': context,
+            'Exten': extension,             'Priority': priority,
+            'Application': application,     'Data': data,
+            'Timeout': timeout,             'CallerID': caller_id,
+            'Variable': variable,           'Account': account,
+            'Async': int(bool(async))
+        }
+
+        id = self._write_action('Originate', data)
         return self._raise_failure(self.read_response(id))
 
 
