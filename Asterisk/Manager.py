@@ -202,9 +202,8 @@ class BaseManager(Asterisk.Logging.InstanceLogger):
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.connect(address)
 
-        self.sock = sock
-        self.fileno = self.sock.fileno
-        self.file = os.fdopen(sock.fileno(), 'r+', 0) # line buffered.
+        self.file = sock.makefile('r+', 0) # line buffered.
+        self.fileno = self.file.fileno
 
         self.response_buffer = []
         self._authenticate()
