@@ -63,7 +63,7 @@ def show_actions(action = None):
 
     methods = [
         (name, obj) for (name, obj) in inspect.getmembers(AllActions) \
-        if inspect.ismethod(obj)
+        if inspect.ismethod(obj) and name[0] != '_'
     ]
 
     if action is not None:
