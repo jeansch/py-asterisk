@@ -61,7 +61,7 @@ Asynchronous Usage:
 __author__ = 'David M. Wilson <dw-py-asterisk-Manager.py@botanicus.net>'
 __id__ = '$Id$'
 
-import socket
+import socket, time
 from new import instancemethod
 import Asterisk, Asterisk.Util
 
@@ -83,9 +83,10 @@ class AuthenticationFailure(BaseException):
 
 class CommunicationError(BaseException):
     'This exception is raised when the PBX responds in an unexpected manner.'
-    def __init__(self, packet):
-        self._error = 'Unexpected response %r from PBX: %r' %\
-            (packet['Response'], packet['Message'])
+    def __init__(self, packet, msg = None):
+        e = 'Unexpected response %r from PBX' % (packet['Response'],)
+        if msg: e += ' (' + msg + ')'
+        self._error = e + ': %r' % (packet['Message'],)
 
 
 class GoneAwayError(BaseException):
@@ -119,22 +120,25 @@ class BaseManager(object):
     _AST_BANNER = 'Asterisk Call Manager/1.0\r\n'
 
 
-    def __init__(self, hostname, port, username, secret):
+    def __init__(self, hostname, port, username, secret, listen_events = True):
         '''
         Provide communication methods for the PBX instance running at <hostname> on
-        <port>. Authenticate using <username> and <secret>.
+        <port>. Authenticate using <username> and <secret>. Receive event
+        information from the Manager API if <listen_events> is True.
         '''
 
         self.hostname = hostname
         self.port = port
         self.username = username
         self.secret = secret
+        self.listen_events = listen_event
 
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.connect((hostname, port))
 
         self.file = sock.makefile('r+', 1) # line buffered.
         self.fileno = self.file.fileno
+        self.response_buffer = []
 
         self._authenticate()
 
@@ -145,10 +149,15 @@ class BaseManager(object):
         if self.file.readline() != self._AST_BANNER:
             raise Exception('Server banner was incorrect.')
 
-        self._write_action('Login', {
+        action = {
             'Username': self.username,
             'Secret': self.secret
-        })
+        }
+
+        if not self.listen_events:
+            action['Events'] = 'off'
+
+        self._write_action('Login', action)
 
         if self._read_packet()['Response'] == 'Error':
             raise AuthenticationFailure
@@ -162,22 +171,21 @@ class BaseManager(object):
              self.username, self.hostname, self.port)
 
 
-    def _write_action(self, action, data = None, id = None):
+    def _write_action(self, action, data = None):
         '''
         Write an <action> request to the Manager API, sending header keys and
-        values from the mapping <data>. Optionally include the ActionID key,
-        set to <id>.
+        values from the mapping <data>. Return the (string) action identifier
+        on success.
         '''
 
-        lines = [ 'Action: %s' % action ]
-
-        if id is not None:
-            lines.append('ActionID: %s' % id)
+        id = str(time.time()) # Assumes microsecond precision for reliability.
+        lines = [ 'Action: ' + action, 'ActionID: ' + id ]
 
         if data is not None:
             [ lines.append('%s: %s' % item) for item in data.iteritems() ]
 
         self.file.write('\r\n'.join(lines) + '\r\n\r\n')
+        return id
 
 
     def _read_response_follows(self):
@@ -186,8 +194,8 @@ class BaseManager(object):
         the "command" action.
         '''
 
-        packet = { 'Response': 'Follows', 'Lines': [] }
-        lines = packet['Lines']
+        lines = []
+        packet = { 'Response': 'Follows', 'Lines': lines }
 
         while True:
             line = self.file.readline().rstrip()
@@ -268,7 +276,7 @@ class BaseManager(object):
         self._write_action('Logoff')
         packet = self._read_packet()
         if packet['Response'] != 'Goodbye':
-            raise CommunicationError(packet)
+            raise CommunicationError(packet, 'expected goodbye')
         self.file.close()
 
 
@@ -279,14 +287,39 @@ class BaseManager(object):
         self._dispatch_packet(packet)
 
 
-    def read_response(self):
-        'Return the response packet for the last issued command.'
+    def read_response(self, id):
+        'Return the response packet found for the given action <id>.'
+
+        buffer = self.response_buffer
 
         while True:
+            if buffer:
+                for idx, packet in enumerate(buffer):
+                    # It is an error if no ActionID is sent. This is intentional.
+                    if packet['ActionID'] == id:
+                        buffer.pop(idx)
+                        return packet
+
             packet = self._read_packet()
-            if 'Response' in packet:
+
+
+            if 'Event' in packet:
+                self._dispatch_packet(packet)
+
+            elif not packet.has_key('ActionID'):
+                raise CommunicationError(packet, 'no ActionID')
+
+            elif packet['ActionID'] == id:
                 return packet
-            self._dispatch_packet(packet)
+
+            else:
+                buffer.append(packet)
+
+
+    def responses_waiting(self):
+        'Return truth if there are unprocessed buffered responses.'
+
+        return bool(self.response_buffer)
 
 
     def serve_forever(self):
@@ -414,48 +447,48 @@ class CoreActions(object):
     def AbsoluteTimeout(self, channel, timeout):
         'Set the absolute timeout of <channel> to <timeout>.'
 
-        self._write_action('AbsoluteTimeout', {
+        id = self._write_action('AbsoluteTimeout', {
             'Channel': channel,
             'Timeout': int(timeout)
         })
 
-        self._raise_failure(self.read_response())
+        self._raise_failure(self.read_response(id))
 
 
     def ChangeMonitor(self, channel, pathname):
         'Change the monitor filename of <channel> to <pathname>.'
 
-        self._write_action('ChangeMonitor', {
+        id = self._write_action('ChangeMonitor', {
             'Channel': channel,
             'File': pathname
         })
 
-        self._raise_failure(self.read_response())
+        self._raise_failure(self.read_response(id))
 
 
     def Command(self, command):
         'Execute console command <command> and return its output lines.'
 
-        self._write_action('Command', {'Command': command})
-        return self._raise_failure(self.read_response())['Lines']
+        id = self._write_action('Command', {'Command': command})
+        return self._raise_failure(self.read_response(id))['Lines']
 
 
     def Events(self, categories):
         'Filter received events to only those in the list <categories>.'
 
-        self._write_action('Events', { 'EventMask': ','.join(categories) })
-        return self._raise_failure(self.read_response())
+        id = self._write_action('Events', { 'EventMask': ','.join(categories) })
+        return self._raise_failure(self.read_response(id))
 
 
     def ExtensionState(self, context, extension):
         'Return the state of <extension> in <context>.'
         # TODO: what is this?
 
-        self._write_action('ExtensionState', {
+        id = self._write_action('ExtensionState', {
             'Context': context,
             'Exten': extension
         })
-        return self._raise_failure(self.read_response())
+        return self._raise_failure(self.read_response(id))
 
 
     def Getvar(self, channel, variable, default = None):
@@ -464,12 +497,12 @@ class CoreActions(object):
         is not set.
         '''
 
-        self._write_action('Getvar', {
+        id = self._write_action('Getvar', {
             'Channel': channel,
             'Variable': variable
         })
 
-        response = self._raise_failure(self.read_response())
+        response = self._raise_failure(self.read_response(id))
         value = response[variable]
 
         if value == '(null)':
@@ -480,15 +513,15 @@ class CoreActions(object):
     def Hangup(self, channel):
         'Hangup <channel>.'
 
-        self._write_action('Hangup', { 'Channel': channel })
-        return self._raise_failure(self.read_response())
+        id = self._write_action('Hangup', { 'Channel': channel })
+        return self._raise_failure(self.read_response(id))
 
 
     def ListCommands(self):
         'Return a dict of all available <action> => <desc> items.'
 
-        self._write_action('ListCommands')
-        commands = self._raise_failure(self.read_response())
+        id = self._write_action('ListCommands')
+        commands = self._raise_failure(self.read_response(id))
         del commands['Response']
         return commands
 
@@ -503,81 +536,81 @@ class CoreActions(object):
         'Return a (<new_msgs>, <old_msgs>) tuple for the given <mailbox>.'
         # TODO: this can sum multiple mailboxes too.
 
-        self._write_action('MailboxCount', { 'Mailbox': mailbox })
-        result = self._raise_failure(self.read_response())
+        id = self._write_action('MailboxCount', { 'Mailbox': mailbox })
+        result = self._raise_failure(self.read_response(id))
         return int(result.NewMessages), int(result.OldMessages)
 
 
     def MailboxStatus(self, mailbox):
         'Return the number of messages in <mailbox>.'
 
-        self._write_action('MailboxStatus', { 'Mailbox': mailbox })
-        return int(self._raise_failure(self.read_response())['Waiting'])
+        id = self._write_action('MailboxStatus', { 'Mailbox': mailbox })
+        return int(self._raise_failure(self.read_response(id))['Waiting'])
 
 
     def Monitor(self, channel, pathname, format, mix):
         'Begin monitoring of <channel> into <pathname> using <format>.'
 
-        self._write_action('Monitor', {
+        id = self._write_action('Monitor', {
             'Channel': channel,
             'File': pathname,
             'Format': format,
             'Mix': mix and 'yes' or 'no'
         })
 
-        return self._raise_failure(self.read_response())
+        return self._raise_failure(self.read_response(id))
 
 
     def Originate(self, channel, **kwargs):
         'Originate a call.'
 
         kwargs['Channel'] = channel
-        self._write_action('Originate', kwargs)
-        return self._raise_failure(self.read_response())
+        id = self._write_action('Originate', kwargs)
+        return self._raise_failure(self.read_response(id))
 
 
     def ParkedCalls(self):
         'Trigger resending of all parked call events.'
 
-        self._write_action('ParkedCalls')
-        return self._raise_failure(self.read_response())
+        id = self._write_action('ParkedCalls')
+        return self._raise_failure(self.read_response(id))
 
 
     def Ping(self):
         'No-op to ensure the PBX is still there and keep the connection alive.'
 
-        self._write_action('Ping')
-        return self._raise_failure(self.read_response())
+        id = self._write_action('Ping')
+        return self._raise_failure(self.read_response(id))
 
 
     def QueueAdd(self, queue, interface, penalty = 0):
         'Add <interface> to <queue> with optional <penalty>.'
 
-        self._write_action('QueueAdd', {
+        id = self._write_action('QueueAdd', {
             'Queue': queue,
             'Interface': interface,
             'Penalty': str(int(penalty))
         })
 
-        return self._raise_failure(self.read_response())
+        return self._raise_failure(self.read_response(id))
 
 
     def QueueRemove(self, queue, interface):
         'Remove <interface> from <queue>.'
 
-        self._write_action('QueueRemove', {
+        id = self._write_action('QueueRemove', {
             'Queue': queue,
             'Interface': interface
         })
 
-        return self._raise_failure(self.read_response())
+        return self._raise_failure(self.read_response(id))
 
 
     def Queues(self):
         'Return a complex nested dict describing queue statii.'
 
-        self._write_action('Queues')
-        self._raise_failure(self.read_response())
+        id = self._write_action('Queues')
+        self._raise_failure(self.read_response(id))
         queues = {}
 
         def on_QueueParams(self, event):
@@ -622,7 +655,7 @@ class CoreActions(object):
         optionally bridging with <channel2>
         '''
 
-        self._write_action('Redirect', {
+        id = self._write_action('Redirect', {
             'Channel': channel,
             'Context': context,
             'Exten': extension,
@@ -630,38 +663,38 @@ class CoreActions(object):
             'ExtraChannel': channel2 and channel2 or ''
         })
 
-        return self._raise_failure(self.read_response())
+        return self._raise_failure(self.read_response(id))
 
 
     def SetCDRUserField(self, channel, data, append = False):
         "Append or replace <channel>'s CDR user field with <data>'."
 
-        self._write_action('SetCDRUserField', {
+        id = self._write_action('SetCDRUserField', {
             'Channel': channel,
             'UserField': data,
             'Append': append and 'yes' or 'no'
         })
 
-        return self._raise_failure(self.read_response())
+        return self._raise_failure(self.read_response(id))
 
 
     def Setvar(self, channel, variable, value):
         'Set <variable> of <channel> to <value>.'
 
-        self._write_action('Setvar', {
+        id = self._write_action('Setvar', {
             'Channel': channel,
             'Variable': variable,
             'Value': value
         })
 
-        return self._raise_failure(self.read_response())
+        return self._raise_failure(self.read_response(id))
  
 
     def Status(self):
         'Return a nested dict of channel statii.'
 
-        self._write_action('Status')
-        self._raise_failure(self.read_response())
+        id = self._write_action('Status')
+        self._raise_failure(self.read_response(id))
         channels = {}
 
         def on_Status(self, event):
@@ -692,8 +725,8 @@ class CoreActions(object):
     def StopMonitor(self, channel):
         'Stop monitoring of <channel>.'
 
-        self._write_action('StopMonitor', { 'Channel': channel })
-        return self._raise_failure(self.read_response())
+        id = self._write_action('StopMonitor', { 'Channel': channel })
+        return self._raise_failure(self.read_response(id))
 
 
 
@@ -718,40 +751,40 @@ class ZapataActions(object):
     def ZapDialOffhook(self, channel, number):
         'Off-hook dial <number> on Zapata driver <channel>.'
 
-        self._write_action('ZapDialOffhook', {
+        id = self._write_action('ZapDialOffhook', {
             'ZapChannel': channel,
             'Number': number
         })
 
-        return self._raise_failure(self.read_response())
+        return self._raise_failure(self.read_response(id))
 
 
     def ZapDNDoff(self, channel):
         'Disable DND status on Zapata driver <channel>.'
 
-        self._write_action('ZapDNDoff', { 'ZapChannel': str(int(channel)) })
-        return self._raise_failure(self.read_response())
+        id = self._write_action('ZapDNDoff', { 'ZapChannel': str(int(channel)) })
+        return self._raise_failure(self.read_response(id))
 
 
     def ZapDNDon(self, channel):
         'Enable DND status on Zapata driver <channel>.'
 
-        self._write_action('ZapDNDon', { 'ZapChannel': str(int(channel)) })
-        return self._raise_failure(self.read_response())
+        id = self._write_action('ZapDNDon', { 'ZapChannel': str(int(channel)) })
+        return self._raise_failure(self.read_response(id))
 
 
     def ZapHangup(self, channel):
         'Hangup Zapata driver <channel>.'
 
-        self._write_action('ZapHangup', { 'ZapChannel': str(int(channel)) })
-        return self._raise_failure(self.read_response())
+        id = self._write_action('ZapHangup', { 'ZapChannel': str(int(channel)) })
+        return self._raise_failure(self.read_response(id))
 
 
     def ZapShowChannels(self):
         'Return a nested dict of Zapata driver channel statii.'
 
-        self._write_action('ZapShowChannels')
-        self._raise_failure(self.read_response())
+        id = self._write_action('ZapShowChannels')
+        self._raise_failure(self.read_response(id))
         channels = {}
 
         def on_ZapShowChannels(self, event):
@@ -783,8 +816,8 @@ class ZapataActions(object):
         'Transfer Zapata driver <channel>.'
         # TODO: Does nothing on X100P. What is this for?
 
-        self._write_action('ZapTransfer', { 'ZapChannel': str(int(channel)) })
-        return self._raise_failure(self.read_response())
+        id = self._write_action('ZapTransfer', { 'ZapChannel': str(int(channel)) })
+        return self._raise_failure(self.read_response(id))
 
 
 
