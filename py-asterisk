@@ -4,7 +4,7 @@
 py-asterisk: User interface to Asterisk.CLI.
 '''
 
-__author__ = 'David M. Wilson <dw@autosols.com>'
+__author__ = 'David M. Wilson <dw-py-asterisk@botanicus.net>'
 __id__ =     '$Id$'
 
 import Asterisk, Asterisk.Manager, Asterisk.CLI
@@ -18,6 +18,10 @@ progname = os.path.basename(sys.argv[0])
 try:
     sys.exit(Asterisk.CLI.command_line(sys.argv))
 
+except Asterisk.CLI.ArgumentsError, error:
+    print >> sys.stderr, progname, 'error:', str(error)
+    Asterisk.CLI.usage(progname, sys.stderr)
+
 except Asterisk.BaseException, error:
     print >> sys.stderr, progname, 'error:', str(error)
 
@@ -29,4 +33,4 @@ except getopt.GetoptError, error:
     print >> sys.stderr, '%s: %s' %\
         ( progname, error.msg )
 
-    Karsystems.CLI.usage(progname)
+    Asterisk.CLI.usage(progname, sys.stderr)

@@ -7,7 +7,7 @@ Asterisk/CLI.py: Command-line wrapper around the Asterisk Manager API.
 __author__ = 'David M. Wilson <dw@autosols.com>'
 __id__ = '$Id$'
 
-import sys, inspect
+import sys, os, inspect
 from Asterisk import Manager, BaseException
 from Asterisk.Config import get_config
 
@@ -15,7 +15,7 @@ from Asterisk.Config import get_config
 
 
 class ArgumentsError(BaseException):
-    _prefix = 'program arguments error'
+    _prefix = 'bad arguments'
 
 
 
@@ -25,21 +25,24 @@ def usage(argv0, out_file):
     Print command-line program usage.
     '''
 
+    argv0 = os.path.basename(argv0)
+
     usage = '''
         %(argv0)s actions
             Show available actions and their arguments.
+
         %(argv0)s action <API action> [<arg1> [<argn> ..]]
             Execute the specified action.
+
         %(argv0)s command "<console command>"
             Execute the specified Asterisk console command.
+
         %(argv0)s usage
             Display this message.
-    '''
 
-    out_file.write(__doc__ + '\n')
-    for line in usage.splitlines():
-        out_file.write(line[8:]+'\n')
-    out_file.write('\n')
+    ''' % locals()
+
+    out_file.writelines([ line[6:] + '\n' for line in usage.splitlines() ])
 
 
 
