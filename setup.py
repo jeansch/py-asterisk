@@ -22,6 +22,6 @@ setup(
 	url =           'http://botanicus.net/dw/',
 	download_url =  'http://botanicus.net/dw/py-asterisk.php',
 	packages =      [ 'Asterisk' ],
-	scripts =       [ 'asterisk-dump', 'py-asterisk' ]
-    data_files =    [ ('/etc/asterisk', 'conf/py-asterisk.conf.sample') ]
+	scripts =       [ 'asterisk-dump', 'py-asterisk' ],
+    data_files =    [ ('/etc/asterisk', ['conf/py-asterisk.conf']) ]
 )
