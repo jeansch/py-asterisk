@@ -84,9 +84,8 @@ class AuthenticationFailure(BaseException):
 class CommunicationError(BaseException):
     'This exception is raised when the PBX responds in an unexpected manner.'
     def __init__(self, packet, msg = None):
-        e = 'Unexpected response %r from PBX' % (packet['Response'],)
-        if msg: e += ' (' + msg + ')'
-        self._error = e + ': %r' % (packet['Message'],)
+        e = 'Unexpected response from PBX: %r\n' % (msg,)
+        self._error = e + ': %r' % (packet,)
 
 
 class GoneAwayError(BaseException):
@@ -196,14 +195,21 @@ class BaseManager(object):
 
         lines = []
         packet = { 'Response': 'Follows', 'Lines': lines }
+        line_nr = 0
 
         while True:
             line = self.file.readline().rstrip()
+            line_nr += 1
 
-            if not line or line == '--END COMMAND--':
+            if line_nr == 1 and line.startswith('ActionID: '):
+                # Asterisk is a pile of shite!!!!!!!!!
+                packet['ActionID'] = line[10:]
+
+            elif not line or line == '--END COMMAND--':
                 return packet
 
-            lines.append(line)
+            else:
+                lines.append(line)
 
 
     def _read_packet(self):
@@ -261,7 +267,7 @@ class BaseManager(object):
     def _raise_failure(self, packet, success = None):
         'Raise an error if the reponse packet reports failure.'
 
-        if packet['Response'] in ('Success', 'follows'):
+        if packet['Response'] in ('Success', 'Follows'):
             return packet
 
         if packet['Message'] == 'Permission denied':
