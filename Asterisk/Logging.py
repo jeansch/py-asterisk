@@ -10,11 +10,11 @@ import logging
 
 
 
-# Add two new levels.
+# Add new levels.
 
-logging.STATE    = logging.DEBUG  - 1
-logging.PACKET   = logging.STATE  - 1
-logging.IO       = logging.PACKET - 1
+logging.STATE  = logging.INFO   - 1
+logging.PACKET = logging.DEBUG  - 1
+logging.IO     = logging.PACKET - 1
 
 logging.addLevelName(logging.STATE,  'STATE')
 logging.addLevelName(logging.PACKET, 'PACKET')
@@ -35,6 +35,10 @@ else:
 # Provide a new logger class that supports our new levels.
 
 class AsteriskLogger(loggerClass):
+    def state(self, msg, *args, **kwargs):
+        "Log a message with severity 'STATE' on this logger."
+        return self.log(logging.STATE, msg, *args, **kwargs)
+
     def packet(self, msg, *args, **kwargs):
         "Log a message with severity 'PACKET' on this logger."
         return self.log(logging.PACKET, msg, *args, **kwargs)
