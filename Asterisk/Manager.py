@@ -232,7 +232,7 @@ class BaseManager(Asterisk.Logging.InstanceLogger):
         self._write_action('Login', action)
 
         if self._read_packet().Response == 'Error':
-            raise AuthenticationFailure
+            raise AuthenticationFailure('authentication failed.')
 
         self.log.debug('Authenticated as %r.', self.username)
 
