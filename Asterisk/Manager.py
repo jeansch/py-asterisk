@@ -158,13 +158,13 @@ class BaseManager(object):
         if not self.listen_events:
             action['Events'] = 'off'
 
-        self.log.debug('Authenticating.')
+        self.log.debug('Authenticating as %r/%r.', self.username, self.secret)
         self._write_action('Login', action)
 
         if self._read_packet().Response == 'Error':
             raise AuthenticationFailure
 
-        self.log.debug('Authenticated.')
+        self.log.debug('Authenticated as %r.', self.username)
 
 
     def __repr__(self):
@@ -191,10 +191,10 @@ class BaseManager(object):
 
         for line in lines:
             self.file.write(line + '\r\n')
-            self.iolog.debug('_write_action: send %r' % (line + '\r\n',))
+            self.iolog.debug('_write_action: send %r', line + '\r\n')
 
         self.file.write('\r\n')
-        self.iolog.debug('_write_action: send: %r' % ('\r\n',))
+        self.iolog.debug('_write_action: send: %r', '\r\n')
         return id
 
 
@@ -214,7 +214,7 @@ class BaseManager(object):
 
         while True:
             line = self.file.readline().rstrip()
-            self.iolog.debug('_read_response_follows: recv %r' % (line,))
+            self.iolog.debug('_read_response_follows: recv %r', line)
             line_nr += 1
 
             if line_nr == 1 and line.startswith('ActionID: '):
@@ -244,13 +244,13 @@ class BaseManager(object):
 
         while True:
             line = self.file.readline().rstrip()
-            self.iolog.debug('_read_packet: recv %r' % (line,))
+            self.iolog.debug('_read_packet: recv %r', line)
 
             if not line:
                 if not packet:
                     raise GoneAwayError('Asterisk Manager connection has gone away.')
 
-                self.log.debug('_read_packet() completed: %r' % (packet,))
+                self.log.debug('_read_packet() completed: %r', packet)
                 return packet
 
             if line.count(':') == 1 and line[-1] == ':': # Empty field:
@@ -277,19 +277,19 @@ class BaseManager(object):
             # Specific handler:
             method = getattr(self, 'on_%s' % packet.Event, None)
             if method is not None:
-                self.log.debug('_dispatch_packet() using on_%s' % (packet.Event,))
+                self.log.debug('_dispatch_packet() using on_%s', packet.Event)
                 return method(packet)
 
             # Global handler:
-            self.log.debug('_dispatch_packet() using on_Event for %r.' % (packet.Event,))
+            self.log.debug('_dispatch_packet() using on_Event for %r.', packet.Event)
             method = getattr(self, 'on_Event', None)
             if method is not None:
                 return method(packet)
 
-            raise InternalError('no handler defined for event %r.' % (packet.Event,))
+            raise InternalError('no handler defined for event %r.', packet.Event)
 
         else:
-            raise InternalError('Unknown packet type detected: %r' % (packet,))
+            raise InternalError('Unknown packet type detected: %r', packet)
 
 
     def _raise_failure(self, packet, success = None):
@@ -583,7 +583,7 @@ class CoreActions(object):
         is not set.
         '''
 
-        self.log.debug('Getvar(%r, %r, default=%r)' % (channel, variable, default,))
+        self.log.debug('Getvar(%r, %r, default=%r)', channel, variable, default)
 
         id = self._write_action('Getvar', {
             'Channel': channel,
@@ -597,10 +597,10 @@ class CoreActions(object):
             if default is self._CoreActionsUnspecified:
                 raise KeyError(variable)
             else:
-                self.log.debug('Getvar() returning %r' % (default,))
+                self.log.debug('Getvar() returning %r', default)
                 return default
 
-        self.log.debug('Getvar() returning %r' % (value,))
+        self.log.debug('Getvar() returning %r', value)
         return value
 
 
