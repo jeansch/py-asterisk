@@ -6,7 +6,7 @@ import os, ConfigParser
 import Asterisk
 
 
-# Default configuration search path:
+# Default configuration file search path:
 
 CONFIG_PATHNAMES = [
     os.environ.get('PYASTERISK_CONF', '/') + '/py-asterisk.conf',
@@ -25,9 +25,11 @@ class ConfigurationError(Asterisk.BaseException):
 
 
 
-def get_config(config_pathname = None):
+def find_config(config_pathname):
     '''
-    Read py-Asterisk configuration data from the filesystem.
+    Search the filesystem paths listed in CONFIG_PATHNAMES for a regular file.
+    Return the name of the first one found, or <config_pathname>, if it is not
+    None.
     '''
 
     if config_pathname is None:
@@ -38,6 +40,18 @@ def get_config(config_pathname = None):
 
     if config_pathname is None:
         raise ConfigurationError('cannot find a suitable configuration file.')
+
+    return config_pathname
+
+
+
+
+def get_config(config_pathname = None):
+    '''
+    Read py-Asterisk configuration data from the filesystem.
+    '''
+
+    config_pathname = find_config(config_pathname)
 
 
     try:
