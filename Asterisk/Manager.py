@@ -131,8 +131,11 @@ class BaseManager(object):
         self.secret = secret
         self.listen_events = listen_events
 
-        self.log = logging.getLogger('Asterisk.Manager.BaseManager')
-        self.iolog = logging.getLogger('Asterisk.Manager.BaseManager:IO')
+        log_name = self.__module__ + '.' + self.__class__.__name__
+
+        self.log = logging.getLogger(log_name)
+        self.iolog = logging.getLogger(log_name + '.IO')
+        self.log.debug('In Asterisk.Manager.BaseManager.__init__()')
 
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.connect(address)
@@ -295,7 +298,7 @@ class BaseManager(object):
     def _raise_failure(self, packet, success = None):
         'Raise an error if the reponse packet reports failure.'
 
-        if packet.Response in ('Success', 'Follows'):
+        if packet.Response in ('Success', 'Follows', 'Pong'):
             return packet
 
         if packet.Message == 'Permission denied':
