@@ -298,6 +298,7 @@ class BaseManager(object):
                     # It is an error if no ActionID is sent. This is intentional.
                     if packet['ActionID'] == id:
                         buffer.pop(idx)
+                        packet.pop('ActionID')
                         return packet
 
             packet = self._read_packet()
@@ -310,6 +311,7 @@ class BaseManager(object):
                 raise CommunicationError(packet, 'no ActionID')
 
             elif packet['ActionID'] == id:
+                packet.pop('ActionID')
                 return packet
 
             else:
