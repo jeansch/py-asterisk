@@ -10,6 +10,7 @@ __id__ = '$Id$'
 import sys, os, inspect
 from Asterisk import Manager, BaseException
 from Asterisk.Config import get_config
+import Asterisk.Util
 
 
 
@@ -40,6 +41,9 @@ def usage(argv0, out_file):
         %(argv0)s usage
             Display this message.
 
+        %(argv0)s help <action>
+            Display usage message for the given <action>.
+
     ''' % locals()
 
     out_file.writelines([ line[6:] + '\n' for line in usage.splitlines() ])
@@ -47,11 +51,12 @@ def usage(argv0, out_file):
 
 
 
-def show_actions():
-    print
-    print 'Supported actions and their arguments.'
-    print '======================================'
-    print
+def show_actions(action = None):
+    if action is None:
+        print
+        print 'Supported actions and their arguments.'
+        print '======================================'
+        print
 
     class AllActions(Manager.CoreActions, Manager.ZapataActions):
         pass
@@ -60,6 +65,9 @@ def show_actions():
         (name, obj) for (name, obj) in inspect.getmembers(AllActions) \
         if inspect.ismethod(obj)
     ]
+
+    if action is not None:
+        methods = [ x for x in methods if x[0].lower() == action.lower() ]
 
     for name, method in methods:
         arg_spec = inspect.getargspec(method)
@@ -84,30 +92,7 @@ def execute_action(manager, argv):
         if inspect.ismethod(v) ])
 
     method = method_dict[method_name]
-    res = method(*argv)
-
-    if isinstance(res, list):
-        print '\n'.join(res)
-
-    elif isinstance(res, dict):
-        for key, val in res.iteritems():
-            if isinstance(val, str):
-                print '%s: %s' % (key, val)
-            elif isinstance(val, list):
-                print '%s:'
-                sys.stdout.write('   ')
-                print '\n   '.join(res)
-            elif isinstance(res, dict):
-                print '%s:' % key
-                for subkey, subval in val.iteritems():
-                    print '   %s: %s' % (subkey, subval)
-            print
-
-    else:
-        import pprint
-        pprint.pprint(res)
-
-    print
+    Asterisk.Util.dump_result(method(*argv))
 
 
 def command_line(argv):
@@ -117,7 +102,7 @@ def command_line(argv):
 
     config = get_config()
 
-    commands = [ 'actions', 'action', 'command', 'usage' ]
+    commands = [ 'actions', 'action', 'command', 'usage', 'help' ]
 
     if len(argv) < 2:
         raise ArgumentsError('please specify at least one argument.')
@@ -136,6 +121,12 @@ def command_line(argv):
     
     if command == 'actions':
         show_actions()
+
+    if command == 'help':
+        if len(argv) < 3:
+            raise ArgumentsError('please specify an action.')
+
+        show_actions(argv[2])
 
     elif command == 'action':
         if len(argv) < 3:

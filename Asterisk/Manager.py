@@ -444,6 +444,35 @@ class CoreActions(object):
     engine.
     '''
 
+    def _temp_events(self, events):
+        '''
+        Given a list of functions, temporarily replace on_<funcname> attributes
+        to self using those functions. Return a mapping containing undo
+        information.
+        '''
+
+        output = {}
+        for handler in events:
+            handler_name = 'on_' + handler.__name__
+            output[handler_name] = getattr(self, handler_name, None)
+            setattr(self, handler_name, handler)
+
+        return output
+
+
+    def _undo_events(self, mapping):
+        '''
+        Given a mapping (as returned by _save_methods), update self with those
+        methods. Method names with a value of None are ignored.
+        '''
+
+        for name, method in mapping.iteritems():
+            if method is None:
+                del self.__dict__[name]
+            else:
+                setattr(self, name, method)
+
+
     def AbsoluteTimeout(self, channel, timeout):
         'Set the absolute timeout of <channel> to <timeout>.'
 
@@ -613,37 +642,29 @@ class CoreActions(object):
         self._raise_failure(self.read_response(id))
         queues = {}
 
-        def on_QueueParams(event):
+        def QueueParams(event):
             name = event.pop('Queue')
             event['members'] = {}
             del event['Event']
 
             queues[name] = event
     
-        def on_QueueMember(event):
-            del event['Event']
-            queues[name]['member'][event.pop('Location')] = event
+        def QueueMember(event):
+            name = event.pop('Queue')
+            queues[name]['members'][event.pop('Location')] = event
 
-        def on_QueueStatusEnd(event):
+        def QueueStatusEnd(event):
             stop_flag[0] = True
 
         stop_flag = [ False ]
 
-        old_QueueParams = self.on_QueueParams
-        old_QueueMember = self.on_QueueMember
-        old_QueueStatusEnd = self.on_QueueStatusEnd
-        self.on_QueueParams = on_QueueParams
-        self.on_QueueMember = on_QueueMember
-        self.onQueueStatusEnd = on_QueueStatusEnd
+        undo = self._temp_events([ QueueParams, QueueMember, QueueStatusEnd ])
 
         while stop_flag[0] == False:
             packet = self._read_packet()
             self._dispatch_packet(packet)
 
-        self.on_QueueParams = old_QueueParams
-        self.on_QueueMember = old_QueueMember
-        self.onQueueStatusEnd = old_QueueStatusEnd
-
+        self._undo_events(undo)
         return queues
 
     QueueStatus = Queues
