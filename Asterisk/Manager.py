@@ -117,7 +117,7 @@ class BaseChannel(Asterisk.Logging.InstanceLogger):
         '''
         return self.manager.Redirect(self, context, extension, priority, channel2)
 
-    def SetCDRUserField(data, append = False):
+    def SetCDRUserField(self, data, append = False):
         "Append or replace this channel's CDR user field with <data>."
         return self.manager.SetCDRUserField(self, data, append)
 
