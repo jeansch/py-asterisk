@@ -131,7 +131,7 @@ class BaseManager(object):
         self.port = port
         self.username = username
         self.secret = secret
-        self.listen_events = listen_event
+        self.listen_events = listen_events
 
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.connect((hostname, port))
