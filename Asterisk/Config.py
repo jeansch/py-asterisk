@@ -65,8 +65,8 @@ def get_config(config_pathname = None):
 
     return {
         'manager_init_args': (
-            conf.get    ('pbx-connection', 'hostname'),
-            conf.getint ('pbx-connection', 'port'),
+            ( conf.get    ('pbx-connection', 'hostname'),
+              conf.getint ('pbx-connection', 'port')),
             conf.get    ('pbx-connection', 'username'),
             conf.get    ('pbx-connection', 'secret'),
         )

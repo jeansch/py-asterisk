@@ -61,7 +61,7 @@ Asynchronous Usage:
 __author__ = 'David M. Wilson <dw-py-asterisk-Manager.py@botanicus.net>'
 __id__ = '$Id$'
 
-import socket, time
+import socket, time, logging
 from new import instancemethod
 import Asterisk, Asterisk.Util
 
@@ -119,21 +119,23 @@ class BaseManager(object):
     _AST_BANNER = 'Asterisk Call Manager/1.0\r\n'
 
 
-    def __init__(self, hostname, port, username, secret, listen_events = True):
+    def __init__(self, address, username, secret, listen_events = True):
         '''
-        Provide communication methods for the PBX instance running at <hostname> on
-        <port>. Authenticate using <username> and <secret>. Receive event
+        Provide communication methods for the PBX instance running at
+        <address>. Authenticate using <username> and <secret>. Receive event
         information from the Manager API if <listen_events> is True.
         '''
 
-        self.hostname = hostname
-        self.port = port
+        self.address = address
         self.username = username
         self.secret = secret
         self.listen_events = listen_events
 
+        self.log = logging.getLogger('Asterisk.Manager.BaseManager')
+        self.iolog = logging.getLogger('Asterisk.Manager.BaseManager:IO')
+
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        sock.connect((hostname, port))
+        sock.connect(address)
 
         self.file = sock.makefile('r+', 1) # line buffered.
         self.fileno = self.file.fileno
@@ -156,18 +158,21 @@ class BaseManager(object):
         if not self.listen_events:
             action['Events'] = 'off'
 
+        self.log.debug('Authenticating.')
         self._write_action('Login', action)
 
-        if self._read_packet()['Response'] == 'Error':
+        if self._read_packet().Response == 'Error':
             raise AuthenticationFailure
+
+        self.log.debug('Authenticated.')
 
 
     def __repr__(self):
         'Return a string representation of this object.'
 
         return '<%s.%s connected as %s to %s:%d>' %\
-            (self.__module__, self.__class__.__name__,
-             self.username, self.hostname, self.port)
+            ((self.__module__, self.__class__.__name__,
+             self.username) + self.address)
 
 
     def _write_action(self, action, data = None):
@@ -184,7 +189,12 @@ class BaseManager(object):
             [ lines.append('%s: %s' % item) for item in data.iteritems()
                 if item[1] is not None ]
 
-        self.file.write('\r\n'.join(lines) + '\r\n\r\n')
+        for line in lines:
+            self.file.write(line + '\r\n')
+            self.iolog.debug('_write_action: send %r' % (line + '\r\n',))
+
+        self.file.write('\r\n')
+        self.iolog.debug('_write_action: send: %r' % ('\r\n',))
         return id
 
 
@@ -194,41 +204,53 @@ class BaseManager(object):
         the "command" action.
         '''
 
+        self.log.debug('In _read_response_follows().')
+
         lines = []
-        packet = { 'Response': 'Follows', 'Lines': lines }
+        packet = Asterisk.Util.AttributeDict({
+            'Response': 'Follows', 'Lines': lines
+        })
         line_nr = 0
 
         while True:
             line = self.file.readline().rstrip()
+            self.iolog.debug('_read_response_follows: recv %r' % (line,))
             line_nr += 1
 
             if line_nr == 1 and line.startswith('ActionID: '):
                 # Asterisk is a pile of shite!!!!!!!!!
-                packet['ActionID'] = line[10:]
+                packet.ActionID = line[10:]
 
             elif not line or line == '--END COMMAND--':
                 self.file.readline()
+                self.log.debug('Completed _read_response_follows().')
                 return packet
 
             else:
                 lines.append(line)
 
 
-    def _read_packet(self):
+    def _read_packet(self, discard_events = False):
         '''
         Read a set of packet from the Manager API, stopping when a "\r\n\r\n"
         sequence is read. Return the packet as a mapping.
+        
+        If <discard_events> is True, discard all Event packets and wait for a
+        Response packet, this is used while closing down the channel.
         '''
 
         packet = Asterisk.Util.AttributeDict()
+        self.log.debug('In _read_packet().')
 
         while True:
             line = self.file.readline().rstrip()
+            self.iolog.debug('_read_packet: recv %r' % (line,))
 
             if not line:
                 if not packet:
                     raise GoneAwayError('Asterisk Manager connection has gone away.')
 
+                self.log.debug('_read_packet() completed: %r' % (packet,))
                 return packet
 
             if line.count(':') == 1 and line[-1] == ':': # Empty field:
@@ -246,45 +268,50 @@ class BaseManager(object):
         'Feed a single packet to an event handler.'
 
         if 'Response' in packet:
+            self.log.debug('_dispatch_packet() placed response in buffer.')
             self.response_buffer.append(packet)
 
         elif 'Event' in packet:
+            self.log.debug('_dispatch_packet() dealing with event.')
+
             # Specific handler:
-            method = getattr(self, 'on_%s' % packet['Event'], None)
+            method = getattr(self, 'on_%s' % packet.Event, None)
             if method is not None:
+                self.log.debug('_dispatch_packet() using on_%s' % (packet.Event,))
                 return method(packet)
 
             # Global handler:
+            self.log.debug('_dispatch_packet() using on_Event for %r.' % (packet.Event,))
             method = getattr(self, 'on_Event', None)
             if method is not None:
                 return method(packet)
 
-            raise InternalError(
-                'no handler defined for event %(Event)r.' % packet)
+            raise InternalError('no handler defined for event %r.' % (packet.Event,))
 
         else:
-            raise InternalError('Unknown packet type detected: %r'
-                % (packet, ))
+            raise InternalError('Unknown packet type detected: %r' % (packet,))
 
 
     def _raise_failure(self, packet, success = None):
         'Raise an error if the reponse packet reports failure.'
 
-        if packet['Response'] in ('Success', 'Follows'):
+        if packet.Response in ('Success', 'Follows'):
             return packet
 
-        if packet['Message'] == 'Permission denied':
+        if packet.Message == 'Permission denied':
             raise PermissionDenied
 
-        raise ActionFailed(packet['Message'])
+        raise ActionFailed(packet.Message)
 
 
     def close(self):
         'Log off and close the connection to the PBX.'
 
+        self.log.debug('close() shutting down.')
+
         self._write_action('Logoff')
-        packet = self._read_packet()
-        if packet['Response'] != 'Goodbye':
+        packet = self._read_packet(discard_events = True)
+        if packet.Response != 'Goodbye':
             raise CommunicationError(packet, 'expected goodbye')
         self.file.close()
 
@@ -305,7 +332,7 @@ class BaseManager(object):
             if buffer:
                 for idx, packet in enumerate(buffer):
                     # It is an error if no ActionID is sent. This is intentional.
-                    if packet['ActionID'] == id:
+                    if packet.ActionID == id:
                         buffer.pop(idx)
                         packet.pop('ActionID')
                         return packet
@@ -319,7 +346,7 @@ class BaseManager(object):
             elif not packet.has_key('ActionID'):
                 raise CommunicationError(packet, 'no ActionID')
 
-            elif packet['ActionID'] == id:
+            elif packet.ActionID == id:
                 packet.pop('ActionID')
                 return packet
 
@@ -498,6 +525,11 @@ class CoreActions(object):
     engine.
     '''
 
+    # Unique object used for testing for an unspecified argument where None is
+    # unsuitable. We use this as it looks nice in pydoc output.
+    _CoreActionsUnspecified = [None]
+
+
     def AbsoluteTimeout(self, channel, timeout):
         'Set the absolute timeout of <channel> to <timeout>.'
 
@@ -545,11 +577,13 @@ class CoreActions(object):
         return self._raise_failure(self.read_response(id))
 
 
-    def Getvar(self, channel, variable, default = None):
+    def Getvar(self, channel, variable, default = _CoreActionsUnspecified):
         '''
         Return the value of <channel>'s <variable>, or <default> if <variable>
         is not set.
         '''
+
+        self.log.debug('Getvar(%r, %r, default=%r)' % (channel, variable, default,))
 
         id = self._write_action('Getvar', {
             'Channel': channel,
@@ -560,7 +594,13 @@ class CoreActions(object):
         value = response[variable]
 
         if value == '(null)':
-            return default
+            if default is self._CoreActionsUnspecified:
+                raise KeyError(variable)
+            else:
+                self.log.debug('Getvar() returning %r' % (default,))
+                return default
+
+        self.log.debug('Getvar() returning %r' % (value,))
         return value
 
 
