@@ -86,6 +86,11 @@ class EventCollection(Logging.InstanceLogger):
         self.subscriptions[name].remove(handler)
 
 
+    def clear(self):
+        'Destroy all present subscriptions.'
+        self.subscriptions.clear()
+
+
     def fire(self, name, *args, **kwargs):
         '''
         Fire event <name> passing *<args> and **<kwargs> to subscribers,
