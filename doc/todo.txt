@@ -1,0 +1,7 @@
+$Id$
+
+Todo List For py-Asterisk.
+
+    - Import old public domain AGI.py or rewrite it. At the least refactor it
+      to not be so terrible.
+

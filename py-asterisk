@@ -1,0 +1,32 @@
+#!/usr/bin/env python2.3
+
+'''
+py-asterisk: User interface to Asterisk.CLI.
+'''
+
+__author__ = 'David M. Wilson <dw@autosols.com>'
+__id__ =     '$Id$'
+
+import Asterisk, Asterisk.Manager, Asterisk.CLI
+import sys, os, getopt
+
+
+
+
+progname = os.path.basename(sys.argv[0])
+
+try:
+    sys.exit(Asterisk.CLI.command_line(sys.argv))
+
+except Asterisk.BaseException, error:
+    print >> sys.stderr, progname, 'error:', str(error)
+
+except IOError, error:
+    print >> sys.stderr, '%s: %s: %s' %\
+        ( progname, error.filename, error.strerror )
+
+except getopt.GetoptError, error:
+    print >> sys.stderr, '%s: %s' %\
+        ( progname, error.msg )
+
+    Karsystems.CLI.usage(progname)

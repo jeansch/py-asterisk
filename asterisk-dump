@@ -1,0 +1,42 @@
+#!/usr/bin/env python2.3
+
+'''
+Dump events from the Manager interface to stdout.
+'''
+
+__author__  = 'David M. Wilson <dw-py-asterisk-dump-events@botanicus.net>'
+__id__      = '$Id$'
+
+import sys
+from Asterisk.Config import get_config
+from Asterisk.Manager import CoreManager
+
+
+
+
+class MyManager(CoreManager):
+    '''
+    Print events to stdout.
+    '''
+
+    def on_Event(self, event):
+        [ sys.stdout.write('%s: %s\n' % x) for x in event.iteritems() ]
+        sys.stdout.write('\n')
+
+
+
+
+def main(argv):
+    manager = MyManager(*get_config()['manager_init_args'])
+
+    try:
+        manager.serve_forever()
+
+    except KeyboardInterrupt, e:
+        raise SystemExit
+
+
+
+
+if __name__ == '__main__':
+    main(sys.argv[1:])
