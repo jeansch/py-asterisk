@@ -150,7 +150,11 @@ def command_line(argv):
         if len(argv) < 3:
             raise ArgumentsError('please specify an action.')
 
-        execute_action(manager, argv[2:])
+        try:
+            execute_action(manager, argv[2:])
+        except TypeError, e:
+            print "Bad arguments specified. Help for %s:" % (argv[2],)
+            show_actions(argv[2])
 
     elif command == 'command':
         execute_action('command', argv[2])
