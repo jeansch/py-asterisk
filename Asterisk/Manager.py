@@ -79,7 +79,7 @@ class BaseChannel(Asterisk.Logging.InstanceLogger):
 
     def __hash__(self):
         'Return the hash value of this channel.'
-        return hash(self.id) ^ hash(repr(self.manager))
+        return hash(self.id) ^ id(self.manager)
 
     def __str__(self):
         return self.id
