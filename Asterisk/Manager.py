@@ -88,6 +88,10 @@ class CommunicationError(BaseException):
             (packet['Response'], packet['Message'])
 
 
+class GoneAwayError(BaseException):
+    'This exception is raised when the Manager connection becomes closed.'
+
+
 class InternalError(BaseException):
     'This exception is raised when an error occurs within a Manager object.'
     _prefix = 'py-Asterisk internal error'
@@ -206,6 +210,9 @@ class BaseManager(object):
             line = self.file.readline().rstrip()
 
             if not line:
+                if not packet:
+                    raise GoneAwayError('Asterisk Manager connection has gone away.')
+
                 return packet
 
             if line.count(':') == 1 and line[-1] == ':': # Empty field:
