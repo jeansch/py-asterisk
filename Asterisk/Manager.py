@@ -61,7 +61,7 @@ Asynchronous Usage:
 __author__ = 'David M. Wilson <dw-py-asterisk-Manager.py@botanicus.net>'
 __id__ = '$Id$'
 
-import socket, time, logging
+import socket, time, logging, errno, os
 from new import instancemethod
 import Asterisk, Asterisk.Util
 
@@ -290,10 +290,11 @@ class BaseManager(object):
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.connect(address)
 
-        self.file = sock.makefile('r+', 1) # line buffered.
-        self.fileno = self.file.fileno
-        self.response_buffer = []
+        self.sock = sock
+        self.fileno = self.sock.fileno
+        self.file = os.fdopen(sock.fileno(), 'r+', 0) # line buffered.
 
+        self.response_buffer = []
         self._authenticate()
 
 
@@ -501,8 +502,20 @@ class BaseManager(object):
     def read(self):
         'Called by the parent code when activity is detected on our fd.'
 
-        packet = self._read_packet()
-        self._dispatch_packet(packet)
+        # Temporary contrived workaround for Asterisk/py-asterisk issue.
+        self.sock.setblocking(0)
+
+        try:
+            try:
+                packet = self._read_packet()
+                self._dispatch_packet(packet)
+
+            except IOError, error:
+                if error.errno == errno.EAGAIN:
+                    self.log.debug('read() got no data!')
+
+        finally:
+            self.sock.setblocking(1)
 
 
     def read_response(self, id):
