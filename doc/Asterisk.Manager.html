@@ -8,7 +8,7 @@
 <td valign=bottom>&nbsp;<br>
 <font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong><a href="Asterisk.html"><font color="#ffffff">Asterisk</font></a>.Manager</strong></big></big></font></td
 ><td align=right valign=bottom
-><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="file:/usr/src/ks-voip/py-asterisk/Asterisk/Manager.py">/usr/src/ks-voip/py-asterisk/Asterisk/Manager.py</a></font></td></tr></table>
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="file:/home/dw/py-asterisk/Asterisk/Manager.py">/home/dw/py-asterisk/Asterisk/Manager.py</a></font></td></tr></table>
     <p><tt>Asterisk&nbsp;<a href="#Manager">Manager</a>&nbsp;API&nbsp;interface&nbsp;module&nbsp;for&nbsp;Python.<br>
 &nbsp;<br>
 This&nbsp;module&nbsp;provides&nbsp;an&nbsp;<a href="__builtin__.html#object">object</a>&nbsp;oriented&nbsp;interface&nbsp;to&nbsp;the&nbsp;Asterisk&nbsp;<a href="#Manager">Manager</a>&nbsp;API,<br>
@@ -111,7 +111,8 @@ Asynchronous&nbsp;Usage:<br>
 </font></dt><dt><font face="helvetica, arial"><a href="Asterisk.Manager.html#Manager">Manager</a>(<a href="Asterisk.Manager.html#BaseManager">BaseManager</a>, <a href="Asterisk.Manager.html#CoreEventHandlers">CoreEventHandlers</a>, <a href="Asterisk.Manager.html#CoreActions">CoreActions</a>, <a href="Asterisk.Manager.html#ZapataEventHandlers">ZapataEventHandlers</a>, <a href="Asterisk.Manager.html#ZapataActions">ZapataActions</a>)
 </font></dt></dl>
 </dd>
-<dt><font face="helvetica, arial"><a href="Asterisk.Manager.html#CoreActions">CoreActions</a>
+<dt><font face="helvetica, arial"><a href="Asterisk.Manager.html#Channel">Channel</a>
+</font></dt><dt><font face="helvetica, arial"><a href="Asterisk.Manager.html#CoreActions">CoreActions</a>
 </font></dt><dt><font face="helvetica, arial"><a href="Asterisk.Manager.html#CoreEventHandlers">CoreEventHandlers</a>
 </font></dt><dt><font face="helvetica, arial"><a href="Asterisk.Manager.html#ZapataActions">ZapataActions</a>
 </font></dt><dt><font face="helvetica, arial"><a href="Asterisk.Manager.html#ZapataEventHandlers">ZapataEventHandlers</a>
@@ -210,6 +211,12 @@ information&nbsp;from&nbsp;the&nbsp;<a href="#Manager">Manager</a>&nbsp;API&nbsp
 
 <dl><dt><a name="BaseManager-close"><strong>close</strong></a>(self)</dt><dd><tt>Log&nbsp;off&nbsp;and&nbsp;close&nbsp;the&nbsp;connection&nbsp;to&nbsp;the&nbsp;PBX.</tt></dd></dl>
 
+<dl><dt><a name="BaseManager-getLogger"><strong>getLogger</strong></a>(self)</dt><dd><tt>Return&nbsp;the&nbsp;Logger&nbsp;instance&nbsp;which&nbsp;receives&nbsp;debug&nbsp;messages&nbsp;for&nbsp;this&nbsp;class<br>
+instance.</tt></dd></dl>
+
+<dl><dt><a name="BaseManager-getLoggerClass"><strong>getLoggerClass</strong></a>(self)</dt><dd><tt>Return&nbsp;the&nbsp;namespace&nbsp;where&nbsp;debug&nbsp;messages&nbsp;for&nbsp;all&nbsp;instances&nbsp;of&nbsp;this<br>
+class&nbsp;are&nbsp;sent.</tt></dd></dl>
+
 <dl><dt><a name="BaseManager-read"><strong>read</strong></a>(self)</dt><dd><tt>Called&nbsp;by&nbsp;the&nbsp;parent&nbsp;code&nbsp;when&nbsp;activity&nbsp;is&nbsp;detected&nbsp;on&nbsp;our&nbsp;fd.</tt></dd></dl>
 
 <dl><dt><a name="BaseManager-read_response"><strong>read_response</strong></a>(self, id)</dt><dd><tt>Return&nbsp;the&nbsp;response&nbsp;packet&nbsp;found&nbsp;for&nbsp;the&nbsp;given&nbsp;action&nbsp;&lt;id&gt;.</tt></dd></dl>
@@ -232,6 +239,57 @@ Data and other attributes defined here:<br>
 <dl><dt><strong>__dict__</strong> = &lt;dictproxy object&gt;<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dl>
 
 <dl><dt><strong>__weakref__</strong> = &lt;attribute '__weakref__' of 'BaseManager' objects&gt;<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;<a href="__builtin__.html#object">object</a>&nbsp;(if&nbsp;defined)</tt></dl>
+
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="Channel">class <strong>Channel</strong></a>(<a href="__builtin__.html#object">__builtin__.object</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>Represents&nbsp;a&nbsp;living&nbsp;Asterisk&nbsp;channel,&nbsp;with&nbsp;shortcut&nbsp;methods&nbsp;for&nbsp;operating<br>
+on&nbsp;it.&nbsp;The&nbsp;<a href="__builtin__.html#object">object</a>&nbsp;acts&nbsp;as&nbsp;a&nbsp;mapping,&nbsp;ie.&nbsp;you&nbsp;may&nbsp;get&nbsp;and&nbsp;set&nbsp;items&nbsp;of&nbsp;it.<br>
+This&nbsp;translates&nbsp;to&nbsp;Getvar&nbsp;and&nbsp;Setvar&nbsp;actions&nbsp;on&nbsp;the&nbsp;channel.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%">Methods defined here:<br>
+<dl><dt><a name="Channel-AbsoluteTimeout"><strong>AbsoluteTimeout</strong></a>(self, timeout)</dt><dd><tt>Set&nbsp;the&nbsp;absolute&nbsp;timeout&nbsp;of&nbsp;this&nbsp;channel&nbsp;to&nbsp;&lt;timeout&gt;.</tt></dd></dl>
+
+<dl><dt><a name="Channel-ChangeMonitor"><strong>ChangeMonitor</strong></a>(self, pathname)</dt><dd><tt>Change&nbsp;the&nbsp;monitor&nbsp;filename&nbsp;of&nbsp;this&nbsp;channel&nbsp;to&nbsp;&lt;pathname&gt;.</tt></dd></dl>
+
+<dl><dt><a name="Channel-Getvar"><strong>Getvar</strong></a>(self, variable, default<font color="#909090">=[None]</font>)</dt><dd><tt>Return&nbsp;the&nbsp;value&nbsp;of&nbsp;this&nbsp;channel's&nbsp;&lt;variable&gt;,&nbsp;or&nbsp;&lt;default&gt;&nbsp;if&nbsp;variable<br>
+is&nbsp;not&nbsp;set.</tt></dd></dl>
+
+<dl><dt><a name="Channel-Hangup"><strong>Hangup</strong></a>(self)</dt><dd><tt>Hangup&nbsp;this&nbsp;channel.</tt></dd></dl>
+
+<dl><dt><a name="Channel-Monitor"><strong>Monitor</strong></a>(self, pathname, format, mix)</dt><dd><tt>Begin&nbsp;monitoring&nbsp;of&nbsp;this&nbsp;channel&nbsp;into&nbsp;&lt;pathname&gt;&nbsp;using&nbsp;&lt;format&gt;.</tt></dd></dl>
+
+<dl><dt><a name="Channel-Redirect"><strong>Redirect</strong></a>(self, context, extension<font color="#909090">='s'</font>, priority<font color="#909090">=1</font>, channel2<font color="#909090">=None</font>)</dt><dd><tt>Redirect&nbsp;this&nbsp;channel&nbsp;to&nbsp;&lt;priority&gt;&nbsp;of&nbsp;&lt;extension&gt;&nbsp;in&nbsp;&lt;context&gt;,<br>
+optionally&nbsp;bridging&nbsp;with&nbsp;&lt;channel2&gt;.</tt></dd></dl>
+
+<dl><dt><a name="Channel-SetCDRUserField"><strong>SetCDRUserField</strong></a>(data, append<font color="#909090">=False</font>)</dt><dd><tt>Append&nbsp;or&nbsp;replace&nbsp;this&nbsp;channel's&nbsp;CDR&nbsp;user&nbsp;field&nbsp;with&nbsp;&lt;data&gt;.</tt></dd></dl>
+
+<dl><dt><a name="Channel-Setvar"><strong>Setvar</strong></a>(self, variable, value)</dt><dd><tt>Set&nbsp;the&nbsp;&lt;variable&gt;&nbsp;in&nbsp;this&nbsp;channel&nbsp;to&nbsp;&lt;value&gt;.</tt></dd></dl>
+
+<dl><dt><a name="Channel-Status"><strong>Status</strong></a>(self)</dt><dd><tt>Return&nbsp;the&nbsp;<a href="#Channel-Status">Status</a>()&nbsp;dict&nbsp;for&nbsp;this&nbsp;channel&nbsp;(wasteful!).</tt></dd></dl>
+
+<dl><dt><a name="Channel-StopMonitor"><strong>StopMonitor</strong></a>(self)</dt><dd><tt>Stop&nbsp;monitoring&nbsp;of&nbsp;this&nbsp;channel.</tt></dd></dl>
+
+<dl><dt><a name="Channel-__getitem__"><strong>__getitem__</strong></a>(self, key)</dt><dd><tt>Fetch&nbsp;&lt;key&gt;&nbsp;as&nbsp;a&nbsp;variable&nbsp;from&nbsp;this&nbsp;channel.</tt></dd></dl>
+
+<dl><dt><a name="Channel-__init__"><strong>__init__</strong></a>(self, manager, channel_id)</dt><dd><tt>Initialise&nbsp;a&nbsp;new&nbsp;<a href="#Channel">Channel</a>&nbsp;<a href="__builtin__.html#object">object</a>&nbsp;belonging&nbsp;to&nbsp;&lt;channel_id&gt;&nbsp;reachable&nbsp;via<br>
+<a href="#BaseManager">BaseManager</a>&nbsp;&lt;manager&gt;.</tt></dd></dl>
+
+<dl><dt><a name="Channel-__repr__"><strong>__repr__</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Channel-__setitem__"><strong>__setitem__</strong></a>(self, key, value)</dt><dd><tt>Set&nbsp;&lt;key&gt;&nbsp;as&nbsp;a&nbsp;variable&nbsp;on&nbsp;this&nbsp;channel.</tt></dd></dl>
+
+<dl><dt><a name="Channel-__str__"><strong>__str__</strong></a>(self)</dt></dl>
+
+<hr>
+Data and other attributes defined here:<br>
+<dl><dt><strong>__dict__</strong> = &lt;dictproxy object&gt;<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dl>
+
+<dl><dt><strong>__weakref__</strong> = &lt;attribute '__weakref__' of 'Channel' objects&gt;<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;<a href="__builtin__.html#object">object</a>&nbsp;(if&nbsp;defined)</tt></dl>
 
 </td></tr></table> <p>
 <table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
@@ -455,6 +513,12 @@ information&nbsp;from&nbsp;the&nbsp;<a href="#Manager">Manager</a>&nbsp;API&nbsp
 
 <dl><dt><a name="CoreManager-close"><strong>close</strong></a>(self)</dt><dd><tt>Log&nbsp;off&nbsp;and&nbsp;close&nbsp;the&nbsp;connection&nbsp;to&nbsp;the&nbsp;PBX.</tt></dd></dl>
 
+<dl><dt><a name="CoreManager-getLogger"><strong>getLogger</strong></a>(self)</dt><dd><tt>Return&nbsp;the&nbsp;Logger&nbsp;instance&nbsp;which&nbsp;receives&nbsp;debug&nbsp;messages&nbsp;for&nbsp;this&nbsp;class<br>
+instance.</tt></dd></dl>
+
+<dl><dt><a name="CoreManager-getLoggerClass"><strong>getLoggerClass</strong></a>(self)</dt><dd><tt>Return&nbsp;the&nbsp;namespace&nbsp;where&nbsp;debug&nbsp;messages&nbsp;for&nbsp;all&nbsp;instances&nbsp;of&nbsp;this<br>
+class&nbsp;are&nbsp;sent.</tt></dd></dl>
+
 <dl><dt><a name="CoreManager-read"><strong>read</strong></a>(self)</dt><dd><tt>Called&nbsp;by&nbsp;the&nbsp;parent&nbsp;code&nbsp;when&nbsp;activity&nbsp;is&nbsp;detected&nbsp;on&nbsp;our&nbsp;fd.</tt></dd></dl>
 
 <dl><dt><a name="CoreManager-read_response"><strong>read_response</strong></a>(self, id)</dt><dd><tt>Return&nbsp;the&nbsp;response&nbsp;packet&nbsp;found&nbsp;for&nbsp;the&nbsp;given&nbsp;action&nbsp;&lt;id&gt;.</tt></dd></dl>
@@ -643,6 +707,12 @@ information&nbsp;from&nbsp;the&nbsp;<a href="#Manager">Manager</a>&nbsp;API&nbsp
 <dl><dt><a name="Manager-__repr__"><strong>__repr__</strong></a>(self)</dt><dd><tt>Return&nbsp;a&nbsp;string&nbsp;representation&nbsp;of&nbsp;this&nbsp;<a href="__builtin__.html#object">object</a>.</tt></dd></dl>
 
 <dl><dt><a name="Manager-close"><strong>close</strong></a>(self)</dt><dd><tt>Log&nbsp;off&nbsp;and&nbsp;close&nbsp;the&nbsp;connection&nbsp;to&nbsp;the&nbsp;PBX.</tt></dd></dl>
+
+<dl><dt><a name="Manager-getLogger"><strong>getLogger</strong></a>(self)</dt><dd><tt>Return&nbsp;the&nbsp;Logger&nbsp;instance&nbsp;which&nbsp;receives&nbsp;debug&nbsp;messages&nbsp;for&nbsp;this&nbsp;class<br>
+instance.</tt></dd></dl>
+
+<dl><dt><a name="Manager-getLoggerClass"><strong>getLoggerClass</strong></a>(self)</dt><dd><tt>Return&nbsp;the&nbsp;namespace&nbsp;where&nbsp;debug&nbsp;messages&nbsp;for&nbsp;all&nbsp;instances&nbsp;of&nbsp;this<br>
+class&nbsp;are&nbsp;sent.</tt></dd></dl>
 
 <dl><dt><a name="Manager-read"><strong>read</strong></a>(self)</dt><dd><tt>Called&nbsp;by&nbsp;the&nbsp;parent&nbsp;code&nbsp;when&nbsp;activity&nbsp;is&nbsp;detected&nbsp;on&nbsp;our&nbsp;fd.</tt></dd></dl>
 
