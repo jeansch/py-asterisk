@@ -206,6 +206,7 @@ class BaseManager(object):
                 packet['ActionID'] = line[10:]
 
             elif not line or line == '--END COMMAND--':
+                self.file.readline()
                 return packet
 
             else:
@@ -244,9 +245,9 @@ class BaseManager(object):
         'Feed a single packet to an event handler.'
 
         if 'Response' in packet:
-            return self.on_Response(packet)
+            self.response_buffer.append(packet)
 
-        if 'Event' in packet:
+        elif 'Event' in packet:
             # Specific handler:
             method = getattr(self, 'on_%s' % packet['Event'], None)
             if method is not None:
@@ -260,8 +261,9 @@ class BaseManager(object):
             raise InternalError(
                 'no handler defined for event %(Event)r.' % packet)
 
-        raise InternalError('Unknown packet type detected: %r'
-            % (packet, ))
+        else:
+            raise InternalError('Unknown packet type detected: %r'
+                % (packet, ))
 
 
     def _raise_failure(self, packet, success = None):
@@ -468,6 +470,9 @@ class CoreEventHandlers(object):
     def on_ParkedCallsComplete(self, event):
         'Fired when a "ParkedCallsComplete" event is seen.'
 
+    def on_QueueEntry(self, event):
+        'Fired when a "QueueEntry" event is seen.'
+
     def on_QueueParams(self, event):
         'Fired when a "QueueParams" event is seen.'
 
@@ -617,6 +622,16 @@ class CoreActions(object):
         return self._raise_failure(self.read_response(id))
 
 
+    def Originate2(self, channel, parameters):
+        '''
+        Originate a call, using parameters in the mapping <parameters>.
+        Provided for compatibility with RPC bridges that do not support keyword
+        arguments.
+        '''
+
+        return self.Originate(channel, **parameters)
+
+
     def ParkedCalls(self):
         'Return a nested dict describing currently parked calls.'
 
@@ -676,7 +691,7 @@ class CoreActions(object):
         return self._raise_failure(self.read_response(id))
 
 
-    def Queues(self):
+    def QueueStatus(self):
         'Return a complex nested dict describing queue statii.'
 
         id = self._write_action('QueueStatus')
@@ -684,21 +699,25 @@ class CoreActions(object):
         queues = {}
 
         def QueueParams(self, event):
-            event = self.strip_evinfo(event)
-            name = event.pop('Queue')
-            event['members'] = {}
-            queues[name] = event
+            queue = self.strip_evinfo(event)
+            queue['members'] = {}
+            queue['entries'] = {}
+            queues[queue.pop('Queue')] = queue
     
         def QueueMember(self, event):
-            name = event.pop('Queue')
-            queues[name]['members'][event.pop('Location')] = event
+            member = self.strip_evinfo(event)
+            queues[member.pop('Queue')]['members'][member.pop('Location')] = member
+            
+        def QueueEntry(self, event):
+            entry = self.strip_evinfo(event)
+            queues[entry.pop('Queue')]['entries'][event.pop('Channel')] = entry
 
         def QueueStatusEnd(self, event):
             stop_flag[0] = True
 
         stop_flag = [ False ]
 
-        undo = self.replace_events([ QueueParams, QueueMember, QueueStatusEnd ])
+        undo = self.replace_events([ QueueParams, QueueMember, QueueEntry, QueueStatusEnd ])
 
         try:
             while stop_flag[0] == False:
@@ -709,7 +728,7 @@ class CoreActions(object):
             self.undo_events(undo)
         return queues
 
-    QueueStatus = Queues
+    Queues = QueueStatus
 
 
     def Redirect(self, channel, context, extension, priority, channel2 = None):
