@@ -21,7 +21,12 @@ class MyManager(CoreManager):
     '''
 
     def on_Event(self, event):
-        [ sys.stdout.write('%s: %s\n' % x) for x in event.iteritems() ]
+        event_name = event.pop('Event')
+        event = event.items()
+        event.sort()
+
+        sys.stdout.write('-- %s -- \n' % (event_name,))
+        [ sys.stdout.write('%s: %s\n' % x) for x in event ]
         sys.stdout.write('\n')
 
 
