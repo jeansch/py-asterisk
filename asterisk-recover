@@ -1,0 +1,72 @@
+#!/usr/bin/env python2.3
+
+'''
+Recover a channel lost in asterisk. Usage:
+
+    asterisk-recover <lost_channel> <context> <exten> <priority>
+
+'''
+
+__author__  = 'David M. Wilson <dw-asterisk-dump@botanicus.net>'
+__id__      = '$Id: asterisk-dump 3 2004-09-03 01:41:42Z dw $'
+
+import sys
+from Asterisk.Config import get_config
+from Asterisk.Manager import Manager
+
+
+
+
+def main(argv):
+    manager = Manager(*get_config()['manager_init_args'])
+
+    statii = manager.Status()
+    #statii = {'SIP/101-d180': {'Account': '', 'Extension': '917070', 'CallerID': '101', 'Seconds': '32', 'Uniqueid': '1094494902.180', 'Priority': '1', 'State': 'Up', 'Link': 'Zap/2-1', 'Context': 'local_extensions'}, 'Zap/2-1': {'Account': '', 'CallerID': '101', 'State': 'Up', 'Link': 'SIP/101-d180', 'Uniqueid': '1094494902.181'}}
+
+    if not len(statii):
+        print >> sys.stderr, 'No channels active.'
+        print
+        raise SystemExit, 0
+
+    if len(sys.argv) == 5:
+        manager.Redirect(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4])
+
+    else:
+        chans = [ x for x in statii.items() if not x[1].has_key('Extension') ]
+
+        for nr, (channel, status) in enumerate(chans):
+            print 'Channel #%d:' % (nr+1, ), channel
+            if len(status['CallerID']):
+                print '   Caller ID:', status['CallerID']
+            if status.has_key('Link') and len(status['Link']):
+                print '   Link:', status['Link']
+
+        print
+
+
+        try:
+            chan_nr = input('Channel number [default: 1]: ') - 1
+        except SyntaxError, e:
+            print 'Using channel #1.'
+            chan_nr = 1
+
+        if len(chans) < chan_nr:
+            print 'Using channel #1.'
+            chan_nr = 0
+        else:
+            chan_nr -= 1
+
+        
+
+        context = raw_input('Context [default: local_extensions]: ') or 'local_extensions'
+        exten = raw_input('Extension [default: 101]: ') or '101'
+        priority = raw_input('Priority [default: 1]: ') or '1'
+
+        print 'Redirecting', chans[chan_nr][0], 'to', '%s:%s@%s' % (exten, priority, context)
+        manager.Redirect(chans[chan_nr][0], context, exten, priority)
+
+
+
+
+if __name__ == '__main__':
+    main(sys.argv[1:])
