@@ -49,8 +49,8 @@ def usage(argv0, out_file):
 
 def show_actions():
     print
-    print "Supported actions and their arguments."
-    print "======================================"
+    print 'Supported actions and their arguments.'
+    print '======================================'
     print
 
     class AllActions(Manager.CoreActions, Manager.ZapataActions):
@@ -64,11 +64,11 @@ def show_actions():
     for name, method in methods:
         arg_spec = inspect.getargspec(method)
         arg_spec[0].pop(0)
-        print "   Action:", name
+        print '   Action:', name
 
         fmt = inspect.formatargspec(*arg_spec)[1:-1]
         if fmt:
-            print "Arguments:", fmt
+            print 'Arguments:', fmt
 
         foo = [ x.strip() for x in method.__doc__.strip().splitlines() ]
         print '           ' + '\n           '.join(foo)
