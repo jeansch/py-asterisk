@@ -319,6 +319,12 @@ class BaseManager(Asterisk.Logging.InstanceLogger):
                     raise GoneAwayError('Asterisk Manager connection has gone away.')
 
                 self.log.packet('_read_packet: %r', packet)
+
+                if discard_events and 'Event' in packet:
+                    self.log.debug('_read_packet() discarding: %r.', packet)
+                    packet.clear()
+                    continue
+
                 self.log.debug('_read_packet() completed.')
                 return packet
 
@@ -393,20 +399,9 @@ class BaseManager(Asterisk.Logging.InstanceLogger):
     def read(self):
         'Called by the parent code when activity is detected on our fd.'
 
-        # Temporary contrived workaround for Asterisk/py-asterisk issue.
-        self.sock.setblocking(0)
-
-        try:
-            try:
-                packet = self._read_packet()
-                self._dispatch_packet(packet)
-
-            except IOError, error:
-                if error.errno == errno.EAGAIN:
-                    self.log.debug('read() got no data!')
-
-        finally:
-            self.sock.setblocking(1)
+        self.log.debug('Activity detected on our fd.')
+        packet = self._read_packet()
+        self._dispatch_packet(packet)
 
 
     def read_response(self, id):
