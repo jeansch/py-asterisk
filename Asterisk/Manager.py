@@ -609,22 +609,22 @@ class CoreActions(object):
     def Queues(self):
         'Return a complex nested dict describing queue statii.'
 
-        id = self._write_action('Queues')
+        id = self._write_action('QueueStatus')
         self._raise_failure(self.read_response(id))
         queues = {}
 
-        def on_QueueParams(self, event):
+        def on_QueueParams(event):
             name = event.pop('Queue')
             event['members'] = {}
             del event['Event']
 
             queues[name] = event
     
-        def on_QueueMember(self, event):
+        def on_QueueMember(event):
             del event['Event']
             queues[name]['member'][event.pop('Location')] = event
 
-        def on_QueueStatusEnd(self, event):
+        def on_QueueStatusEnd(event):
             stop_flag[0] = True
 
         stop_flag = [ False ]

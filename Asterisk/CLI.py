@@ -79,11 +79,29 @@ def show_actions():
 
 def execute_action(manager, argv):
     method_name = argv.pop(0)
-    method = getattr(manager, method_name)
+    method_dict = dict(\
+        [ (k.lower(), v) for (k, v) in inspect.getmembers(manager) \
+        if inspect.ismethod(v) ])
+
+    method = method_dict[method_name]
     res = method(*argv)
 
     if isinstance(res, list):
         print '\n'.join(res)
+
+    elif isinstance(res, dict):
+        for key, val in res.iteritems():
+            if isinstance(val, str):
+                print '%s: %s' % (key, val)
+            elif isinstance(val, list):
+                print '%s:'
+                sys.stdout.write('   ')
+                print '\n   '.join(res)
+            elif isinstance(res, dict):
+                print '%s:' % key
+                for subkey, subval in val.iteritems():
+                    print '   %s: %s' % (subkey, subval)
+            print
 
     else:
         import pprint
