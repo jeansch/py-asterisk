@@ -8,7 +8,7 @@
 <td valign=bottom>&nbsp;<br>
 <font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong><a href="Asterisk.html"><font color="#ffffff">Asterisk</font></a>.Manager</strong></big></big></font></td
 ><td align=right valign=bottom
-><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="file:/home/dw/www/botanicus.net/dw/tmp/py-asterisk/trunk/Asterisk/Manager.py">/home/dw/www/botanicus.net/dw/tmp/py-asterisk/trunk/Asterisk/Manager.py</a></font></td></tr></table>
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="file:/usr/src/ks-voip/py-asterisk/Asterisk/Manager.py">/usr/src/ks-voip/py-asterisk/Asterisk/Manager.py</a></font></td></tr></table>
     <p><tt>Asterisk&nbsp;<a href="#Manager">Manager</a>&nbsp;API&nbsp;interface&nbsp;module&nbsp;for&nbsp;Python.<br>
 &nbsp;<br>
 This&nbsp;module&nbsp;provides&nbsp;an&nbsp;<a href="__builtin__.html#object">object</a>&nbsp;oriented&nbsp;interface&nbsp;to&nbsp;the&nbsp;Asterisk&nbsp;<a href="#Manager">Manager</a>&nbsp;API,<br>
@@ -92,6 +92,7 @@ Asynchronous&nbsp;Usage:<br>
 <dt><font face="helvetica, arial"><a href="Asterisk.Manager.html#ActionFailed">ActionFailed</a>
 </font></dt><dt><font face="helvetica, arial"><a href="Asterisk.Manager.html#AuthenticationFailure">AuthenticationFailure</a>
 </font></dt><dt><font face="helvetica, arial"><a href="Asterisk.Manager.html#CommunicationError">CommunicationError</a>
+</font></dt><dt><font face="helvetica, arial"><a href="Asterisk.Manager.html#GoneAwayError">GoneAwayError</a>
 </font></dt><dt><font face="helvetica, arial"><a href="Asterisk.Manager.html#InternalError">InternalError</a>
 </font></dt><dt><font face="helvetica, arial"><a href="Asterisk.Manager.html#PermissionDenied">PermissionDenied</a>
 </font></dt></dl>
@@ -131,11 +132,9 @@ Asynchronous&nbsp;Usage:<br>
 <dd><a href="exceptions.html#Exception">exceptions.Exception</a></dd>
 </dl>
 <hr>
-Methods defined here:<br>
-<dl><dt><a name="ActionFailed-__init__"><strong>__init__</strong></a>(self, message)</dt></dl>
-
-<hr>
 Methods inherited from <a href="Asterisk.html#BaseException">Asterisk.BaseException</a>:<br>
+<dl><dt><a name="ActionFailed-__init__"><strong>__init__</strong></a>(self, error)</dt></dl>
+
 <dl><dt><a name="ActionFailed-__str__"><strong>__str__</strong></a>(self)</dt></dl>
 
 <hr>
@@ -159,13 +158,13 @@ Methods inherited from <a href="exceptions.html#Exception">exceptions.Exception<
 </dl>
 <hr>
 Methods inherited from <a href="Asterisk.html#BaseException">Asterisk.BaseException</a>:<br>
+<dl><dt><a name="AuthenticationFailure-__init__"><strong>__init__</strong></a>(self, error)</dt></dl>
+
 <dl><dt><a name="AuthenticationFailure-__str__"><strong>__str__</strong></a>(self)</dt></dl>
 
 <hr>
 Methods inherited from <a href="exceptions.html#Exception">exceptions.Exception</a>:<br>
 <dl><dt><a name="AuthenticationFailure-__getitem__"><strong>__getitem__</strong></a>(...)</dt></dl>
-
-<dl><dt><a name="AuthenticationFailure-__init__"><strong>__init__</strong></a>(...)</dt></dl>
 
 </td></tr></table> <p>
 <table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
@@ -183,13 +182,13 @@ Methods inherited from <a href="exceptions.html#Exception">exceptions.Exception<
 </dl>
 <hr>
 Methods inherited from <a href="Asterisk.html#BaseException">Asterisk.BaseException</a>:<br>
+<dl><dt><a name="BaseException-__init__"><strong>__init__</strong></a>(self, error)</dt></dl>
+
 <dl><dt><a name="BaseException-__str__"><strong>__str__</strong></a>(self)</dt></dl>
 
 <hr>
 Methods inherited from <a href="exceptions.html#Exception">exceptions.Exception</a>:<br>
 <dl><dt><a name="BaseException-__getitem__"><strong>__getitem__</strong></a>(...)</dt></dl>
-
-<dl><dt><a name="BaseException-__init__"><strong>__init__</strong></a>(...)</dt></dl>
 
 </td></tr></table> <p>
 <table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
@@ -498,10 +497,35 @@ Methods inherited from <a href="Asterisk.Manager.html#ZapataActions">ZapataActio
 <table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
 <tr bgcolor="#ffc8d8">
 <td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="GoneAwayError">class <strong>GoneAwayError</strong></a>(<a href="Asterisk.Manager.html#BaseException">BaseException</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>This&nbsp;exception&nbsp;is&nbsp;raised&nbsp;when&nbsp;the&nbsp;<a href="#Manager">Manager</a>&nbsp;connection&nbsp;becomes&nbsp;closed.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="Asterisk.Manager.html#GoneAwayError">GoneAwayError</a></dd>
+<dd><a href="Asterisk.Manager.html#BaseException">BaseException</a></dd>
+<dd><a href="Asterisk.html#BaseException">Asterisk.BaseException</a></dd>
+<dd><a href="exceptions.html#Exception">exceptions.Exception</a></dd>
+</dl>
+<hr>
+Methods inherited from <a href="Asterisk.html#BaseException">Asterisk.BaseException</a>:<br>
+<dl><dt><a name="GoneAwayError-__init__"><strong>__init__</strong></a>(self, error)</dt></dl>
+
+<dl><dt><a name="GoneAwayError-__str__"><strong>__str__</strong></a>(self)</dt></dl>
+
+<hr>
+Methods inherited from <a href="exceptions.html#Exception">exceptions.Exception</a>:<br>
+<dl><dt><a name="GoneAwayError-__getitem__"><strong>__getitem__</strong></a>(...)</dt></dl>
+
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
 <font color="#000000" face="helvetica, arial"><a name="InternalError">class <strong>InternalError</strong></a>(<a href="Asterisk.Manager.html#BaseException">BaseException</a>)</font></td></tr>
     
 <tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
-<td colspan=2><tt>This&nbsp;exception&nbsp;is&nbsp;raised&nbsp;when&nbsp;an&nbsp;error&nbsp;occurs&nbsp;within&nbsp;the&nbsp;ManagerAPI&nbsp;<a href="__builtin__.html#object">object</a>.<br>&nbsp;</tt></td></tr>
+<td colspan=2><tt>This&nbsp;exception&nbsp;is&nbsp;raised&nbsp;when&nbsp;an&nbsp;error&nbsp;occurs&nbsp;within&nbsp;a&nbsp;<a href="#Manager">Manager</a>&nbsp;<a href="__builtin__.html#object">object</a>.<br>&nbsp;</tt></td></tr>
 <tr><td>&nbsp;</td>
 <td width="100%"><dl><dt>Method resolution order:</dt>
 <dd><a href="Asterisk.Manager.html#InternalError">InternalError</a></dd>
@@ -510,11 +534,9 @@ Methods inherited from <a href="Asterisk.Manager.html#ZapataActions">ZapataActio
 <dd><a href="exceptions.html#Exception">exceptions.Exception</a></dd>
 </dl>
 <hr>
-Methods defined here:<br>
+Methods inherited from <a href="Asterisk.html#BaseException">Asterisk.BaseException</a>:<br>
 <dl><dt><a name="InternalError-__init__"><strong>__init__</strong></a>(self, error)</dt></dl>
 
-<hr>
-Methods inherited from <a href="Asterisk.html#BaseException">Asterisk.BaseException</a>:<br>
 <dl><dt><a name="InternalError-__str__"><strong>__str__</strong></a>(self)</dt></dl>
 
 <hr>
@@ -714,13 +736,13 @@ requested&nbsp;action.<br>&nbsp;</tt></td></tr>
 </dl>
 <hr>
 Methods inherited from <a href="Asterisk.html#BaseException">Asterisk.BaseException</a>:<br>
+<dl><dt><a name="PermissionDenied-__init__"><strong>__init__</strong></a>(self, error)</dt></dl>
+
 <dl><dt><a name="PermissionDenied-__str__"><strong>__str__</strong></a>(self)</dt></dl>
 
 <hr>
 Methods inherited from <a href="exceptions.html#Exception">exceptions.Exception</a>:<br>
 <dl><dt><a name="PermissionDenied-__getitem__"><strong>__getitem__</strong></a>(...)</dt></dl>
-
-<dl><dt><a name="PermissionDenied-__init__"><strong>__init__</strong></a>(...)</dt></dl>
 
 </td></tr></table> <p>
 <table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
