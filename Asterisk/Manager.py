@@ -446,7 +446,7 @@ class CoreActions(object):
     engine.
     '''
 
-    def _temp_events(self, events):
+    def replace_events(self, events):
         '''
         Given a list of functions, temporarily replace on_<funcname> attributes
         to self using those functions. Return a mapping containing undo
@@ -463,7 +463,7 @@ class CoreActions(object):
         return output
 
 
-    def _undo_events(self, mapping):
+    def undo_events(self, mapping):
         '''
         Given a mapping (as returned by _save_methods), update self with those
         methods. Method names with a value of None are ignored.
@@ -661,7 +661,7 @@ class CoreActions(object):
 
         stop_flag = [ False ]
 
-        undo = self._temp_events([ QueueParams, QueueMember, QueueStatusEnd ])
+        undo = self.replace_events([ QueueParams, QueueMember, QueueStatusEnd ])
 
         try:
             while stop_flag[0] == False:
@@ -669,7 +669,7 @@ class CoreActions(object):
                 self._dispatch_packet(packet)
 
         finally:
-            self._undo_events(undo)
+            self.undo_events(undo)
         return queues
 
     QueueStatus = Queues
@@ -733,7 +733,7 @@ class CoreActions(object):
 
 
         stop_flag = [ False ]
-        undo = self._temp_events([ Status, StatusComplete ])
+        undo = self.replace_events([ Status, StatusComplete ])
 
         try:
             while stop_flag[0] == False:
@@ -741,7 +741,7 @@ class CoreActions(object):
                 self._dispatch_packet(packet)
 
         finally:
-            self._undo_events(undo)
+            self.undo_events(undo)
         return channels
 
 
@@ -819,7 +819,7 @@ class ZapataActions(object):
             stop_flag[0] = True
 
         stop_flag = [ False ]
-        undo = self._temp_events([ ZapShowChannels, ZapShowChannelsComplete ])
+        undo = self.replace_events([ ZapShowChannels, ZapShowChannelsComplete ])
 
         try:
             while stop_flag[0] == False:
@@ -827,7 +827,7 @@ class ZapataActions(object):
                 self._dispatch_packet(packet)
 
         finally:
-            self._undo_events(undo)
+            self.undo_events(undo)
         return channels
 
 
