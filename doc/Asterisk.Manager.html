@@ -297,6 +297,10 @@ is&nbsp;not&nbsp;set.</tt></dd></dl>
 
 <dl><dt><a name="CoreActions-Originate"><strong>Originate</strong></a>(self, channel, **kwargs)</dt><dd><tt>Originate&nbsp;a&nbsp;call.</tt></dd></dl>
 
+<dl><dt><a name="CoreActions-Originate2"><strong>Originate2</strong></a>(self, channel, parameters)</dt><dd><tt>Originate&nbsp;a&nbsp;call,&nbsp;using&nbsp;parameters&nbsp;in&nbsp;the&nbsp;mapping&nbsp;&lt;parameters&gt;.<br>
+Provided&nbsp;for&nbsp;compatibility&nbsp;with&nbsp;RPC&nbsp;bridges&nbsp;that&nbsp;do&nbsp;not&nbsp;support&nbsp;keyword<br>
+arguments.</tt></dd></dl>
+
 <dl><dt><a name="CoreActions-ParkedCalls"><strong>ParkedCalls</strong></a>(self)</dt><dd><tt>Return&nbsp;a&nbsp;nested&nbsp;dict&nbsp;describing&nbsp;currently&nbsp;parked&nbsp;calls.</tt></dd></dl>
 
 <dl><dt><a name="CoreActions-Ping"><strong>Ping</strong></a>(self)</dt><dd><tt>No-op&nbsp;to&nbsp;ensure&nbsp;the&nbsp;PBX&nbsp;is&nbsp;still&nbsp;there&nbsp;and&nbsp;keep&nbsp;the&nbsp;connection&nbsp;alive.</tt></dd></dl>
@@ -305,9 +309,9 @@ is&nbsp;not&nbsp;set.</tt></dd></dl>
 
 <dl><dt><a name="CoreActions-QueueRemove"><strong>QueueRemove</strong></a>(self, queue, interface)</dt><dd><tt>Remove&nbsp;&lt;interface&gt;&nbsp;from&nbsp;&lt;queue&gt;.</tt></dd></dl>
 
-<dl><dt><a name="CoreActions-QueueStatus"><strong>QueueStatus</strong></a> = <a href="#CoreActions-Queues">Queues</a>(self)</dt></dl>
+<dl><dt><a name="CoreActions-QueueStatus"><strong>QueueStatus</strong></a>(self)</dt><dd><tt>Return&nbsp;a&nbsp;complex&nbsp;nested&nbsp;dict&nbsp;describing&nbsp;queue&nbsp;statii.</tt></dd></dl>
 
-<dl><dt><a name="CoreActions-Queues"><strong>Queues</strong></a>(self)</dt><dd><tt>Return&nbsp;a&nbsp;complex&nbsp;nested&nbsp;dict&nbsp;describing&nbsp;queue&nbsp;statii.</tt></dd></dl>
+<dl><dt><a name="CoreActions-Queues"><strong>Queues</strong></a> = <a href="#CoreActions-QueueStatus">QueueStatus</a>(self)</dt></dl>
 
 <dl><dt><a name="CoreActions-Redirect"><strong>Redirect</strong></a>(self, channel, context, extension, priority, channel2<font color="#909090">=None</font>)</dt><dd><tt>Redirect&nbsp;&lt;channel&gt;&nbsp;to&nbsp;&lt;priority&gt;&nbsp;of&nbsp;&lt;extension&gt;&nbsp;in&nbsp;&lt;context&gt;,<br>
 optionally&nbsp;bridging&nbsp;with&nbsp;&lt;channel2&gt;</tt></dd></dl>
@@ -379,6 +383,8 @@ Data and other attributes defined here:<br>
 <dl><dt><a name="CoreEventHandlers-on_ParkedCall"><strong>on_ParkedCall</strong></a>(self, event)</dt><dd><tt>Fired&nbsp;when&nbsp;a&nbsp;"ParkedCall"&nbsp;event&nbsp;is&nbsp;seen.</tt></dd></dl>
 
 <dl><dt><a name="CoreEventHandlers-on_ParkedCallsComplete"><strong>on_ParkedCallsComplete</strong></a>(self, event)</dt><dd><tt>Fired&nbsp;when&nbsp;a&nbsp;"ParkedCallsComplete"&nbsp;event&nbsp;is&nbsp;seen.</tt></dd></dl>
+
+<dl><dt><a name="CoreEventHandlers-on_QueueEntry"><strong>on_QueueEntry</strong></a>(self, event)</dt><dd><tt>Fired&nbsp;when&nbsp;a&nbsp;"QueueEntry"&nbsp;event&nbsp;is&nbsp;seen.</tt></dd></dl>
 
 <dl><dt><a name="CoreEventHandlers-on_QueueMember"><strong>on_QueueMember</strong></a>(self, event)</dt><dd><tt>Fired&nbsp;when&nbsp;a&nbsp;"QueueMember"&nbsp;event&nbsp;is&nbsp;seen.</tt></dd></dl>
 
@@ -483,6 +489,10 @@ is&nbsp;not&nbsp;set.</tt></dd></dl>
 
 <dl><dt><a name="CoreManager-Originate"><strong>Originate</strong></a>(self, channel, **kwargs)</dt><dd><tt>Originate&nbsp;a&nbsp;call.</tt></dd></dl>
 
+<dl><dt><a name="CoreManager-Originate2"><strong>Originate2</strong></a>(self, channel, parameters)</dt><dd><tt>Originate&nbsp;a&nbsp;call,&nbsp;using&nbsp;parameters&nbsp;in&nbsp;the&nbsp;mapping&nbsp;&lt;parameters&gt;.<br>
+Provided&nbsp;for&nbsp;compatibility&nbsp;with&nbsp;RPC&nbsp;bridges&nbsp;that&nbsp;do&nbsp;not&nbsp;support&nbsp;keyword<br>
+arguments.</tt></dd></dl>
+
 <dl><dt><a name="CoreManager-ParkedCalls"><strong>ParkedCalls</strong></a>(self)</dt><dd><tt>Return&nbsp;a&nbsp;nested&nbsp;dict&nbsp;describing&nbsp;currently&nbsp;parked&nbsp;calls.</tt></dd></dl>
 
 <dl><dt><a name="CoreManager-Ping"><strong>Ping</strong></a>(self)</dt><dd><tt>No-op&nbsp;to&nbsp;ensure&nbsp;the&nbsp;PBX&nbsp;is&nbsp;still&nbsp;there&nbsp;and&nbsp;keep&nbsp;the&nbsp;connection&nbsp;alive.</tt></dd></dl>
@@ -491,9 +501,9 @@ is&nbsp;not&nbsp;set.</tt></dd></dl>
 
 <dl><dt><a name="CoreManager-QueueRemove"><strong>QueueRemove</strong></a>(self, queue, interface)</dt><dd><tt>Remove&nbsp;&lt;interface&gt;&nbsp;from&nbsp;&lt;queue&gt;.</tt></dd></dl>
 
-<dl><dt><a name="CoreManager-QueueStatus"><strong>QueueStatus</strong></a> = Queues(self)</dt><dd><tt>Return&nbsp;a&nbsp;complex&nbsp;nested&nbsp;dict&nbsp;describing&nbsp;queue&nbsp;statii.</tt></dd></dl>
+<dl><dt><a name="CoreManager-QueueStatus"><strong>QueueStatus</strong></a>(self)</dt><dd><tt>Return&nbsp;a&nbsp;complex&nbsp;nested&nbsp;dict&nbsp;describing&nbsp;queue&nbsp;statii.</tt></dd></dl>
 
-<dl><dt><a name="CoreManager-Queues"><strong>Queues</strong></a>(self)</dt><dd><tt>Return&nbsp;a&nbsp;complex&nbsp;nested&nbsp;dict&nbsp;describing&nbsp;queue&nbsp;statii.</tt></dd></dl>
+<dl><dt><a name="CoreManager-Queues"><strong>Queues</strong></a> = QueueStatus(self)</dt><dd><tt>Return&nbsp;a&nbsp;complex&nbsp;nested&nbsp;dict&nbsp;describing&nbsp;queue&nbsp;statii.</tt></dd></dl>
 
 <dl><dt><a name="CoreManager-Redirect"><strong>Redirect</strong></a>(self, channel, context, extension, priority, channel2<font color="#909090">=None</font>)</dt><dd><tt>Redirect&nbsp;&lt;channel&gt;&nbsp;to&nbsp;&lt;priority&gt;&nbsp;of&nbsp;&lt;extension&gt;&nbsp;in&nbsp;&lt;context&gt;,<br>
 optionally&nbsp;bridging&nbsp;with&nbsp;&lt;channel2&gt;</tt></dd></dl>
@@ -668,6 +678,8 @@ Methods inherited from <a href="Asterisk.Manager.html#CoreEventHandlers">CoreEve
 
 <dl><dt><a name="Manager-on_ParkedCallsComplete"><strong>on_ParkedCallsComplete</strong></a>(self, event)</dt><dd><tt>Fired&nbsp;when&nbsp;a&nbsp;"ParkedCallsComplete"&nbsp;event&nbsp;is&nbsp;seen.</tt></dd></dl>
 
+<dl><dt><a name="Manager-on_QueueEntry"><strong>on_QueueEntry</strong></a>(self, event)</dt><dd><tt>Fired&nbsp;when&nbsp;a&nbsp;"QueueEntry"&nbsp;event&nbsp;is&nbsp;seen.</tt></dd></dl>
+
 <dl><dt><a name="Manager-on_QueueMember"><strong>on_QueueMember</strong></a>(self, event)</dt><dd><tt>Fired&nbsp;when&nbsp;a&nbsp;"QueueMember"&nbsp;event&nbsp;is&nbsp;seen.</tt></dd></dl>
 
 <dl><dt><a name="Manager-on_QueueParams"><strong>on_QueueParams</strong></a>(self, event)</dt><dd><tt>Fired&nbsp;when&nbsp;a&nbsp;"QueueParams"&nbsp;event&nbsp;is&nbsp;seen.</tt></dd></dl>
@@ -715,6 +727,10 @@ is&nbsp;not&nbsp;set.</tt></dd></dl>
 
 <dl><dt><a name="Manager-Originate"><strong>Originate</strong></a>(self, channel, **kwargs)</dt><dd><tt>Originate&nbsp;a&nbsp;call.</tt></dd></dl>
 
+<dl><dt><a name="Manager-Originate2"><strong>Originate2</strong></a>(self, channel, parameters)</dt><dd><tt>Originate&nbsp;a&nbsp;call,&nbsp;using&nbsp;parameters&nbsp;in&nbsp;the&nbsp;mapping&nbsp;&lt;parameters&gt;.<br>
+Provided&nbsp;for&nbsp;compatibility&nbsp;with&nbsp;RPC&nbsp;bridges&nbsp;that&nbsp;do&nbsp;not&nbsp;support&nbsp;keyword<br>
+arguments.</tt></dd></dl>
+
 <dl><dt><a name="Manager-ParkedCalls"><strong>ParkedCalls</strong></a>(self)</dt><dd><tt>Return&nbsp;a&nbsp;nested&nbsp;dict&nbsp;describing&nbsp;currently&nbsp;parked&nbsp;calls.</tt></dd></dl>
 
 <dl><dt><a name="Manager-Ping"><strong>Ping</strong></a>(self)</dt><dd><tt>No-op&nbsp;to&nbsp;ensure&nbsp;the&nbsp;PBX&nbsp;is&nbsp;still&nbsp;there&nbsp;and&nbsp;keep&nbsp;the&nbsp;connection&nbsp;alive.</tt></dd></dl>
@@ -723,9 +739,9 @@ is&nbsp;not&nbsp;set.</tt></dd></dl>
 
 <dl><dt><a name="Manager-QueueRemove"><strong>QueueRemove</strong></a>(self, queue, interface)</dt><dd><tt>Remove&nbsp;&lt;interface&gt;&nbsp;from&nbsp;&lt;queue&gt;.</tt></dd></dl>
 
-<dl><dt><a name="Manager-QueueStatus"><strong>QueueStatus</strong></a> = Queues(self)</dt><dd><tt>Return&nbsp;a&nbsp;complex&nbsp;nested&nbsp;dict&nbsp;describing&nbsp;queue&nbsp;statii.</tt></dd></dl>
+<dl><dt><a name="Manager-QueueStatus"><strong>QueueStatus</strong></a>(self)</dt><dd><tt>Return&nbsp;a&nbsp;complex&nbsp;nested&nbsp;dict&nbsp;describing&nbsp;queue&nbsp;statii.</tt></dd></dl>
 
-<dl><dt><a name="Manager-Queues"><strong>Queues</strong></a>(self)</dt><dd><tt>Return&nbsp;a&nbsp;complex&nbsp;nested&nbsp;dict&nbsp;describing&nbsp;queue&nbsp;statii.</tt></dd></dl>
+<dl><dt><a name="Manager-Queues"><strong>Queues</strong></a> = QueueStatus(self)</dt><dd><tt>Return&nbsp;a&nbsp;complex&nbsp;nested&nbsp;dict&nbsp;describing&nbsp;queue&nbsp;statii.</tt></dd></dl>
 
 <dl><dt><a name="Manager-Redirect"><strong>Redirect</strong></a>(self, channel, context, extension, priority, channel2<font color="#909090">=None</font>)</dt><dd><tt>Redirect&nbsp;&lt;channel&gt;&nbsp;to&nbsp;&lt;priority&gt;&nbsp;of&nbsp;&lt;extension&gt;&nbsp;in&nbsp;&lt;context&gt;,<br>
 optionally&nbsp;bridging&nbsp;with&nbsp;&lt;channel2&gt;</tt></dd></dl>
