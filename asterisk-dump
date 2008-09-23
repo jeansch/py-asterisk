@@ -4,7 +4,7 @@
 Dump events from the Manager interface to stdout.
 '''
 
-__author__  = 'David M. Wilson <dw-asterisk-dump@botanicus.net>'
+__author__  = 'David Wilson'
 __id__      = '$Id$'
 
 import sys, time, socket

@@ -7,7 +7,7 @@ Recover a channel lost in asterisk. Usage:
 
 '''
 
-__author__  = 'David M. Wilson <dw-asterisk-dump@botanicus.net>'
+__author__  = 'David Wilson'
 __id__      = '$Id: asterisk-dump 3 2004-09-03 01:41:42Z dw $'
 
 import sys

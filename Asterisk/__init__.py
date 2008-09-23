@@ -2,7 +2,7 @@
 Asterisk Manager API Python package.
 '''
 
-__author__ = 'David M. Wilson <dw@botanicus.net>'
+__author__ = 'David Wilson'
 __id__ = '$Id$'
 
 try:

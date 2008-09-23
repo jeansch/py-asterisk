@@ -2,7 +2,7 @@
 Asterisk Manager and Channel objects.
 '''
 
-__author__ = 'David M. Wilson <dw-py-asterisk-Manager.py@botanicus.net>'
+__author__ = 'David Wilson'
 __id__ = '$Id$'
 
 import socket, time, logging, errno, os

@@ -2,7 +2,7 @@
 Asterisk/Logging.py: extensions to the Python 2.3 logging module.
 '''
 
-__author__ = 'David M. Wilson <dw-py-Asterisk-Util.py@botanicus.net>'
+__author__ = 'David Wilson'
 __Id__ = '$Id$'
 
 import logging

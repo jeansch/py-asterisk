@@ -4,7 +4,7 @@
 py-asterisk: User interface to Asterisk.CLI.
 '''
 
-__author__ = 'David M. Wilson <dw-py-asterisk@botanicus.net>'
+__author__ = 'David Wilson'
 __id__ =     '$Id$'
 
 import Asterisk, Asterisk.Manager, Asterisk.CLI

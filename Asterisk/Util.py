@@ -2,7 +2,7 @@
 Asterisk/Util.py: utility classes.
 '''
 
-__author__ = 'David M. Wilson <dw-py-Asterisk-Util.py@botanicus.net>'
+__author__ = 'David Wilson'
 __Id__ = '$Id$'
 
 import sys, copy
