@@ -180,7 +180,7 @@ class BaseManager(Asterisk.Logging.InstanceLogger):
     'Base protocol implementation for the Asterisk Manager API.'
 
     _AST_BANNERS = [
-        'Asterisk Call Manager/1.0\r\n'
+        'Asterisk Call Manager/1.0\r\n',
         'Asterisk Call Manager/1.1\r\n'
     ]
 
