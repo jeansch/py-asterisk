@@ -179,7 +179,10 @@ class ZapChannel(BaseChannel):
 class BaseManager(Asterisk.Logging.InstanceLogger):
     'Base protocol implementation for the Asterisk Manager API.'
 
-    _AST_BANNER = 'Asterisk Call Manager/1.0\r\n'
+    _AST_BANNERS = [
+        'Asterisk Call Manager/1.0\r\n'
+        'Asterisk Call Manager/1.1\r\n'
+    ]
 
 
     def __init__(self, address, username, secret, listen_events = True):
@@ -220,8 +223,10 @@ class BaseManager(Asterisk.Logging.InstanceLogger):
     def _authenticate(self):
         'Read the server banner and attempt to authenticate.'
 
-        if self.file.readline() != self._AST_BANNER:
-            raise Exception('Server banner was incorrect.')
+        banner = sel.file.readline()
+        if banner not in self._AST_BANNERS:
+            raise Exception('banner incorrect; got %r, expected one of %r' %\
+                            (banner, self._AST_BANNERS))
 
         action = {
             'Username': self.username,
