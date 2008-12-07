@@ -223,7 +223,7 @@ class BaseManager(Asterisk.Logging.InstanceLogger):
     def _authenticate(self):
         'Read the server banner and attempt to authenticate.'
 
-        banner = sel.file.readline()
+        banner = self.file.readline()
         if banner not in self._AST_BANNERS:
             raise Exception('banner incorrect; got %r, expected one of %r' %\
                             (banner, self._AST_BANNERS))
