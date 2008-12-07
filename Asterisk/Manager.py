@@ -546,7 +546,10 @@ class CoreActions(object):
         })
 
         response = self._translate_response(self.read_response(id))
-        value = response[variable]
+        if response.has_key(variable):
+            value = response[variable]
+        else:
+            value = response['Value']
 
         if value == '(null)':
             if default is Asterisk.Util.Unspecified:
