@@ -12,8 +12,8 @@ CONFIG_FILENAME = 'py-asterisk.conf'
 
 CONFIG_PATHNAMES = [
     os.environ.get('PYASTERISK_CONF', ''),
-    os.path.join(os.environ.get('HOME', ''), '/.py-asterisk.conf'),
-    os.path.join(os.environ.get('USERPROFILE', ''), '/py-asterisk.conf'),
+    os.path.join(os.environ.get('HOME', ''), '.py-asterisk.conf'),
+    os.path.join(os.environ.get('USERPROFILE', ''), 'py-asterisk.conf'),
     'py-asterisk.conf',
     '/etc/py-asterisk.conf',
     '/etc/asterisk/py-asterisk.conf',
