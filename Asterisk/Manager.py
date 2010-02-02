@@ -725,6 +725,18 @@ class CoreActions(object):
         return self._translate_response(self.read_response(id))
 
 
+    def QueuePause(self, queue, interface, paused):
+        'Pause <interface> in <queue>.'
+       
+        id = self._write_action('QueuePause', {
+            'Queue': queue,
+            'Interface': interface,
+            'Paused': paused and 'true' or 'false'
+        })
+
+        return self._translate_response(self.read_response(id))
+       
+
     def QueueRemove(self, queue, interface):
         'Remove <interface> from <queue>.'
 

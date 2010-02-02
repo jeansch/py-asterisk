@@ -41,7 +41,7 @@ Asynchronous Usage:
         objects_to_watch = [ manager, gui, etc ]
 
         while True:
-            for obj in select.select(objects_to_watch, [], [])[1]:
+            for obj in select.select(objects_to_watch, [], [])[0]:
                 if obj is manager:
                     manager.read()
                 else if obj is gui:
