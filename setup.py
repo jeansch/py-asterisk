@@ -12,11 +12,11 @@ from distutils.core import setup
 
 setup(
     name =          'py-Asterisk',
-    version =       '0.1',
+    version =       '0.1a4',
     description =   'Asterisk Manager API Python interface.',
-    author =        'David Wilson',
+    author =        'David Wilson <dw@botanicus.net>',
     license =       'MIT',
-    url =           'http://py-asterisk.berlios.de/',
+    url =           'http://code.google.com/p/py-asterisk/',
     packages =      [ 'Asterisk' ],
     scripts =       [ 'asterisk-dump', 'py-asterisk' ],
     data_files =    [ ('/etc/asterisk', ['conf/py-asterisk.conf.sample']) ]
