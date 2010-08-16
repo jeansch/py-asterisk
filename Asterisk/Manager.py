@@ -639,7 +639,11 @@ class CoreActions(object):
             <async>         Return successfully immediately.
         '''
 
-        has_dialplan = None not in (channel, context, extension)
+        # Since channel is a required parameter, no need including it here.
+        # As a matter of fact, including it here, generates an AttributeError
+        # because 'None' does not have an 'id' attribute which is required in
+        # checking equality with an object like channel
+        has_dialplan = None not in (context, extension)
         has_application = application is not None
 
 
