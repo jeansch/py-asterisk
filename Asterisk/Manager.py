@@ -5,7 +5,7 @@ Asterisk Manager and Channel objects.
 __author__ = 'David Wilson'
 __id__ = '$Id$'
 
-import socket, time, logging, errno, os
+import socket, time, logging, errno, os, re
 from new import instancemethod
 import Asterisk, Asterisk.Util, Asterisk.Logging
 
@@ -303,10 +303,13 @@ class BaseManager(Asterisk.Logging.InstanceLogger):
                 # Asterisk is a pile of shite!!!!!!!!!
                 packet.ActionID = line[10:]
 
-            elif not line or line == '--END COMMAND--':
+            elif line == '--END COMMAND--':
                 self.file.readline()
                 self.log.debug('Completed _read_response_follows().')
                 return packet
+
+            elif not line:
+                self.log.debug('Empty line encountered.')
 
             else:
                 lines.append(line)
@@ -316,7 +319,7 @@ class BaseManager(Asterisk.Logging.InstanceLogger):
         '''
         Read a set of packet from the Manager API, stopping when a "\r\n\r\n"
         sequence is read. Return the packet as a mapping.
-        
+
         If <discard_events> is True, discard all Event packets and wait for a
         Response packet, this is used while closing down the channel.
         '''
@@ -344,6 +347,8 @@ class BaseManager(Asterisk.Logging.InstanceLogger):
 
             if line.count(':') == 1 and line[-1] == ':': # Empty field:
                 key, val = line[:-1], ''
+            elif line.count(',') == 1 and line[0] == ' ': # ChannelVariable
+                key, val = line[1:].split(',', 1)
             else:
                 key, val = line.split(': ', 1)
 
@@ -516,6 +521,19 @@ class CoreActions(object):
         return self._translate_response(self.read_response(id))['Lines']
 
 
+    def DBGet(self, family, key):
+        'Retrieve a key from the Asterisk database'
+
+        id = self._write_action('DBGet', {'Family': family, 'Key': key})
+        try:
+            response = self._translate_response(self.read_response(id))
+        except Asterisk.Manager.ActionFailed as e:
+            return str(e)
+        if response.get('Response') == 'Success':
+            packet = self._read_packet()
+        return packet.get('Value')
+
+
     def Events(self, categories):
         'Filter received events to only those in the list <categories>.'
 
@@ -523,15 +541,20 @@ class CoreActions(object):
         return self._translate_response(self.read_response(id))
 
 
-    def ExtensionState(self, context, extension):
-        'Return the state of <extension> in <context>.'
-        # TODO: what is this?
+    def ExtensionStates(self):
+        'Return nested dictionary of contexts, extensions and their state'
 
-        id = self._write_action('ExtensionState', {
-            'Context': context,
-            'Exten': extension
-        })
-        return self._translate_response(self.read_response(id))
+        hint_re = re.compile(r'\s+(\d+)@(\S+).+State:(\S+)')
+        state_dict = dict()
+        for line in self.Command('core show hints'):
+            match = hint_re.search(line)
+            if match:
+                extension, context, state = match.groups()
+                if context in state_dict:
+                    state_dict[context][extension] = state
+                else:
+                    state_dict[context] = {extension: state}
+        return state_dict
 
 
     def Getvar(self, channel, variable, default = Asterisk.Util.Unspecified):
@@ -600,6 +623,40 @@ class CoreActions(object):
 
         id = self._write_action('MailboxStatus', { 'Mailbox': mailbox })
         return int(self._translate_response(self.read_response(id))['Waiting'])
+
+    def MeetMe(self):
+        '''
+        Return list of dictionaries containing confnum, parties, marked, activity and creation.
+        Returns empty list if no conferences active.
+        '''
+
+        resp = self.Command('meetme')
+        meetme_list = list()
+        if resp[1] == 'No active MeetMe conferences.':
+            return meetme_list
+        else:
+            meetme_re = re.compile(r'^(?P<confnum>\d+)\s+(?P<parties>\d+)\s+(?P<marked>\S+)\s+(?P<activity>\S+)\s+(?P<creation>\S+)')
+            for line in resp:
+                match = meetme_re.search(line)
+                if match:
+                    meetme_list.append(match.groupdict())
+        return meetme_list
+
+
+    def MeetMeList(self, confnum):
+        'Lists users in conferences'
+
+        resp = self.Command('meetme list %s' % confnum)
+        caller_list = list()
+        if (resp[1] == 'No active conferences.') or ('No such conference' in resp[1]):
+            return caller_list
+        else:
+            meetme_re = re.compile(r'^User #: (?P<usernum>\d+)\s+(?P<callerid>.+)\s+Channel: (?P<channel>\S+)\s+\((?P<monitor>.+)\)\s+(?P<duration>\S+)')
+            for line in resp:
+                match = meetme_re.search(line)
+                if match:
+                    caller_list.append(match.groupdict())
+        return caller_list
 
 
     def Monitor(self, channel, pathname, format, mix):
@@ -766,24 +823,24 @@ class CoreActions(object):
             queue['members'] = {}
             queue['entries'] = {}
             queues[queue.pop('Queue')] = queue
-    
+
         def QueueMember(self, event):
             member = self.strip_evinfo(event)
             queues[member.pop('Queue')]['members'][member.pop('Location')] = member
-            
+
         def QueueEntry(self, event):
             entry = self.strip_evinfo(event)
             queues[entry.pop('Queue')]['entries'][event.pop('Channel')] = entry
 
-        def QueueStatusEnd(self, event):
+        def QueueStatusComplete(self, event):
             stop_flag[0] = True
 
         events = Asterisk.Util.EventCollection([
-            QueueParams, QueueMember, QueueEntry, QueueStatusEnd])
+            QueueParams, QueueMember, QueueEntry, QueueStatusComplete])
         self.events += events
 
         try:
-            stop_flag = [ False ]
+            stop_flag = [False]
 
             while stop_flag[0] == False:
                 packet = self._read_packet()
@@ -837,6 +894,13 @@ class CoreActions(object):
 
         return self._translate_response(self.read_response(id))
  
+
+    def SipShowPeer(self, peer):
+        id = self._write_action('SIPshowpeer', {'Peer': peer})
+        showpeer = self._translate_response(self.read_response(id))
+        del showpeer['Response']
+        return showpeer
+
 
     def Status(self):
         'Return a nested dict of channel statii.'
