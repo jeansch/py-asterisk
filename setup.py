@@ -12,7 +12,7 @@ from distutils.core import setup
 
 setup(
     name =          'py-Asterisk',
-    version =       '0.1a4',
+    version =       '0.2',
     description =   'Asterisk Manager API Python interface.',
     author =        'David Wilson',
     author_email =  'dw@botanicus.net',
