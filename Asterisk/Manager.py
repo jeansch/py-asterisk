@@ -893,9 +893,10 @@ class CoreActions(object):
         })
 
         return self._translate_response(self.read_response(id))
- 
+
 
     def SipShowPeer(self, peer):
+        'Fetch the status of SIP peer <peer>.'
         id = self._write_action('SIPshowpeer', {'Peer': peer})
         showpeer = self._translate_response(self.read_response(id))
         del showpeer['Response']
@@ -913,7 +914,7 @@ class CoreActions(object):
             event = self.strip_evinfo(event)
             name = event.pop('Channel')
             channels[name] = event
-    
+
         def StatusComplete(self, event):
             stop_flag[0] = True
 
