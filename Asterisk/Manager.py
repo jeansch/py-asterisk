@@ -185,7 +185,8 @@ class BaseManager(Asterisk.Logging.InstanceLogger):
     ]
 
 
-    def __init__(self, address, username, secret, listen_events = True):
+    def __init__(self, address, username, secret, listen_events=True,
+            timeout=None):
         '''
         Provide communication methods for the PBX instance running at
         <address>. Authenticate using <username> and <secret>. Receive event
@@ -203,6 +204,7 @@ class BaseManager(Asterisk.Logging.InstanceLogger):
         self.log.debug('Initialising.')
 
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.settimeout(timeout)
         sock.connect(address)
 
         self.file = sock.makefile('r+', 0) # line buffered.
