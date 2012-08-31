@@ -64,7 +64,7 @@ class InstanceLogger(object):
         Return the name where log messages for this instance is sent.
         '''
 
-        return '%s.%s.%d' % (self.__module__, self.__class__.__name__, id(self))
+        return '%s.%s' % (self.__module__, self.__class__.__name__)
 
 
     def getLogger(self):
