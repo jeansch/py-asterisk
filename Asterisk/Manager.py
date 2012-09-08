@@ -906,6 +906,36 @@ class CoreActions(object):
         return showpeer
 
 
+    def SipShowRegistry(self):
+        'Return a nested dict of SIP registry.'
+
+        id = self._write_action('SIPshowregistry')
+        self._translate_response(self.read_response(id))
+        registry = {}
+
+        def RegistryEntry(self, event):
+            event = self.strip_evinfo(event)
+            name = event.pop('Host')
+            registry[name] = event
+
+        def RegistrationsComplete(self, event):
+            stop_flag[0] = True
+
+        events = Asterisk.Util.EventCollection([ RegistryEntry, RegistrationsComplete ])
+        self.events += events
+
+        try:
+            stop_flag = [ False ]
+
+            while stop_flag[0] == False:
+                packet = self._read_packet()
+                self._dispatch_packet(packet)
+
+        finally:
+            self.events -= events
+        return registry
+
+
     def Status(self):
         'Return a nested dict of channel statii.'
 
