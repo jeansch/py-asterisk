@@ -267,8 +267,13 @@ class BaseManager(Asterisk.Logging.InstanceLogger):
         lines = [ 'Action: ' + action, 'ActionID: ' + id ]
 
         if data is not None:
-            [ lines.append('%s: %s' % item) for item in data.iteritems()
-                if item[1] is not None ]
+            for item in data.iteritems():
+                if item[1] is not None:
+                    if not isinstance(item[1], list):
+                        lines.append('%s: %s' % item)
+                    elif isinstance(item[1], list):
+                        for param in item[1]:
+                            lines.append('%s: %s' % (item[0], param))
 
         self.log.packet('write_action: %r', lines)
 
