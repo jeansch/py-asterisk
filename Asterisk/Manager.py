@@ -5,7 +5,7 @@ Asterisk Manager and Channel objects.
 __author__ = 'David Wilson'
 __id__ = '$Id$'
 
-import socket, time, logging, errno, os, re
+import socket, time, logging, errno, os, re, datetime
 from new import instancemethod
 import Asterisk, Asterisk.Util, Asterisk.Logging
 
@@ -199,13 +199,14 @@ class BaseManager(Asterisk.Logging.InstanceLogger):
         self.secret = secret
         self.listen_events = listen_events
         self.events = Asterisk.Util.EventCollection()
+        self.timeout = timeout
 
         # Configure logging:
         self.log = self.getLogger()
         self.log.debug('Initialising.')
 
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        sock.settimeout(timeout)
+        sock.settimeout(self.timeout)
         sock.connect(address)
 
         self.file = sock.makefile('r+', 0) # line buffered.
@@ -304,7 +305,7 @@ class BaseManager(Asterisk.Logging.InstanceLogger):
             line = self.file.readline().rstrip()
             self.log.io('_read_response_follows: recv %r', line)
             line_nr += 1
-
+            empty_line_ts = None
             # In some case, ActionID is the line 2 the first starting with
             # 'Privilege:'
             if line_nr in [1, 2] and line.startswith('ActionID: '):
@@ -317,6 +318,14 @@ class BaseManager(Asterisk.Logging.InstanceLogger):
                 return packet
 
             elif not line:
+                if self.timeout:
+                    now = datetime.datetime.now()
+                    if empty_line_ts is None:
+                        empty_line_ts = now
+                    else:
+                        if (now - empty_line_ts).seconds > self.timeout:
+                            self.log.debug("Bogus asterisk 'Command' answer.'")
+                            raise CommunicationError(packet, 'expected --END COMMAND--')
                 self.log.debug('Empty line encountered.')
 
             else:
