@@ -300,12 +300,11 @@ class BaseManager(Asterisk.Logging.InstanceLogger):
             'Response': 'Follows', 'Lines': lines
         })
         line_nr = 0
-
+        empty_line_ts = None
         while True:
             line = self.file.readline().rstrip()
             self.log.io('_read_response_follows: recv %r', line)
             line_nr += 1
-            empty_line_ts = None
             # In some case, ActionID is the line 2 the first starting with
             # 'Privilege:'
             if line_nr in [1, 2] and line.startswith('ActionID: '):
