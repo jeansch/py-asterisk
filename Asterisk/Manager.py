@@ -367,8 +367,13 @@ class BaseManager(Asterisk.Logging.InstanceLogger):
             elif line.count(',') == 1 and line[0] == ' ': # ChannelVariable
                 key, val = line[1:].split(',', 1)
             else:
-                key, val = line.split(': ', 1)
-
+                # Some asterisk features like 'XMPP' presence
+                # send bogus packets with empty lines in the datas
+                # We should properly fail on those packets.
+                try:
+                    key, val = line.split(': ', 1)
+                except:
+                    raise InternalError('Malformed packet detected: %r' % (packet,))
             if key == 'Response' and val == 'Follows':
                 return self._read_response_follows()
 
