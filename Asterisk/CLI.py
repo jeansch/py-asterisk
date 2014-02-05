@@ -7,8 +7,14 @@ Asterisk/CLI.py: Command-line wrapper around the Asterisk Manager API.
 __author__ = 'David M. Wilson <dw@autosols.com>'
 __id__ = '$Id$'
 
-import sys, os, inspect
-from Asterisk import Manager, BaseException, Config
+from __future__ import absolute_import
+import inspect
+import os
+import sys
+
+from Asterisk import BaseException
+from Asterisk import Config
+from Asterisk import Manager
 import Asterisk.Util
 
 

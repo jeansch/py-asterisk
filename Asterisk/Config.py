@@ -2,7 +2,10 @@
 Asterisk/Config.py: filesystem configuration reader.
 '''
 
-import os, ConfigParser
+from __future__ import absolute_import
+import ConfigParser
+import os
+
 import Asterisk
 
 

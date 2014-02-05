@@ -5,14 +5,18 @@ Asterisk Manager and Channel objects.
 __author__ = 'David Wilson'
 __id__ = '$Id$'
 
-import socket, time, logging, errno, os, re, datetime
-from new import instancemethod
-import Asterisk, Asterisk.Util, Asterisk.Logging
+from __future__ import absolute_import
+import datetime
+import errno
+import logging
+import os
+import re
+import socket
+import time
 
-
-
-
-
+import Asterisk
+import Asterisk.Util
+import Asterisk.Logging
 
 
 # Your ParentBaseException class should provide a __str__ method that combined

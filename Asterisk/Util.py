@@ -5,7 +5,10 @@ Asterisk/Util.py: utility classes.
 __author__ = 'David Wilson'
 __Id__ = '$Id$'
 
-import sys, copy
+from __future__ import absolute_import
+import copy
+import sys
+
 import Asterisk
 from Asterisk import Logging
 
