@@ -1,3 +1,5 @@
+# 2015-01-04: New maintainer found (jeansch), thanks to David Wilson for all the past work !
+
 # 2014-04-15: I have not used Asterisk in a decade. This package urgently needs a new maintainer!
 
 # 2012-11-29: Downloads have been moved to Cheese Shop, to facilitate easier development
