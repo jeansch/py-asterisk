@@ -555,6 +555,14 @@ class CoreActions(object):
         return packet.get('Value')
 
 
+    def DBPut(self, family, key, value):
+        'Store a value in the Asterisk database'
+
+        id = self._write_action('DBPut', {'Family': family, 'Key': key, 'Val': value})
+
+        return self._translate_response(self.read_response(id))
+
+
     def Events(self, categories):
         'Filter received events to only those in the list <categories>.'
 
