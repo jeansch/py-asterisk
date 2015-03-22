@@ -542,6 +542,73 @@ class CoreActions(object):
         return self._translate_response(self.read_response(id))['Lines']
 
 
+    def ConfbridgeListRooms(self):
+        '''
+        Return a list of dictionaries containing room_name, users_count, marked_users and locked.
+        Returns empty list if no conferences active.
+        '''
+
+        resp = self.Command('confbridge list')
+        rooms = list()
+
+        cb_re = re.compile(r'^(?P<room_name>\S+)(\s+)(?P<users>\S+)(\s+)(?P<marked_users>\S+)(\s+)(?P<locked>\S+)')
+        for line in resp[3:]:
+            match = cb_re.search(line)
+            if match:
+                rooms.append(match.groupdict())
+        return rooms
+
+
+    def ConfbridgeList(self, room):
+        '''
+        Return a list of dictionaries containing channel, user_profile, bridge_profile, menu, caller_id and muted.
+        Returns empty list if <room> was not found.
+        '''
+
+        resp = self.Command('confbridge list %s' % room)
+        parties = list()
+
+        if ('No conference bridge named' in resp[1]):
+            return parties
+        else:
+            confbridge_re = re.compile(r'^(?P<channel>SIP/\S+)\s+(?P<user_profile>\S+)\s+(?P<bridge_profile>\S+)\s+(?P<menu>\w*)\s+(?P<caller_id>\S+)\s+(?P<muted>\S+)')
+            for line in resp:
+                match = confbridge_re.search(line)
+                if match:
+                    parties.append(match.groupdict())
+            return parties
+
+
+    def ConfbridgeKick(self, room, channel):
+        '''
+        Kicks <channel> from conference <room>.
+        Returns boolean.
+        '''
+
+        resp = self.Command('confbridge kick %s %s' % (room, channel))
+        return not 'No participant named' in resp[1]
+
+
+    def ConfbridgeMute(self, room, channel):
+        '''
+        Mutes <channel> in conference <room>.
+        Returns boolean.
+        '''
+
+        resp = self.Command('confbridge mute %s %s' % (room, channel))
+        return not 'No channel named' in resp[1]
+
+
+    def ConfbridgeUnmute(self, room, channel):
+        '''
+        Unmutes <channel> in conference <room>.
+        Returns boolean.
+        '''
+
+        resp = self.Command('confbridge unmute %s %s' % (room, channel))
+        return not 'No channel named' in resp[1]
+
+
     def DBGet(self, family, key):
         'Retrieve a key from the Asterisk database'
 
@@ -559,7 +626,6 @@ class CoreActions(object):
         'Store a value in the Asterisk database'
 
         id = self._write_action('DBPut', {'Family': family, 'Key': key, 'Val': value})
-
         return self._translate_response(self.read_response(id))
 
 
