@@ -998,6 +998,36 @@ class CoreActions(object):
         return self._translate_response(self.read_response(id))
 
 
+    def CoreShowChannels(self):
+        'Return a list of current channels.'
+
+        id = self._write_action('CoreShowChannels')
+        self._translate_response(self.read_response(id))
+
+        channels = []
+
+        def CoreShowChannel(self, event):
+            name = event.pop('Channel')
+            channels.append(event)
+
+        def CoreShowChannelsComplete(self, event):
+            stop_flag[0] = True
+
+        events = Asterisk.Util.EventCollection([
+            CoreShowChannel, CoreShowChannelsComplete ])
+        self.events += events
+
+        try:
+            stop_flag = [ False ]
+
+            while stop_flag[0] == False:
+                packet = self._read_packet()
+                self._dispatch_packet(packet)
+
+        finally:
+            self.events -= events
+
+        return channels
 
 
 class ZapataActions(object):
@@ -1046,7 +1076,7 @@ class ZapataActions(object):
             event = self.strip_evinfo(event)
             number = int(event.pop('Channel'))
             channels[number] = event
-    
+
         def ZapShowChannelsComplete(self, event):
             stop_flag[0] = True
 
@@ -1073,8 +1103,6 @@ class ZapataActions(object):
 
         id = self._write_action('ZapTransfer', { 'ZapChannel': channel })
         return self._translate_response(self.read_response(id))
-
-
 
 
 class CoreManager(BaseManager, CoreActions, ZapataActions):
