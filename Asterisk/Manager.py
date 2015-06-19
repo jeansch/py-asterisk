@@ -1,10 +1,3 @@
-'''
-Asterisk Manager and Channel objects.
-'''
-
-__author__ = 'David Wilson'
-__id__ = '$Id$'
-
 from __future__ import absolute_import
 import datetime
 import errno
