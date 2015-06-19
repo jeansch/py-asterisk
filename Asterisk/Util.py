@@ -1,10 +1,3 @@
-'''
-Asterisk/Util.py: utility classes.
-'''
-
-__author__ = 'David Wilson'
-__Id__ = '$Id$'
-
 from __future__ import absolute_import
 import copy
 import sys
