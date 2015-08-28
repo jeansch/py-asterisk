@@ -1,15 +1,10 @@
 '''
 Asterisk Manager and Channel objects.
 '''
-
-__author__ = 'David Wilson'
-__id__ = '$Id$'
-
 from __future__ import absolute_import
+
+
 import datetime
-import errno
-import logging
-import os
 import re
 import socket
 import time
@@ -18,9 +13,15 @@ import Asterisk
 import Asterisk.Util
 import Asterisk.Logging
 
+__author__ = 'David Wilson'
+__id__ = '$Id$'
+
+
+# pylint: disable=W0710, W0622
 
 # Your ParentBaseException class should provide a __str__ method that combined
 # _prefix and _error as  ('%s: %s' % (_prefix, _error) or similar.
+
 
 class BaseException(Asterisk.BaseException):
     'Base class for all Asterisk Manager API exceptions.'
@@ -34,7 +35,7 @@ class AuthenticationFailure(BaseException):
 
 class CommunicationError(BaseException):
     'This exception is raised when the PBX responds in an unexpected manner.'
-    def __init__(self, packet, msg = None):
+    def __init__(self, packet, msg=None):
         e = 'Unexpected response from PBX: %r\n' % (msg,)
         self._error = e + ': %r' % (packet,)
 
@@ -60,8 +61,6 @@ class PermissionDenied(BaseException):
     '''
 
     _error = 'Permission denied'
-
-
 
 
 class BaseChannel(Asterisk.Logging.InstanceLogger):
@@ -105,7 +104,7 @@ class BaseChannel(Asterisk.Logging.InstanceLogger):
         'Change the monitor filename of this channel to <pathname>.'
         return self.manager.ChangeMonitor(self, pathname)
 
-    def Getvar(self, variable, default = Asterisk.Util.Unspecified):
+    def Getvar(self, variable, default=Asterisk.Util.Unspecified):
         '''
         Return the value of this channel's <variable>, or <default> if variable
         is not set.
@@ -122,14 +121,15 @@ class BaseChannel(Asterisk.Logging.InstanceLogger):
         'Begin monitoring of this channel into <pathname> using <format>.'
         return self.manager.Monitor(self, pathname, format, mix)
 
-    def Redirect(self, context, extension = 's', priority = 1, channel2 = None):
+    def Redirect(self, context, extension='s', priority=1, channel2=None):
         '''
         Redirect this channel to <priority> of <extension> in <context>,
         optionally bridging with <channel2>.
         '''
-        return self.manager.Redirect(self, context, extension, priority, channel2)
+        return self.manager.Redirect(self, context, extension,
+                                     priority, channel2)
 
-    def SetCDRUserField(self, data, append = False):
+    def SetCDRUserField(self, data, append=False):
         "Append or replace this channel's CDR user field with <data>."
         return self.manager.SetCDRUserField(self, data, append)
 
@@ -154,8 +154,6 @@ class BaseChannel(Asterisk.Logging.InstanceLogger):
         return self.Setvar(key, value)
 
 
-
-
 class ZapChannel(BaseChannel):
     def ZapDNDoff(self):
         'Disable DND status on this Zapata driver channel.'
@@ -178,8 +176,6 @@ class ZapChannel(BaseChannel):
         return self.manager.ZapTransfer(self)
 
 
-
-
 class BaseManager(Asterisk.Logging.InstanceLogger):
     'Base protocol implementation for the Asterisk Manager API.'
 
@@ -191,9 +187,8 @@ class BaseManager(Asterisk.Logging.InstanceLogger):
         'Asterisk Call Manager/2.5.0\r\n'
     ]
 
-
     def __init__(self, address, username, secret, listen_events=True,
-            timeout=None):
+                 timeout=None):
         '''
         Provide communication methods for the PBX instance running at
         <address>. Authenticate using <username> and <secret>. Receive event
@@ -215,12 +210,11 @@ class BaseManager(Asterisk.Logging.InstanceLogger):
         sock.settimeout(self.timeout)
         sock.connect(address)
 
-        self.file = sock.makefile('r+', 0) # line buffered.
+        self.file = sock.makefile('r+', 0)  # line buffered.
         self.fileno = self.file.fileno
 
         self.response_buffer = []
         self._authenticate()
-
 
     def get_channel(self, channel_id):
         'Return a channel object for the given <channel_id>.'
@@ -229,13 +223,12 @@ class BaseManager(Asterisk.Logging.InstanceLogger):
             return ZapChannel(self, channel_id)
         return BaseChannel(self, channel_id)
 
-
     def _authenticate(self):
         'Read the server banner and attempt to authenticate.'
 
         banner = self.file.readline()
         if banner not in self._AST_BANNERS:
-            raise Exception('banner incorrect; got %r, expected one of %r' %\
+            raise Exception('banner incorrect; got %r, expected one of %r' %
                             (banner, self._AST_BANNERS))
 
         action = {
@@ -254,24 +247,22 @@ class BaseManager(Asterisk.Logging.InstanceLogger):
 
         self.log.debug('Authenticated as %r.', self.username)
 
-
     def __repr__(self):
         'Return a string representation of this object.'
 
         return '<%s.%s connected as %s to %s:%d>' %\
             ((self.__module__, self.__class__.__name__,
-             self.username) + self.address)
+              self.username) + self.address)
 
-
-    def _write_action(self, action, data = None):
+    def _write_action(self, action, data=None):
         '''
         Write an <action> request to the Manager API, sending header keys and
         values from the mapping <data>. Return the (string) action identifier
         on success. Values from <data> are omitted if they are None.
         '''
 
-        id = str(time.time()) # Assumes microsecond precision for reliability.
-        lines = [ 'Action: ' + action, 'ActionID: ' + id ]
+        id = str(time.time())  # Assumes microsecond precision for reliability.
+        lines = ['Action: ' + action, 'ActionID: ' + id]
 
         if data is not None:
             for item in data.iteritems():
@@ -291,7 +282,6 @@ class BaseManager(Asterisk.Logging.InstanceLogger):
         self.file.write('\r\n')
         self.log.io('_write_action: send: %r', '\r\n')
         return id
-
 
     def _read_response_follows(self):
         '''
@@ -330,14 +320,14 @@ class BaseManager(Asterisk.Logging.InstanceLogger):
                     else:
                         if (now - empty_line_ts).seconds > self.timeout:
                             self.log.debug("Bogus asterisk 'Command' answer.'")
-                            raise CommunicationError(packet, 'expected --END COMMAND--')
+                            raise CommunicationError(
+                                packet, 'expected --END COMMAND--')
                 self.log.debug('Empty line encountered.')
 
             else:
                 lines.append(line)
 
-
-    def _read_packet(self, discard_events = False):
+    def _read_packet(self, discard_events=False):
         '''
         Read a set of packet from the Manager API, stopping when a "\r\n\r\n"
         sequence is read. Return the packet as a mapping.
@@ -355,7 +345,8 @@ class BaseManager(Asterisk.Logging.InstanceLogger):
 
             if not line:
                 if not packet:
-                    raise GoneAwayError('Asterisk Manager connection has gone away.')
+                    raise GoneAwayError(
+                        'Asterisk Manager connection has gone away.')
 
                 self.log.packet('_read_packet: %r', packet)
 
@@ -366,11 +357,11 @@ class BaseManager(Asterisk.Logging.InstanceLogger):
 
                 self.log.debug('_read_packet() completed.')
                 return packet
-            
+
             val = None
-            if line.count(':') == 1 and line[-1] == ':': # Empty field:
+            if line.count(':') == 1 and line[-1] == ':':  # Empty field:
                 key, val = line[:-1], ''
-            elif line.count(',') == 1 and line[0] == ' ': # ChannelVariable
+            elif line.count(',') == 1 and line[0] == ' ':  # ChannelVariable
                 key, val = line[1:].split(',', 1)
             else:
                 # Some asterisk features like 'XMPP' presence
@@ -379,12 +370,12 @@ class BaseManager(Asterisk.Logging.InstanceLogger):
                 try:
                     key, val = line.split(': ', 1)
                 except:
-                    raise InternalError('Malformed packet detected: %r' % (packet,))
+                    raise InternalError('Malformed packet detected: %r'
+                                        % packet)
             if key == 'Response' and val == 'Follows':
                 return self._read_response_follows()
 
             packet[key] = val
-
 
     def _dispatch_packet(self, packet):
         'Feed a single packet to an event handler.'
@@ -401,8 +392,7 @@ class BaseManager(Asterisk.Logging.InstanceLogger):
         else:
             raise InternalError('Unknown packet type detected: %r' % (packet,))
 
-
-    def _translate_response(self, packet, success = None):
+    def _translate_response(self, packet):
         '''
         Raise an error if the reponse packet reports failure. Convert any
         channel identifiers to their equivalent objects using get_channel().
@@ -420,7 +410,6 @@ class BaseManager(Asterisk.Logging.InstanceLogger):
 
         raise ActionFailed(packet.Message)
 
-
     def _translate_event(self, event):
         '''
         Translate any objects discovered in <event> to Python types.
@@ -430,18 +419,16 @@ class BaseManager(Asterisk.Logging.InstanceLogger):
             if key in event:
                 event[key] = self.get_channel(event[key])
 
-
     def close(self):
         'Log off and close the connection to the PBX.'
 
         self.log.debug('Closing down.')
 
         self._write_action('Logoff')
-        packet = self._read_packet(discard_events = True)
+        packet = self._read_packet(discard_events=True)
         if packet.Response != 'Goodbye':
             raise CommunicationError(packet, 'expected goodbye')
         self.file.close()
-
 
     def read(self):
         'Called by the parent code when activity is detected on our fd.'
@@ -449,7 +436,6 @@ class BaseManager(Asterisk.Logging.InstanceLogger):
         self.log.io('read(): Activity detected on our fd.')
         packet = self._read_packet()
         self._dispatch_packet(packet)
-
 
     def read_response(self, id):
         'Return the response packet found for the given action <id>.'
@@ -459,7 +445,8 @@ class BaseManager(Asterisk.Logging.InstanceLogger):
         while True:
             if buffer:
                 for idx, packet in enumerate(buffer):
-                    # It is an error if no ActionID is sent. This is intentional.
+                    # It is an error if no ActionID is sent.
+                    # This is intentional.
                     if packet.ActionID == id:
                         buffer.pop(idx)
                         packet.pop('ActionID')
@@ -467,11 +454,10 @@ class BaseManager(Asterisk.Logging.InstanceLogger):
 
             packet = self._read_packet()
 
-
             if 'Event' in packet:
                 self._dispatch_packet(packet)
 
-            elif not packet.has_key('ActionID'):
+            elif 'ActionID' not in packet:
                 raise CommunicationError(packet, 'no ActionID')
 
             elif packet.ActionID == id:
@@ -481,18 +467,15 @@ class BaseManager(Asterisk.Logging.InstanceLogger):
             else:
                 buffer.append(packet)
 
-
     def on_Event(self, event):
         'Triggered when an event is received from the Manager.'
 
         self.events.fire(event.Event, self, event)
 
-
     def responses_waiting(self):
         'Return truth if there are unprocessed buffered responses.'
 
         return bool(self.response_buffer)
-
 
     def serve_forever(self):
         'Handle one event at a time until doomsday.'
@@ -500,7 +483,6 @@ class BaseManager(Asterisk.Logging.InstanceLogger):
         while True:
             packet = self._read_packet()
             self._dispatch_packet(packet)
-
 
     def strip_evinfo(self, event):
         '''
@@ -512,9 +494,7 @@ class BaseManager(Asterisk.Logging.InstanceLogger):
         return new
 
 
-
-
-class CoreActions(object):
+class CoreActions(object):  # pylint: disable=R0904
     '''
     Provide methods for Manager API actions exposed by the core Asterisk
     engine.
@@ -530,7 +510,6 @@ class CoreActions(object):
 
         self._translate_response(self.read_response(id))
 
-
     def ChangeMonitor(self, channel, pathname):
         'Change the monitor filename of <channel> to <pathname>.'
 
@@ -541,13 +520,11 @@ class CoreActions(object):
 
         self._translate_response(self.read_response(id))
 
-
     def Command(self, command):
         'Execute console command <command> and return its output lines.'
 
         id = self._write_action('Command', {'Command': command})
         return self._translate_response(self.read_response(id))['Lines']
-
 
     def DBGet(self, family, key):
         'Retrieve a key from the Asterisk database'
@@ -561,13 +538,11 @@ class CoreActions(object):
             packet = self._read_packet()
         return packet.get('Value')
 
-
     def Events(self, categories):
         'Filter received events to only those in the list <categories>.'
 
-        id = self._write_action('Events', { 'EventMask': ','.join(categories) })
+        id = self._write_action('Events', {'EventMask': ','.join(categories)})
         return self._translate_response(self.read_response(id))
-
 
     def ExtensionStates(self):
         'Return nested dictionary of contexts, extensions and their state'
@@ -584,14 +559,13 @@ class CoreActions(object):
                     state_dict[context] = {extension: state}
         return state_dict
 
-
-    def Getvar(self, channel, variable, default = Asterisk.Util.Unspecified):
+    def Getvar(self, channel, variable, default=Asterisk.Util.Unspecified):
         '''
         Return the value of <channel>'s <variable>, or <default> if <variable>
         is not set.
         '''
-
-        self.log.debug('Getvar(%r, %r, default=%r)', channel, variable, default)
+        self.log.debug('Getvar(%r, %r, default=%r)',
+                       channel, variable, default)
 
         id = self._write_action('Getvar', {
             'Channel': channel,
@@ -599,7 +573,7 @@ class CoreActions(object):
         })
 
         response = self._translate_response(self.read_response(id))
-        if response.has_key(variable):
+        if variable in response:
             value = response[variable]
         else:
             value = response['Value']
@@ -614,13 +588,11 @@ class CoreActions(object):
         self.log.debug('Getvar() returning %r', value)
         return value
 
-
     def Hangup(self, channel):
         'Hangup <channel>.'
 
-        id = self._write_action('Hangup', { 'Channel': channel })
+        id = self._write_action('Hangup', {'Channel': channel})
         return self._translate_response(self.read_response(id))
-
 
     def ListCommands(self):
         'Return a dict of all available <action> => <desc> items.'
@@ -630,31 +602,29 @@ class CoreActions(object):
         del commands['Response']
         return commands
 
-
     def Logoff(self):
         'Close the connection to the PBX.'
 
         return self.close()
 
-
     def MailboxCount(self, mailbox):
         'Return a (<new_msgs>, <old_msgs>) tuple for the given <mailbox>.'
         # TODO: this can sum multiple mailboxes too.
 
-        id = self._write_action('MailboxCount', { 'Mailbox': mailbox })
+        id = self._write_action('MailboxCount', {'Mailbox': mailbox})
         result = self._translate_response(self.read_response(id))
         return int(result.NewMessages), int(result.OldMessages)
-
 
     def MailboxStatus(self, mailbox):
         'Return the number of messages in <mailbox>.'
 
-        id = self._write_action('MailboxStatus', { 'Mailbox': mailbox })
+        id = self._write_action('MailboxStatus', {'Mailbox': mailbox})
         return int(self._translate_response(self.read_response(id))['Waiting'])
 
     def MeetMe(self):
         '''
-        Return list of dictionaries containing confnum, parties, marked, activity and creation.
+        Return list of dictionaries containing confnum, parties, marked,
+        activity and creation.
         Returns empty list if no conferences active.
         '''
 
@@ -663,29 +633,36 @@ class CoreActions(object):
         if resp[1] == 'No active MeetMe conferences.':
             return meetme_list
         else:
-            meetme_re = re.compile(r'^(?P<confnum>\d+)\s+(?P<parties>\d+)\s+(?P<marked>\S+)\s+(?P<activity>\S+)\s+(?P<creation>\S+)')
+            meetme_re = re.compile(r'^(?P<confnum>\d+)\s+'
+                                   r'(?P<parties>\d+)\s+'
+                                   r'(?P<marked>\S+)\s+'
+                                   r'(?P<activity>\S+)\s+'
+                                   r'(?P<creation>\S+)')
             for line in resp:
                 match = meetme_re.search(line)
                 if match:
                     meetme_list.append(match.groupdict())
         return meetme_list
 
-
     def MeetMeList(self, confnum):
         'Lists users in conferences'
 
         resp = self.Command('meetme list %s' % confnum)
         caller_list = list()
-        if (resp[1] == 'No active conferences.') or ('No such conference' in resp[1]):
+        if (resp[1] == 'No active conferences.') \
+                or ('No such conference' in resp[1]):
             return caller_list
         else:
-            meetme_re = re.compile(r'^User #: (?P<usernum>\d+)\s+(?P<callerid>.+)\s+Channel: (?P<channel>\S+)\s+\((?P<monitor>.+)\)\s+(?P<duration>\S+)')
+            meetme_re = re.compile(r'^User #: (?P<usernum>\d+)\s+'
+                                   r'(?P<callerid>.+)\s+'
+                                   r'Channel: (?P<channel>\S+)\s+'
+                                   r'\((?P<monitor>.+)\)\s+'
+                                   r'(?P<duration>\S+)')
             for line in resp:
                 match = meetme_re.search(line)
                 if match:
                     caller_list.append(match.groupdict())
         return caller_list
-
 
     def Monitor(self, channel, pathname, format, mix):
         'Begin monitoring of <channel> into <pathname> using <format>.'
@@ -699,10 +676,9 @@ class CoreActions(object):
 
         return self._translate_response(self.read_response(id))
 
-
-    def Originate(self, channel, context = None, extension = None, priority = None,
-    application = None, data = None, timeout = None, caller_id = None,
-    variable = None, account = None, async = None):
+    def Originate(self, channel, context=None, extension=None, priority=None,
+                  application=None, data=None, timeout=None, caller_id=None,
+                  variable=None, account=None, async=None):
         '''
         Originate(channel, context = .., extension = .., priority = ..[, ...])
         Originate(channel, application = ..[, data = ..[, ...]])
@@ -731,29 +707,28 @@ class CoreActions(object):
         has_dialplan = None not in (context, extension)
         has_application = application is not None
 
-
         if has_dialplan and has_application:
-            raise ActionFailed('Originate: dialplan and application calling style are mutually exclusive.')
+            raise ActionFailed('Originate: dialplan and application calling '
+                               'style are mutually exclusive.')
 
         if not (has_dialplan or has_application):
-            raise ActionFailed('Originate: neither dialplan or application calling style used. Refer to documentation.')
+            raise ActionFailed('Originate: neither dialplan or application '
+                               'calling style used. Refer to documentation.')
 
         if not channel:
             raise ActionFailed('Originate: you must specify a channel.')
 
-
         data = {
-            'Channel': channel,             'Context': context,
-            'Exten': extension,             'Priority': priority,
-            'Application': application,     'Data': data,
-            'Timeout': timeout,             'CallerID': caller_id,
-            'Variable': variable,           'Account': account,
+            'Channel': channel, 'Context': context,
+            'Exten': extension, 'Priority': priority,
+            'Application': application, 'Data': data,
+            'Timeout': timeout, 'CallerID': caller_id,
+            'Variable': variable, 'Account': account,
             'Async': int(bool(async))
         }
 
         id = self._write_action('Originate', data)
         return self._translate_response(self.read_response(id))
-
 
     def Originate2(self, channel, parameters):
         '''
@@ -763,7 +738,6 @@ class CoreActions(object):
         '''
 
         return self.Originate(channel, **parameters)
-
 
     def ParkedCalls(self):
         'Return a nested dict describing currently parked calls.'
@@ -776,14 +750,15 @@ class CoreActions(object):
             event = self.strip_evinfo(event)
             parked[event.pop('Exten')] = event
 
-        def ParkedCallsComplete(self, event):
+        def ParkedCallsComplete(self, event):  # pylint: disable=W0613
             stop_flag[0] = True
 
-        events = Asterisk.Util.EventCollection([ ParkedCall, ParkedCallsComplete ])
+        events = Asterisk.Util.EventCollection([ParkedCall,
+                                                ParkedCallsComplete])
         self.events += events
 
         try:
-            stop_flag = [ False ]
+            stop_flag = [False]
 
             while stop_flag[0] == False:
                 packet = self._read_packet()
@@ -794,17 +769,13 @@ class CoreActions(object):
 
         return parked
 
-
-
-
     def Ping(self):
         'No-op to ensure the PBX is still there and keep the connection alive.'
 
         id = self._write_action('Ping')
         return self._translate_response(self.read_response(id))
 
-
-    def QueueAdd(self, queue, interface, penalty = 0):
+    def QueueAdd(self, queue, interface, penalty=0):
         'Add <interface> to <queue> with optional <penalty>.'
 
         id = self._write_action('QueueAdd', {
@@ -815,10 +786,9 @@ class CoreActions(object):
 
         return self._translate_response(self.read_response(id))
 
-
     def QueuePause(self, queue, interface, paused):
         'Pause <interface> in <queue>.'
-       
+
         id = self._write_action('QueuePause', {
             'Queue': queue,
             'Interface': interface,
@@ -826,7 +796,6 @@ class CoreActions(object):
         })
 
         return self._translate_response(self.read_response(id))
-       
 
     def QueueRemove(self, queue, interface):
         'Remove <interface> from <queue>.'
@@ -837,7 +806,6 @@ class CoreActions(object):
         })
 
         return self._translate_response(self.read_response(id))
-
 
     def QueueStatus(self):
         'Return a complex nested dict describing queue statii.'
@@ -854,13 +822,14 @@ class CoreActions(object):
 
         def QueueMember(self, event):
             member = self.strip_evinfo(event)
-            queues[member.pop('Queue')]['members'][member.pop('Location')] = member
+            queues[member.pop('Queue')]['members'][
+                member.pop('Location')] = member
 
         def QueueEntry(self, event):
             entry = self.strip_evinfo(event)
             queues[entry.pop('Queue')]['entries'][event.pop('Channel')] = entry
 
-        def QueueStatusComplete(self, event):
+        def QueueStatusComplete(self, event):  # pylint: disable=W0613
             stop_flag[0] = True
 
         events = Asterisk.Util.EventCollection([
@@ -881,8 +850,8 @@ class CoreActions(object):
 
     Queues = QueueStatus
 
-
-    def Redirect(self, channel, context, extension = 's', priority = 1, channel2 = None):
+    def Redirect(self, channel, context,
+                 extension='s', priority=1, channel2=None):
         '''
         Redirect <channel> to <priority> of <extension> in <context>,
         optionally bridging with <channel2>
@@ -898,8 +867,7 @@ class CoreActions(object):
 
         return self._translate_response(self.read_response(id))
 
-
-    def SetCDRUserField(self, channel, data, append = False):
+    def SetCDRUserField(self, channel, data, append=False):
         "Append or replace <channel>'s CDR user field with <data>'."
 
         id = self._write_action('SetCDRUserField', {
@@ -909,7 +877,6 @@ class CoreActions(object):
         })
 
         return self._translate_response(self.read_response(id))
-
 
     def Setvar(self, channel, variable, value):
         'Set <variable> of <channel> to <value>.'
@@ -922,14 +889,12 @@ class CoreActions(object):
 
         return self._translate_response(self.read_response(id))
 
-
     def SipShowPeer(self, peer):
         'Fetch the status of SIP peer <peer>.'
         id = self._write_action('SIPshowpeer', {'Peer': peer})
         showpeer = self._translate_response(self.read_response(id))
         del showpeer['Response']
         return showpeer
-
 
     def SipShowRegistry(self):
         'Return a nested dict of SIP registry.'
@@ -943,14 +908,15 @@ class CoreActions(object):
             name = event.pop('Host')
             registry[name] = event
 
-        def RegistrationsComplete(self, event):
+        def RegistrationsComplete(self, event):  # pylint: disable=W0613
             stop_flag[0] = True
 
-        events = Asterisk.Util.EventCollection([ RegistryEntry, RegistrationsComplete ])
+        events = Asterisk.Util.EventCollection(
+            [RegistryEntry, RegistrationsComplete])
         self.events += events
 
         try:
-            stop_flag = [ False ]
+            stop_flag = [False]
 
             while stop_flag[0] == False:
                 packet = self._read_packet()
@@ -959,7 +925,6 @@ class CoreActions(object):
         finally:
             self.events -= events
         return registry
-
 
     def Status(self):
         'Return a nested dict of channel statii.'
@@ -973,14 +938,14 @@ class CoreActions(object):
             name = event.pop('Channel')
             channels[name] = event
 
-        def StatusComplete(self, event):
+        def StatusComplete(self, event):  # pylint: disable=W0613
             stop_flag[0] = True
 
-        events = Asterisk.Util.EventCollection([ Status, StatusComplete ])
+        events = Asterisk.Util.EventCollection([Status, StatusComplete])
         self.events += events
 
         try:
-            stop_flag = [ False ]
+            stop_flag = [False]
 
             while stop_flag[0] == False:
                 packet = self._read_packet()
@@ -990,13 +955,11 @@ class CoreActions(object):
             self.events -= events
         return channels
 
-
     def StopMonitor(self, channel):
         'Stop monitoring of <channel>.'
 
-        id = self._write_action('StopMonitor', { 'Channel': channel })
+        id = self._write_action('StopMonitor', {'Channel': channel})
         return self._translate_response(self.read_response(id))
-
 
     def CoreShowChannels(self):
         'Return a list of current channels.'
@@ -1006,19 +969,18 @@ class CoreActions(object):
 
         channels = []
 
-        def CoreShowChannel(self, event):
-            name = event.pop('Channel')
+        def CoreShowChannel(self, event):  # pylint: disable=W0613
             channels.append(event)
 
-        def CoreShowChannelsComplete(self, event):
+        def CoreShowChannelsComplete(self, event):  # pylint: disable=W0613
             stop_flag[0] = True
 
         events = Asterisk.Util.EventCollection([
-            CoreShowChannel, CoreShowChannelsComplete ])
+            CoreShowChannel, CoreShowChannelsComplete])
         self.events += events
 
         try:
-            stop_flag = [ False ]
+            stop_flag = [False]
 
             while stop_flag[0] == False:
                 packet = self._read_packet()
@@ -1043,27 +1005,23 @@ class ZapataActions(object):
 
         return self._translate_response(self.read_response(id))
 
-
     def ZapDNDoff(self, channel):
         'Disable DND status on Zapata driver <channel>.'
 
-        id = self._write_action('ZapDNDoff', { 'ZapChannel': str(int(channel)) })
+        id = self._write_action('ZapDNDoff', {'ZapChannel': str(int(channel))})
         return self._translate_response(self.read_response(id))
-
 
     def ZapDNDon(self, channel):
         'Enable DND status on Zapata driver <channel>.'
 
-        id = self._write_action('ZapDNDon', { 'ZapChannel': str(int(channel)) })
+        id = self._write_action('ZapDNDon', {'ZapChannel': str(int(channel))})
         return self._translate_response(self.read_response(id))
-
 
     def ZapHangup(self, channel):
         'Hangup Zapata driver <channel>.'
 
-        id = self._write_action('ZapHangup', { 'ZapChannel': str(int(channel)) })
+        id = self._write_action('ZapHangup', {'ZapChannel': str(int(channel))})
         return self._translate_response(self.read_response(id))
-
 
     def ZapShowChannels(self):
         'Return a nested dict of Zapata driver channel statii.'
@@ -1077,15 +1035,15 @@ class ZapataActions(object):
             number = int(event.pop('Channel'))
             channels[number] = event
 
-        def ZapShowChannelsComplete(self, event):
+        def ZapShowChannelsComplete(self, event):  # pylint: disable=W0613
             stop_flag[0] = True
 
         events = Asterisk.Util.EventCollection([
-            ZapShowChannels, ZapShowChannelsComplete ])
+            ZapShowChannels, ZapShowChannelsComplete])
         self.events += events
 
         try:
-            stop_flag = [ False ]
+            stop_flag = [False]
 
             while stop_flag[0] == False:
                 packet = self._read_packet()
@@ -1096,12 +1054,11 @@ class ZapataActions(object):
 
         return channels
 
-
     def ZapTransfer(self, channel):
         'Transfer Zapata driver <channel>.'
         # TODO: Does nothing on X100P. What is this for?
 
-        id = self._write_action('ZapTransfer', { 'ZapChannel': channel })
+        id = self._write_action('ZapTransfer', {'ZapChannel': channel})
         return self._translate_response(self.read_response(id))
 
 
@@ -1112,8 +1069,6 @@ class CoreManager(BaseManager, CoreActions, ZapataActions):
     '''
 
     pass
-
-
 
 
 class Manager(BaseManager, CoreActions, ZapataActions):
