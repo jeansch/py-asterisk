@@ -848,6 +848,17 @@ class CoreActions(object):  # pylint: disable=R0904
         id = self._write_action('Ping')
         return self._translate_response(self.read_response(id))
 
+    def Bridge(self, channel1, channel2, tone):
+        'Bridge together two channels'
+
+        id = self._write_action('Bridge', {
+            'Channel1': channel1,
+            'Channel2': channel2,
+            'Tone': tone
+        })
+
+        return self._translate_response(self.read_response(id))
+
     def QueueAdd(self, queue, interface, penalty=0):
         'Add <interface> to <queue> with optional <penalty>.'
 
