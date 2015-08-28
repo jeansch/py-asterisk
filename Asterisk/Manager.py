@@ -179,13 +179,7 @@ class ZapChannel(BaseChannel):
 class BaseManager(Asterisk.Logging.InstanceLogger):
     'Base protocol implementation for the Asterisk Manager API.'
 
-    _AST_BANNERS = [
-        'Asterisk Call Manager/1.0\r\n',
-        'Asterisk Call Manager/1.1\r\n',
-        'Asterisk Call Manager/1.2\r\n',
-        'Asterisk Call Manager/1.3\r\n',
-        'Asterisk Call Manager/2.5.0\r\n'
-    ]
+    _AST_BANNER_PREFIX = 'Asterisk Call Manager'
 
     def __init__(self, address, username, secret, listen_events=True,
                  timeout=None):
@@ -227,10 +221,10 @@ class BaseManager(Asterisk.Logging.InstanceLogger):
         'Read the server banner and attempt to authenticate.'
 
         banner = self.file.readline()
-        if banner not in self._AST_BANNERS:
-            raise Exception('banner incorrect; got %r, expected one of %r' %
-                            (banner, self._AST_BANNERS))
 
+        if not banner.startswith(self._AST_BANNER_PREFIX):
+            raise Exception('banner incorrect; got %r, expected prefix %r' %
+                            (banner, self._AST_BANNER_PREFIX))
         action = {
             'Username': self.username,
             'Secret': self.secret
@@ -526,6 +520,78 @@ class CoreActions(object):  # pylint: disable=R0904
         id = self._write_action('Command', {'Command': command})
         return self._translate_response(self.read_response(id))['Lines']
 
+    def ConfbridgeListRooms(self):
+        '''
+        Return a list of dictionaries containing room_name,
+        users_count, marked_users and locked.
+        Returns empty list if no conferences active.
+        '''
+
+        resp = self.Command('confbridge list')
+        rooms = list()
+
+        cb_re = re.compile(r'^(?P<room_name>\S+)(\s+)'
+                           r'(?P<users>\S+)(\s+)'
+                           r'(?P<marked_users>\S+)(\s+)'
+                           r'(?P<locked>\S+)')
+        for line in resp[3:]:
+            match = cb_re.search(line)
+            if match:
+                rooms.append(match.groupdict())
+        return rooms
+
+    def ConfbridgeList(self, room):
+        '''
+        Return a list of dictionaries containing channel, user_profile,
+        bridge_profile, menu, caller_id and muted.
+        Returns empty list if <room> was not found.
+        '''
+
+        resp = self.Command('confbridge list %s' % room)
+        parties = list()
+
+        if 'No conference bridge named' in resp[1]:
+            return parties
+        else:
+            confbridge_re = re.compile(r'^(?P<channel>SIP/\S+)\s+'
+                                       r'(?P<user_profile>\S+)\s+'
+                                       r'(?P<bridge_profile>\S+)\s+'
+                                       r'(?P<menu>\w*)\s+'
+                                       r'(?P<caller_id>\S+)\s+'
+                                       r'(?P<muted>\S+)')
+            for line in resp:
+                match = confbridge_re.search(line)
+                if match:
+                    parties.append(match.groupdict())
+            return parties
+
+    def ConfbridgeKick(self, room, channel):
+        '''
+        Kicks <channel> from conference <room>.
+        Returns boolean.
+        '''
+
+        resp = self.Command('confbridge kick %s %s' % (room, channel))
+        return 'No participant named' not in resp[1]
+
+    def ConfbridgeMute(self, room, channel):
+        '''
+        Mutes <channel> in conference <room>.
+        Returns boolean.
+        '''
+
+        resp = self.Command('confbridge mute %s %s' % (room, channel))
+        return 'No channel named' not in resp[1]
+
+    def ConfbridgeUnmute(self, room, channel):
+        '''
+        Unmutes <channel> in conference <room>.
+        Returns boolean.
+        '''
+
+        resp = self.Command('confbridge unmute %s %s' % (room, channel))
+        return 'No channel named' not in resp[1]
+
     def DBGet(self, family, key):
         'Retrieve a key from the Asterisk database'
 
@@ -537,6 +603,13 @@ class CoreActions(object):  # pylint: disable=R0904
         if response.get('Response') == 'Success':
             packet = self._read_packet()
         return packet.get('Value')
+
+    def DBPut(self, family, key, value):
+        'Store a value in the Asterisk database'
+
+        id = self._write_action('DBPut',
+                                {'Family': family, 'Key': key, 'Val': value})
+        return self._translate_response(self.read_response(id))
 
     def Events(self, categories):
         'Filter received events to only those in the list <categories>.'
