@@ -123,7 +123,7 @@ class BaseChannel(Asterisk.Logging.InstanceLogger):
 
     def MixMonitorMute(self, channel, direction, state=True):
         'Mute or unmute <direction> of a MixMonitor recording on a <channel>.'
-        return self.manager.MixMonitorMute(self, pathname, format, mix)
+        return self.manager.MixMonitorMute(self, channel, direction, state)
 
     def Redirect(self, context, extension='s', priority=1, channel2=None):
         '''
