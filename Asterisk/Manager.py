@@ -875,6 +875,15 @@ class CoreActions(object):  # pylint: disable=R0904
 
         return self._translate_response(self.read_response(id))
 
+    def PlayDTMF(self, channel, digit):
+        'Plays a dtmf digit on the specified channel'
+        id = self._write_action('PlayDTMF', {
+            'Channel': channel,
+            'Digit': digit
+        })
+
+        return self._translate_response(self.read_response(id))
+
     def QueueAdd(self, queue, interface, penalty=0):
         'Add <interface> to <queue> with optional <penalty>.'
 
