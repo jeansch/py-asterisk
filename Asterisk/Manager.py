@@ -121,6 +121,10 @@ class BaseChannel(Asterisk.Logging.InstanceLogger):
         'Begin monitoring of this channel into <pathname> using <format>.'
         return self.manager.Monitor(self, pathname, format, mix)
 
+    def MixMonitorMute(self, channel, direction, state=True):
+        'Mute or unmute <direction> of a MixMonitor recording on a <channel>.'
+        return self.manager.MixMonitorMute(self, channel, direction, state)
+
     def Redirect(self, context, extension='s', priority=1, channel2=None):
         '''
         Redirect this channel to <priority> of <extension> in <context>,
@@ -749,6 +753,18 @@ class CoreActions(object):  # pylint: disable=R0904
 
         return self._translate_response(self.read_response(id))
 
+    def MixMonitorMute(self, channel, direction, state=True):
+        'Mute or unmute <direction> of a MixMonitor recording on a <channel>.'
+
+        id = self._write_action('MixMonitorMute', {
+            'Channel': channel,
+            'Direction': direction
+            if direction in ['read', 'write'] else 'both',
+            'State': state and '1' or '0'
+        })
+
+        return self._translate_response(self.read_response(id))
+
     def Originate(self, channel, context=None, extension=None, priority=None,
                   application=None, data=None, timeout=None, caller_id=None,
                   variable=None, account=None, async=None):
@@ -833,7 +849,7 @@ class CoreActions(object):  # pylint: disable=R0904
         try:
             stop_flag = [False]
 
-            while stop_flag[0] == False:
+            while stop_flag[0] is False:
                 packet = self._read_packet()
                 self._dispatch_packet(packet)
 
@@ -923,7 +939,7 @@ class CoreActions(object):  # pylint: disable=R0904
         try:
             stop_flag = [False]
 
-            while stop_flag[0] == False:
+            while stop_flag[0] is False:
                 packet = self._read_packet()
                 self._dispatch_packet(packet)
 
@@ -1002,7 +1018,7 @@ class CoreActions(object):  # pylint: disable=R0904
         try:
             stop_flag = [False]
 
-            while stop_flag[0] == False:
+            while stop_flag[0] is False:
                 packet = self._read_packet()
                 self._dispatch_packet(packet)
 
@@ -1031,7 +1047,7 @@ class CoreActions(object):  # pylint: disable=R0904
         try:
             stop_flag = [False]
 
-            while stop_flag[0] == False:
+            while stop_flag[0] is False:
                 packet = self._read_packet()
                 self._dispatch_packet(packet)
 
@@ -1066,7 +1082,7 @@ class CoreActions(object):  # pylint: disable=R0904
         try:
             stop_flag = [False]
 
-            while stop_flag[0] == False:
+            while stop_flag[0] is False:
                 packet = self._read_packet()
                 self._dispatch_packet(packet)
 
@@ -1129,7 +1145,7 @@ class ZapataActions(object):
         try:
             stop_flag = [False]
 
-            while stop_flag[0] == False:
+            while stop_flag[0] is False:
                 packet = self._read_packet()
                 self._dispatch_packet(packet)
 
