@@ -11,7 +11,7 @@ __id__ = '$Id$'
 
 
 setup(name='py-Asterisk',
-      version='0.5.6',
+      version='0.5.7',
       description='Asterisk Manager API Python interface.',
       author='David Wilson',
       author_email='dw@botanicus.net',
