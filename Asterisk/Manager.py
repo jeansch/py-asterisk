@@ -606,7 +606,7 @@ class CoreActions(object):  # pylint: disable=R0904
             return str(e)
         if response.get('Response') == 'Success':
             packet = self._read_packet()
-        return packet.get('Value')
+        return packet.get('Val')
 
     def DBPut(self, family, key, value):
         'Store a value in the Asterisk database'
