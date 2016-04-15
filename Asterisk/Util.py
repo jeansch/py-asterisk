@@ -34,14 +34,14 @@ Unspecified = Unspecified()
 
 class AttributeDict(dict):
     # Fields that can have more that one ocurrency in the manager response or event
-    multivaluefield = ['ChanVariable']
+    multivaluefield = ['ChanVariable', 'DestChanVariable']
 
     def __getattr__(self, key):
         return self[key]
 
     def __setattr__(self, key, value):
         # Assign the multivalue fields correctly in the dictionary
-        
+        print "setting key [%s] to value [%s]" % (key,value)
         if key in self.multivaluefield and len(value.split('=')==2):
             value_splitted = value.split('=')
             if self.has_key(key):
