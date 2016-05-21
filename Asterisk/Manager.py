@@ -2,7 +2,7 @@
 Asterisk Manager and Channel objects.
 '''
 from __future__ import absolute_import
-
+from builtins import object
 
 import datetime
 import re
@@ -208,7 +208,7 @@ class BaseManager(Asterisk.Logging.InstanceLogger):
         sock.settimeout(self.timeout)
         sock.connect(address)
 
-        self.file = sock.makefile('r+', 0)  # line buffered.
+        self.file = sock.makefile('rwb', 0)  # line buffered.
         self.fileno = self.file.fileno
 
         self.response_buffer = []
@@ -224,7 +224,7 @@ class BaseManager(Asterisk.Logging.InstanceLogger):
     def _authenticate(self):
         'Read the server banner and attempt to authenticate.'
 
-        banner = self.file.readline()
+        banner = self.file.readline().decode()
 
         if not banner.startswith(self._AST_BANNER_PREFIX):
             raise Exception('banner incorrect; got %r, expected prefix %r' %
@@ -263,7 +263,7 @@ class BaseManager(Asterisk.Logging.InstanceLogger):
         lines = ['Action: ' + action, 'ActionID: ' + id]
 
         if data is not None:
-            for item in data.iteritems():
+            for item in data.items():
                 if item[1] is not None:
                     if not isinstance(item[1], list):
                         lines.append('%s: %s' % item)
@@ -274,10 +274,10 @@ class BaseManager(Asterisk.Logging.InstanceLogger):
         self.log.packet('write_action: %r', lines)
 
         for line in lines:
-            self.file.write(line + '\r\n')
+            self.file.write(line.encode() + b'\r\n')
             self.log.io('_write_action: send %r', line + '\r\n')
 
-        self.file.write('\r\n')
+        self.file.write(b'\r\n')
         self.log.io('_write_action: send: %r', '\r\n')
         return id
 
@@ -296,7 +296,7 @@ class BaseManager(Asterisk.Logging.InstanceLogger):
         line_nr = 0
         empty_line_ts = None
         while True:
-            line = self.file.readline().rstrip()
+            line = self.file.readline().decode().rstrip()
             self.log.io('_read_response_follows: recv %r', line)
             line_nr += 1
             # In some case, ActionID is the line 2 the first starting with
@@ -338,13 +338,12 @@ class BaseManager(Asterisk.Logging.InstanceLogger):
         self.log.debug('In _read_packet().')
 
         while True:
-            line = self.file.readline().rstrip()
+            line = self.file.readline().decode().rstrip()
             self.log.io('_read_packet: recv %r', line)
 
             if not line:
                 if not packet:
-                    raise GoneAwayError(
-                        'Asterisk Manager connection has gone away.')
+                    raise GoneAwayError('Asterisk Manager connection has gone away.')
 
                 self.log.packet('_read_packet: %r', packet)
 
@@ -404,7 +403,7 @@ class BaseManager(Asterisk.Logging.InstanceLogger):
             return packet
 
         if packet.Message == 'Permission denied':
-            raise PermissionDenied
+            raise PermissionDenied(packet.Message)
 
         raise ActionFailed(packet.Message)
 
@@ -602,7 +601,7 @@ class CoreActions(object):  # pylint: disable=R0904
         id = self._write_action('DBGet', {'Family': family, 'Key': key})
         try:
             response = self._translate_response(self.read_response(id))
-        except Asterisk.Manager.ActionFailed as e:
+        except ActionFailed as e:
             return str(e)
         if response.get('Response') == 'Success':
             packet = self._read_packet()
