@@ -343,8 +343,13 @@ class BaseManager(Asterisk.Logging.InstanceLogger):
 
             if not line:
                 if not packet:
-                    raise GoneAwayError(
-                        'Asterisk Manager connection has gone away.')
+                    try:
+                        self.Ping()
+                    except:
+                        raise GoneAwayError(
+                            'Asterisk Manager connection has gone away.')
+                    else:
+                        continue
 
                 self.log.packet('_read_packet: %r', packet)
 
