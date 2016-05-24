@@ -274,10 +274,10 @@ class BaseManager(Asterisk.Logging.InstanceLogger):
         self.log.packet('write_action: %r', lines)
 
         for line in lines:
-            self.file.write(line + '\r\n')
+            self.file.write(line.encode() + b'\r\n')
             self.log.io('_write_action: send %r', line + '\r\n')
 
-        self.file.write('\r\n')
+        self.file.write(b'\r\n')
         self.log.io('_write_action: send: %r', '\r\n')
         return id
 
@@ -294,8 +294,7 @@ class BaseManager(Asterisk.Logging.InstanceLogger):
         line_nr = 0
         empty_line_ts = None
         while True:
-
-            line = self.file.readline().rstrip()
+            line = self.file.readline().decode().rstrip()
             self.log.io('_read_response_follows: recv %r', line)
             line_nr += 1
             # In some case, ActionID is the line 2 the first starting with
@@ -333,9 +332,8 @@ class BaseManager(Asterisk.Logging.InstanceLogger):
 
         packet = Asterisk.Util.AttributeDict()
         self.log.debug('In _read_packet().')
-
         while True:
-            line = self.file.readline().rstrip()
+            line = self.file.readline().decode().rstrip()
             self.log.io('_read_packet: recv %r', line)
 
             if not line:
