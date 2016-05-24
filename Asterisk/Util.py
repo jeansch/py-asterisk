@@ -2,6 +2,7 @@
 Asterisk/Util.py: utility classes.
 '''
 from __future__ import absolute_import
+from builtins import object
 
 
 import sys
@@ -55,7 +56,7 @@ class AttributeDict(dict):
         self[key] = value
 
     def copy(self):
-        return AttributeDict(self.iteritems())
+        return AttributeDict(iter(self.items()))
 
 
 class EventCollection(Logging.InstanceLogger):
@@ -119,7 +120,7 @@ class EventCollection(Logging.InstanceLogger):
     def copy(self):
         new = self.__class__()
 
-        for name, subscriptions in self.subscriptions.iteritems():
+        for name, subscriptions in self.subscriptions.items():
             new.subscriptions[name] = []
             for subscription in subscriptions:
                 new.subscriptions[name].append(subscription)
@@ -133,7 +134,7 @@ class EventCollection(Logging.InstanceLogger):
         new = self.copy()
 
         try:
-            for name, handlers in collection.subscriptions.iteritems():
+            for name, handlers in collection.subscriptions.items():
                 for handler in handlers:
                     self.subscribe(name, handler)
         except Exception:
@@ -151,7 +152,7 @@ class EventCollection(Logging.InstanceLogger):
         new = self.copy()
 
         try:
-            for name, handlers in collection.subscriptions.iteritems():
+            for name, handlers in collection.subscriptions.items():
                 for handler in handlers:
                     self.unsubscribe(name, handler)
         except Exception:
@@ -173,7 +174,7 @@ def dump_packet(packet, file=sys.stdout):
     else:
         file.write('-- Response: %s\n' % packet.pop('Response'))
 
-    packet = packet.items()
+    packet = list(packet.items())
     packet.sort()
 
     for tuple in packet:
@@ -192,7 +193,7 @@ def dump_human(data, file=sys.stdout, _indent=0):
     Type = type(data)
 
     if Type in (dict, AttributeDict):
-        items = data.items()
+        items = list(data.items())
         items.sort()
 
         for key, val in items:

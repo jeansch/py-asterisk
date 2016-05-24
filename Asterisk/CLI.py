@@ -3,9 +3,11 @@
 '''
 Asterisk/CLI.py: Command-line wrapper around the Asterisk Manager API.
 '''
-from __future__ import absolute_import
 
 # pylint: disable=W0710
+
+from __future__ import absolute_import
+from __future__ import print_function
 
 import inspect
 import os
@@ -52,10 +54,10 @@ def usage(argv0, out_file):
 
 def show_actions(action=None):
     if action is None:
-        print
-        print 'Supported actions and their arguments.'
-        print '======================================'
-        print
+        print()
+        print('Supported actions and their arguments.')
+        print('======================================')
+        print()
 
     class AllActions(Manager.CoreActions, Manager.ZapataActions):
         pass
@@ -69,13 +71,13 @@ def show_actions(action=None):
     for name, method in methods:
         arg_spec = inspect.getargspec(method)
         arg_spec[0].pop(0)
-        print '   Action:', name
+        print('   Action:', name)
         fmt = inspect.formatargspec(*arg_spec)[1:-1]
         if fmt:
-            print 'Arguments:', fmt
+            print('Arguments:', fmt)
         lines = [x.strip() for x in method.__doc__.strip().splitlines()]
-        print '           ' + '\n           '.join(lines)
-        print
+        print('           ' + '\n           '.join(lines))
+        print()
 
 
 def execute_action(manager, argv):
@@ -139,7 +141,7 @@ def command_line(argv):
         try:
             execute_action(manager, argv[2:])
         except TypeError:
-            print "Bad arguments specified. Help for %s:" % (argv[2],)
+            print("Bad arguments specified. Help for %s:" % (argv[2],))
             show_actions(argv[2])
 
     elif command == 'command':
