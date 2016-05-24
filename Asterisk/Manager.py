@@ -3,7 +3,7 @@
 Asterisk Manager and Channel objects.
 '''
 from __future__ import absolute_import
-
+from builtins import object
 
 import datetime
 import re
@@ -214,7 +214,7 @@ class BaseManager(Asterisk.Logging.InstanceLogger):
         sock.settimeout(self.timeout)
         sock.connect(address)
 
-        self.file = sock.makefile('r+', 0)  # line buffered.
+        self.file = sock.makefile('rwb', 0)  # line buffered.
         self.fileno = self.file.fileno
 
         self.response_buffer = []
@@ -230,7 +230,7 @@ class BaseManager(Asterisk.Logging.InstanceLogger):
     def _authenticate(self):
         'Read the server banner and attempt to authenticate.'
 
-        banner = self.file.readline()
+        banner = self.file.readline().decode()
 
         if not banner.startswith(self._AST_BANNER_PREFIX):
             raise Exception('banner incorrect; got %r, expected prefix %r' %
@@ -269,7 +269,7 @@ class BaseManager(Asterisk.Logging.InstanceLogger):
         lines = ['Action: ' + action, 'ActionID: ' + id]
 
         if data is not None:
-            for item in data.iteritems():
+            for item in data.items():
                 if item[1] is not None:
                     if not isinstance(item[1], list):
                         lines.append('%s: %s' % item)
@@ -310,14 +310,11 @@ class BaseManager(Asterisk.Logging.InstanceLogger):
                 # In some case, ActionID is the line 2 the first starting with
                 # 'Privilege:'
                 if line_nr in [1, 2] and line.startswith('ActionID: '):
-                    # Asterisk is a pile of shite!!!!!!!!!
                     packet.ActionID = line[10:]
-
                 elif line == '--END COMMAND--':
                     self.file.readline()
                     self.log.debug('Completed _read_response_follows().')
                     return packet
-
                 elif not line:
                     if self.timeout:
                         now = datetime.datetime.now()
@@ -325,12 +322,11 @@ class BaseManager(Asterisk.Logging.InstanceLogger):
                             empty_line_ts = now
                         else:
                             if (now - empty_line_ts).seconds > self.timeout:
-                                self.log.debug("Bogus asterisk "
-                                               "'Command' answer.'")
+                                self.log.debug(
+                                    "Bogus asterisk 'Command' answer.'")
                                 raise CommunicationError(
                                     packet, 'expected --END COMMAND--')
                     self.log.debug('Empty line encountered.')
-
                 else:
                     lines.append(line)
 
@@ -417,7 +413,7 @@ class BaseManager(Asterisk.Logging.InstanceLogger):
             return packet
 
         if packet.Message == 'Permission denied':
-            raise PermissionDenied
+            raise PermissionDenied(packet.Message)
 
         raise ActionFailed(packet.Message)
 
@@ -615,7 +611,7 @@ class CoreActions(object):  # pylint: disable=R0904
         id = self._write_action('DBGet', {'Family': family, 'Key': key})
         try:
             response = self._translate_response(self.read_response(id))
-        except Asterisk.Manager.ActionFailed as e:
+        except ActionFailed as e:
             return str(e)
         if response.get('Response') == 'Success':
             packet = self._read_packet()
