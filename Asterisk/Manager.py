@@ -8,6 +8,7 @@ import datetime
 import re
 import socket
 import time
+import threading
 
 import Asterisk
 import Asterisk.Util
@@ -204,6 +205,10 @@ class BaseManager(Asterisk.Logging.InstanceLogger):
         self.log = self.getLogger()
         self.log.debug('Initialising.')
 
+        # Configure r/w locks for socket (make sock thread-safe)
+        self.wlock = threading.Lock()
+        self.rlock = threading.Lock()
+
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.settimeout(self.timeout)
         sock.connect(address)
@@ -273,12 +278,13 @@ class BaseManager(Asterisk.Logging.InstanceLogger):
 
         self.log.packet('write_action: %r', lines)
 
-        for line in lines:
-            self.file.write(line + '\r\n')
-            self.log.io('_write_action: send %r', line + '\r\n')
+        with self.wlock:
+            for line in lines:
+                self.file.write(line + '\r\n')
+                self.log.io('_write_action: send %r', line + '\r\n')
 
-        self.file.write('\r\n')
-        self.log.io('_write_action: send: %r', '\r\n')
+            self.file.write('\r\n')
+            self.log.io('_write_action: send: %r', '\r\n')
         return id
 
     def _read_response_follows(self):
@@ -296,34 +302,35 @@ class BaseManager(Asterisk.Logging.InstanceLogger):
         line_nr = 0
         empty_line_ts = None
         while True:
-            line = self.file.readline().rstrip()
-            self.log.io('_read_response_follows: recv %r', line)
-            line_nr += 1
-            # In some case, ActionID is the line 2 the first starting with
-            # 'Privilege:'
-            if line_nr in [1, 2] and line.startswith('ActionID: '):
-                # Asterisk is a pile of shite!!!!!!!!!
-                packet.ActionID = line[10:]
+            with self.rlock:
+                line = self.file.readline().rstrip()
+                self.log.io('_read_response_follows: recv %r', line)
+                line_nr += 1
+                # In some case, ActionID is the line 2 the first starting with
+                # 'Privilege:'
+                if line_nr in [1, 2] and line.startswith('ActionID: '):
+                    # Asterisk is a pile of shite!!!!!!!!!
+                    packet.ActionID = line[10:]
 
-            elif line == '--END COMMAND--':
-                self.file.readline()
-                self.log.debug('Completed _read_response_follows().')
-                return packet
+                elif line == '--END COMMAND--':
+                    self.file.readline()
+                    self.log.debug('Completed _read_response_follows().')
+                    return packet
 
-            elif not line:
-                if self.timeout:
-                    now = datetime.datetime.now()
-                    if empty_line_ts is None:
-                        empty_line_ts = now
-                    else:
-                        if (now - empty_line_ts).seconds > self.timeout:
-                            self.log.debug("Bogus asterisk 'Command' answer.'")
-                            raise CommunicationError(
-                                packet, 'expected --END COMMAND--')
-                self.log.debug('Empty line encountered.')
+                elif not line:
+                    if self.timeout:
+                        now = datetime.datetime.now()
+                        if empty_line_ts is None:
+                            empty_line_ts = now
+                        else:
+                            if (now - empty_line_ts).seconds > self.timeout:
+                                self.log.debug("Bogus asterisk 'Command' answer.'")
+                                raise CommunicationError(
+                                    packet, 'expected --END COMMAND--')
+                    self.log.debug('Empty line encountered.')
 
-            else:
-                lines.append(line)
+                else:
+                    lines.append(line)
 
     def _read_packet(self, discard_events=False):
         '''
@@ -338,42 +345,43 @@ class BaseManager(Asterisk.Logging.InstanceLogger):
         self.log.debug('In _read_packet().')
 
         while True:
-            line = self.file.readline().rstrip()
-            self.log.io('_read_packet: recv %r', line)
+            with self.rlock:
+                line = self.file.readline().rstrip()
+                self.log.io('_read_packet: recv %r', line)
 
-            if not line:
-                if not packet:
-                    raise GoneAwayError(
-                        'Asterisk Manager connection has gone away.')
+                if not line:
+                    if not packet:
+                        raise GoneAwayError(
+                            'Asterisk Manager connection has gone away.')
 
-                self.log.packet('_read_packet: %r', packet)
+                    self.log.packet('_read_packet: %r', packet)
 
-                if discard_events and 'Event' in packet:
-                    self.log.debug('_read_packet() discarding: %r.', packet)
-                    packet.clear()
-                    continue
+                    if discard_events and 'Event' in packet:
+                        self.log.debug('_read_packet() discarding: %r.', packet)
+                        packet.clear()
+                        continue
 
-                self.log.debug('_read_packet() completed.')
-                return packet
+                    self.log.debug('_read_packet() completed.')
+                    return packet
 
-            val = None
-            if line.count(':') == 1 and line[-1] == ':':  # Empty field:
-                key, val = line[:-1], ''
-            elif line.count(',') == 1 and line[0] == ' ':  # ChannelVariable
-                key, val = line[1:].split(',', 1)
-            else:
-                # Some asterisk features like 'XMPP' presence
-                # send bogus packets with empty lines in the datas
-                # We should properly fail on those packets.
-                try:
-                    key, val = line.split(': ', 1)
-                except:
-                    raise InternalError('Malformed packet detected: %r'
-                                        % packet)
-            if key == 'Response' and val == 'Follows':
-                return self._read_response_follows()
+                val = None
+                if line.count(':') == 1 and line[-1] == ':':  # Empty field:
+                    key, val = line[:-1], ''
+                elif line.count(',') == 1 and line[0] == ' ':  # ChannelVariable
+                    key, val = line[1:].split(',', 1)
+                else:
+                    # Some asterisk features like 'XMPP' presence
+                    # send bogus packets with empty lines in the datas
+                    # We should properly fail on those packets.
+                    try:
+                        key, val = line.split(': ', 1)
+                    except:
+                        raise InternalError('Malformed packet detected: %r'
+                                            % packet)
+                if key == 'Response' and val == 'Follows':
+                    return self._read_response_follows()
 
-            packet[key] = val
+                packet[key] = val
 
     def _dispatch_packet(self, packet):
         'Feed a single packet to an event handler.'
