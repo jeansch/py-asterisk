@@ -1,3 +1,4 @@
+# pylint: disable=C0302
 '''
 Asterisk Manager and Channel objects.
 '''
@@ -324,7 +325,8 @@ class BaseManager(Asterisk.Logging.InstanceLogger):
                             empty_line_ts = now
                         else:
                             if (now - empty_line_ts).seconds > self.timeout:
-                                self.log.debug("Bogus asterisk 'Command' answer.'")
+                                self.log.debug("Bogus asterisk "
+                                               "'Command' answer.'")
                                 raise CommunicationError(
                                     packet, 'expected --END COMMAND--')
                     self.log.debug('Empty line encountered.')
@@ -357,7 +359,8 @@ class BaseManager(Asterisk.Logging.InstanceLogger):
                     self.log.packet('_read_packet: %r', packet)
 
                     if discard_events and 'Event' in packet:
-                        self.log.debug('_read_packet() discarding: %r.', packet)
+                        self.log.debug("_read_packet() "
+                                       "discarding: %r.", packet)
                         packet.clear()
                         continue
 
@@ -365,9 +368,11 @@ class BaseManager(Asterisk.Logging.InstanceLogger):
                     return packet
 
                 val = None
-                if line.count(':') == 1 and line[-1] == ':':  # Empty field:
+                # Empty field:
+                if line.count(':') == 1 and line[-1] == ':':
                     key, val = line[:-1], ''
-                elif line.count(',') == 1 and line[0] == ' ':  # ChannelVariable
+                # ChannelVariable
+                elif line.count(',') == 1 and line[0] == ' ':
                     key, val = line[1:].split(',', 1)
                 else:
                     # Some asterisk features like 'XMPP' presence
