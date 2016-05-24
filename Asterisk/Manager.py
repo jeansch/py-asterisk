@@ -780,7 +780,8 @@ class CoreActions(object):  # pylint: disable=R0904
 
     def Originate(self, channel, context=None, extension=None, priority=None,
                   application=None, data=None, timeout=None, caller_id=None,
-                  variable=None, account=None, async=None):
+                  variable=None, account=None, async=None, early_media=None,
+                  codecs=None, other_channel_id=None, other_fields={}):
         '''
         Originate(channel, context = .., extension = .., priority = ..[, ...])
         Originate(channel, application = ..[, data = ..[, ...]])
@@ -800,6 +801,9 @@ class CoreActions(object):  # pylint: disable=R0904
             <variable>      channel variable to set (K=V[|K2=V2[|..]]).
             <account>       CDR account code.
             <async>         Return successfully immediately.
+            <early_media>   Force call bridge on early media.
+            <codecs>        Comma-separated list of codecs to use for this call.
+            <other_channel_id Channel UniqueId to be set on the second local channel.
         '''
 
         # Since channel is a required parameter, no need including it here.
@@ -826,8 +830,20 @@ class CoreActions(object):  # pylint: disable=R0904
             'Application': application, 'Data': data,
             'Timeout': timeout, 'CallerID': caller_id,
             'Variable': variable, 'Account': account,
-            'Async': int(bool(async))
+            'Async': int(bool(async)), 'EarlyMedia': int(bool(early_media)),
+            'Codecs': codecs, 'OtherChannelId': other_channel_id
         }
+
+        # replace value for field if used the same name in other_fields
+        # else asignate new variable
+        key_upper =  map(str.upper, data.keys())
+        for field in other_fields:
+            if field.upper() in key_upper:
+                for k in data.keys():
+                    if field.upper() == k.upper():
+                        data[k] = other_fields[field]
+            else:
+                data[field] = other_fields[field]
 
         id = self._write_action('Originate', data)
         return self._translate_response(self.read_response(id))
