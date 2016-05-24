@@ -3,7 +3,6 @@
 Asterisk Manager and Channel objects.
 '''
 from __future__ import absolute_import
-from builtins import object
 
 import datetime
 import re

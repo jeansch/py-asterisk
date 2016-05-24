@@ -3,7 +3,6 @@ Asterisk/Logging.py: extensions to the Python 2.3 logging module.
 '''
 
 from __future__ import absolute_import
-from builtins import object
 import logging
 
 __author__ = 'David Wilson'
