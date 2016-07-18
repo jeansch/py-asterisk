@@ -3,8 +3,16 @@ Asterisk/Config.py: filesystem configuration reader.
 '''
 
 from __future__ import absolute_import
-import ConfigParser
-import os
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
+import os, sys
+
+#configparser has changed
+try:
+    import configparser
+except:
+    import ConfigParser as configparser
 
 import Asterisk
 
@@ -53,10 +61,10 @@ class Config(object):
         'Read py-Asterisk configuration data from the filesystem.'
 
         try:
-            self.conf = ConfigParser.SafeConfigParser()
-            self.conf.readfp(file(self.config_pathname))
+            self.conf = configparser.SafeConfigParser()
+            self.conf.readfp(open(self.config_pathname))
 
-        except ConfigParser.Error, e:
+        except configparser.Error as e:
             raise ConfigurationError('%r contains invalid data at line %r' %
                                      (self.config_pathname, e.lineno))
 
@@ -84,7 +92,7 @@ class Config(object):
 
             items = dict(conf.items('connection: ' + connection))
 
-        except ConfigParser.Error, e:
+        except configparser.Error as e:
             raise ConfigurationError(str(e))
 
         try:
