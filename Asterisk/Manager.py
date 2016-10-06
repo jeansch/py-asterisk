@@ -1025,6 +1025,35 @@ class CoreActions(object):  # pylint: disable=R0904
             self.events -= events
         return registry
 
+    def SipPeers(self):
+        'Return a nested dict of SIP peers.'
+
+        id = self._write_action('SIPpeers')
+        self._translate_response(self.read_response(id))
+        peer = {}
+
+        def PeerEntry(self, event):
+            event = self.strip_evinfo(event)
+            name = event.pop('ObjectName')
+            peer[name] = event
+
+        def PeerlistComplete(self, event):
+            stop_flag[0] = True
+
+        events = Asterisk.Util.EventCollection([PeerEntry, PeerlistComplete])
+        self.events += events
+
+        try:
+            stop_flag = [False]
+
+            while stop_flag[0] == False:
+                packet = self._read_packet()
+                self._dispatch_packet(packet)
+
+        finally:
+            self.events -= events
+        return peer
+
     def Status(self):
         'Return a nested dict of channel statii.'
 
