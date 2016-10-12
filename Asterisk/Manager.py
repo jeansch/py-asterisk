@@ -224,7 +224,7 @@ class BaseManager(Asterisk.Logging.InstanceLogger):
     def _authenticate(self):
         'Read the server banner and attempt to authenticate.'
 
-        banner = self.file.readline().decode()
+        banner = self.file.readline().decode('utf8')
 
         if not banner.startswith(self._AST_BANNER_PREFIX):
             raise Exception('banner incorrect; got %r, expected prefix %r' %
@@ -294,7 +294,7 @@ class BaseManager(Asterisk.Logging.InstanceLogger):
         line_nr = 0
         empty_line_ts = None
         while True:
-            line = self.file.readline().decode().rstrip()
+            line = self.file.readline().decode('utf8').rstrip()
             self.log.io('_read_response_follows: recv %r', line)
             line_nr += 1
             # In some case, ActionID is the line 2 the first starting with
@@ -333,7 +333,7 @@ class BaseManager(Asterisk.Logging.InstanceLogger):
         packet = Asterisk.Util.AttributeDict()
         self.log.debug('In _read_packet().')
         while True:
-            line = self.file.readline().decode().rstrip()
+            line = self.file.readline().decode('utf8').rstrip()
             self.log.io('_read_packet: recv %r', line)
 
             if not line:
