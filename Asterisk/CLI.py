@@ -145,4 +145,4 @@ def command_line(argv):
             show_actions(argv[2])
 
     elif command == 'command':
-        execute_action('command', argv[2])
+        execute_action('command', [argv[2]])
