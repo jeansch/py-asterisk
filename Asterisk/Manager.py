@@ -553,8 +553,8 @@ class CoreActions(object):  # pylint: disable=R0904
             return parties
         else:
             confbridge_re = re.compile(r'^(?P<channel>SIP/\S+)\s+'
-                                       r'(?P<user_profile>\S+)\s+'
-                                       r'(?P<bridge_profile>\S+)\s+'
+                                       r'(?P<user_profile>\S+)?\s+'
+                                       r'(?P<bridge_profile>\S+)?\s+'
                                        r'(?P<menu>\w*)\s+'
                                        r'(?P<caller_id>\S+)\s+'
                                        r'(?P<muted>\S+)')
@@ -571,7 +571,8 @@ class CoreActions(object):  # pylint: disable=R0904
         '''
 
         resp = self.Command('confbridge kick %s %s' % (room, channel))
-        return 'No participant named' not in resp[1]
+        return ('No participant named' not in resp[1] and
+                'No conference bridge named' not in resp[1])
 
     def ConfbridgeMute(self, room, channel):
         '''
@@ -580,7 +581,8 @@ class CoreActions(object):  # pylint: disable=R0904
         '''
 
         resp = self.Command('confbridge mute %s %s' % (room, channel))
-        return 'No channel named' not in resp[1]
+        return ('No channel named' not in resp[1] and
+                'No conference bridge named' not in resp[1])
 
     def ConfbridgeUnmute(self, room, channel):
         '''
@@ -589,7 +591,8 @@ class CoreActions(object):  # pylint: disable=R0904
         '''
 
         resp = self.Command('confbridge unmute %s %s' % (room, channel))
-        return 'No channel named' not in resp[1]
+        return ('No channel named' not in resp[1] and
+                'No conference bridge named' not in resp[1])
 
     def DBGet(self, family, key):
         'Retrieve a key from the Asterisk database'
