@@ -594,6 +594,29 @@ class CoreActions(object):  # pylint: disable=R0904
         return ('No channel named' not in resp[1] and
                 'No conference bridge named' not in resp[1])
 
+    def ConfbridgeStartRecord(self, room, rFile=None):
+        '''
+        Starts recording the conference <room>.
+        The <rFile> is optional.
+        Returns boolean.
+        '''
+
+        if rFile:
+            resp = self.Command('confbridge record start %s %s'
+                                % (room, rFile))
+        else:
+            resp = self.Command('confbridge record start %s' % room)
+        return 'Conference not found.' not in resp[1]
+
+    def ConfbridgeStopRecord(self, room):
+        '''
+        Stop recording the conference <room>.
+        Returns boolean.
+        '''
+
+        resp = self.Command('confbridge record stop %s' % room)
+        return 'Conference not found.' not in resp[1]
+
     def DBGet(self, family, key):
         'Retrieve a key from the Asterisk database'
 
