@@ -617,6 +617,20 @@ class CoreActions(object):  # pylint: disable=R0904
         resp = self.Command('confbridge record stop %s' % room)
         return 'Conference not found.' not in resp[1]
 
+    def ConfbridgeisRecording(self, room):
+        '''
+        Verify if the conference <room> is recording.
+        Returns boolean.
+        '''
+
+        resp = self.CoreShowChannels()
+        recording_re = re.compile('^ConfBridgeRecorder/conf-%s' % room)
+        for line in resp:
+            match = recording_re.search(str(line['Channel']))
+            if match:
+                return True
+        return False
+
     def DBGet(self, family, key):
         'Retrieve a key from the Asterisk database'
 
