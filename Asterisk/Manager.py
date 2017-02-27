@@ -625,11 +625,8 @@ class CoreActions(object):  # pylint: disable=R0904
 
         resp = self.CoreShowChannels()
         recording_re = re.compile('^ConfBridgeRecorder/conf-%s' % room)
-        for line in resp:
-            match = recording_re.search(str(line['Channel']))
-            if match:
-                return True
-        return False
+        return any(recording_re.search(str(line['Channel']))
+                   for line in resp)
 
     def DBGet(self, family, key):
         'Retrieve a key from the Asterisk database'
