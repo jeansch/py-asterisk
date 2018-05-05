@@ -931,7 +931,7 @@ class CoreActions(object):  # pylint: disable=R0904
             'Queue': queue,
             'Interface': interface,
             'Penalty': str(int(penalty)),
-            'MemberName': str(member_name)
+            'MemberName': member_name
         })
 
         return self._translate_response(self.read_response(id))
