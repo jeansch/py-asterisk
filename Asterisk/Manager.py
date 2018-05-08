@@ -926,14 +926,13 @@ class CoreActions(object):  # pylint: disable=R0904
 
     def QueueAdd(self, queue, interface, penalty=0, member_name=None):
         'Add <interface> to <queue> with optional <penalty> and <member_name>.'
-
-        id = self._write_action('QueueAdd', {
+        params = {
             'Queue': queue,
             'Interface': interface,
-            'Penalty': str(int(penalty)),
-            'MemberName': member_name
-        })
-
+            'Penalty': str(int(penalty))}
+        if member_name:
+            params['MemberName'] = member_name
+        id = self._write_action('QueueAdd', params)
         return self._translate_response(self.read_response(id))
 
     def QueuePause(self, queue, interface, paused):
