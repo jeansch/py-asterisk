@@ -333,7 +333,7 @@ class BaseManager(Asterisk.Logging.InstanceLogger):
         packet = Asterisk.Util.AttributeDict()
         self.log.debug('In _read_packet().')
         while True:
-            line = self.file.readline().decode('utf8').rstrip()
+            line = self.file.readline().rstrip()
             self.log.io('_read_packet: recv %r', line)
 
             if not line:
