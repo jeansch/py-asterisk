@@ -208,7 +208,7 @@ class BaseManager(Asterisk.Logging.InstanceLogger):
         sock.settimeout(self.timeout)
         sock.connect(address)
 
-        self.file = sock.makefile('rwb', 0)  # line buffered.
+        self.file = sock.makefile('rwb', 0)  # unbuffered
         self.fileno = self.file.fileno
 
         self.response_buffer = []
@@ -224,8 +224,12 @@ class BaseManager(Asterisk.Logging.InstanceLogger):
     def _authenticate(self):
         'Read the server banner and attempt to authenticate.'
 
-        banner = self.file.readline().decode('utf8')
-
+        banner = self.file.readline().rstrip()
+        for enc in ('utf-8', 'latin1'):
+            try:
+                banner = banner.decode(enc)
+            except:
+                pass
         if not banner.startswith(self._AST_BANNER_PREFIX):
             raise Exception('banner incorrect; got %r, expected prefix %r' %
                             (banner, self._AST_BANNER_PREFIX))
@@ -294,7 +298,12 @@ class BaseManager(Asterisk.Logging.InstanceLogger):
         line_nr = 0
         empty_line_ts = None
         while True:
-            line = self.file.readline().decode('utf8').rstrip()
+            line = self.file.readline().rstrip()
+            for enc in ('utf-8', 'latin1'):
+                try:
+                    line = line.decode(enc)
+                except:
+                    pass
             self.log.io('_read_response_follows: recv %r', line)
             line_nr += 1
             # In some case, ActionID is the line 2 the first starting with
@@ -334,6 +343,11 @@ class BaseManager(Asterisk.Logging.InstanceLogger):
         self.log.debug('In _read_packet().')
         while True:
             line = self.file.readline().rstrip()
+            for enc in ('utf-8', 'latin1'):
+                try:
+                    line = line.decode(enc)
+                except:
+                    pass
             self.log.io('_read_packet: recv %r', line)
 
             if not line:
