@@ -814,8 +814,9 @@ class CoreActions(object):  # pylint: disable=R0904
 
     def Originate(self, channel, context=None, extension=None, priority=None,
                   application=None, data=None, timeout=None, caller_id=None,
-                  variable=None, account=None, async_param=None, early_media=None,
-                  codecs=None, channel_id=None, other_channel_id=None, **kwargs):
+                  variable=None, account=None, async_param=None,
+                  early_media=None, codecs=None, channel_id=None,
+                  other_channel_id=None, **kwargs):
         '''
         Originate(channel, context = .., extension = .., priority = ..[, ...])
         Originate(channel, application = ..[, data = ..[, ...]])
@@ -860,7 +861,8 @@ class CoreActions(object):  # pylint: disable=R0904
             raise ActionFailed('Originate: you must specify a channel.')
 
         # compatibility of renamed params
-        # 'async' -> 'async_param' because of 'async' and 'await' are reserved keywords since Python 3.7
+        # 'async' -> 'async_param' because of 'async' and 'await' are reserved
+        # keywords since Python 3.7
         if async_param is None and 'async' in kwargs:
             async_param = kwargs['async']
 
