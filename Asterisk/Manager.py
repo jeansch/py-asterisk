@@ -814,8 +814,8 @@ class CoreActions(object):  # pylint: disable=R0904
 
     def Originate(self, channel, context=None, extension=None, priority=None,
                   application=None, data=None, timeout=None, caller_id=None,
-                  variable=None, account=None, async=None, early_media=None,
-                  codecs=None, channel_id=None, other_channel_id=None):
+                  variable=None, account=None, async_param=None, early_media=None,
+                  codecs=None, channel_id=None, other_channel_id=None, **kwargs):
         '''
         Originate(channel, context = .., extension = .., priority = ..[, ...])
         Originate(channel, application = ..[, data = ..[, ...]])
@@ -832,7 +832,7 @@ class CoreActions(object):  # pylint: disable=R0904
             <caller_id>        Outgoing channel Caller ID.
             <variable>         channel variable to set (K=V[|K2=V2[|..]]).
             <account>          CDR account code.
-            <async>            Return successfully immediately.
+            <async_param>      Return successfully immediately.
             <early_media>      Force call bridge on early media.
             <codecs>           Comma-separated list of codecs to use for this
                                call.
@@ -859,13 +859,19 @@ class CoreActions(object):  # pylint: disable=R0904
         if not channel:
             raise ActionFailed('Originate: you must specify a channel.')
 
+        # compatibility of renamed params
+        # 'async' -> 'async_param' because of 'async' and 'await' are reserved keywords since Python 3.7
+        if async_param is None and 'async' in kwargs:
+            async_param = kwargs['async']
+
         data = {
             'Channel': channel, 'Context': context,
             'Exten': extension, 'Priority': priority,
             'Application': application, 'Data': data,
             'Timeout': timeout, 'CallerID': caller_id,
             'Variable': variable, 'Account': account,
-            'Async': int(bool(async)), 'EarlyMedia': int(bool(early_media)),
+            'Async': int(bool(async_param)),
+            'EarlyMedia': int(bool(early_media)),
             'Codecs': codecs, 'ChannelId': channel_id,
             'OtherChannelId': other_channel_id
         }
