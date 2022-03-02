@@ -87,7 +87,7 @@ class EventCollection(Logging.InstanceLogger):
             subscriptions = self.subscriptions[name]
 
         if handler in subscriptions:
-            raise SubscriptionError  # pylint: disable=W0710
+            raise SubscriptionError("Duplicated subscription at event %r", (name))  # pylint: disable=W0710
 
         subscriptions.append(handler)
 
