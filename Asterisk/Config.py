@@ -61,8 +61,8 @@ class Config(object):
         'Read py-Asterisk configuration data from the filesystem.'
 
         try:
-            self.conf = configparser.SafeConfigParser()
-            self.conf.readfp(open(self.config_pathname))
+            self.conf = configparser.ConfigParser()
+            self.conf.read(self.config_pathname)
 
         except configparser.Error as e:
             raise ConfigurationError('%r contains invalid data at line %r' %

@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "py-Asterisk"
+version = "0.5.20"
+description = "Asterisk Manager API Python interface."
+license = "MIT"
+authors = [
+    { name = "David Wilson", email = "dw@botanicus.net" },
+]
+
+[project.urls]
+Homepage = "https://github.com/jeansch/py-asterisk/"
+
+[tool.setuptools]
+packages = ["Asterisk"]
+script-files = ["asterisk-dump", "py-asterisk"]
