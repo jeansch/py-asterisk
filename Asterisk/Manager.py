@@ -204,15 +204,31 @@ class BaseManager(Asterisk.Logging.InstanceLogger):
         self.log = self.getLogger()
         self.log.debug('Initialising.')
 
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        sock.settimeout(self.timeout)
-        sock.connect(address)
+        self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.sock.settimeout(self.timeout)
+        self.sock.connect(address)
 
-        self.file = sock.makefile('rwb', 0)  # unbuffered
+        self.file = self.sock.makefile('rwb', 0)  # unbuffered
         self.fileno = self.file.fileno
 
         self.response_buffer = []
         self._authenticate()
+
+    def _readline(self):
+        '''
+        Read a line from the socket file object. In Python 3, after a
+        socket.timeout occurs, the SocketIO object sets an internal
+        _timeout_occurred flag that causes all subsequent reads to raise
+        OSError("cannot read from timed out object"). Work around this
+        by recreating the file object from the underlying socket.
+        '''
+        try:
+            return self.file.readline()
+        except OSError as e:
+            if 'timed out' in str(e):
+                self.file = self.sock.makefile('rwb', 0)
+                raise socket.timeout(str(e))
+            raise
 
     def get_channel(self, channel_id):
         'Return a channel object for the given <channel_id>.'
@@ -224,7 +240,7 @@ class BaseManager(Asterisk.Logging.InstanceLogger):
     def _authenticate(self):
         'Read the server banner and attempt to authenticate.'
 
-        banner = self.file.readline().rstrip()
+        banner = self._readline().rstrip()
         for enc in ('utf-8', 'latin1'):
             try:
                 banner = banner.decode(enc)
@@ -298,7 +314,7 @@ class BaseManager(Asterisk.Logging.InstanceLogger):
         line_nr = 0
         empty_line_ts = None
         while True:
-            line = self.file.readline().rstrip()
+            line = self._readline().rstrip()
             for enc in ('utf-8', 'latin1'):
                 try:
                     line = line.decode(enc)
@@ -311,7 +327,7 @@ class BaseManager(Asterisk.Logging.InstanceLogger):
             if line_nr in [1, 2] and line.startswith('ActionID: '):
                 packet.ActionID = line[10:]
             elif line == '--END COMMAND--':
-                self.file.readline()
+                self._readline()
                 self.log.debug('Completed _read_response_follows().')
                 return packet
 
@@ -342,7 +358,7 @@ class BaseManager(Asterisk.Logging.InstanceLogger):
         packet = Asterisk.Util.AttributeDict()
         self.log.debug('In _read_packet().')
         while True:
-            line = self.file.readline().rstrip()
+            line = self._readline().rstrip()
             for enc in ('utf-8', 'latin1'):
                 try:
                     line = line.decode(enc)
