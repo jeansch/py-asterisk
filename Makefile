@@ -1,4 +1,4 @@
-.PHONY: build release test clean
+.PHONY: build release upload test clean
 
 test:
 	python -m pytest tests/ -v
@@ -7,6 +7,9 @@ build: clean
 	python -m build
 
 release: build
+	python -m twine upload dist/*
+
+upload:
 	python -m twine upload dist/*
 
 clean:
